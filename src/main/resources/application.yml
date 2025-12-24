@@ -1,0 +1,22 @@
+spring:
+ application:
+  name: mathis
+ ai:
+   mistralai:
+    api-key: ***
+    chat:
+     api-key: ***
+   vectorstore:
+    pgvector:
+     initialize-schema: true	
+ datasource:
+  url: jdbc:postgresql://***
+ servlet:
+  multipart:
+   max-file-size: 50MB
+   max-request-size: 50MB
+   
+telegram:
+ bot:
+  username: your_bot
+  token: ***
