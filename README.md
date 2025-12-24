@@ -1,6 +1,6 @@
 # Mathis - Un agente AI per il knowledge management personale, conversazionale e open source
 <img src="src/main/resources/static/images/logo.jpg" width="200">
-<img src="src/main/resources/static/images/Mathis.png" width="200">
+<img src="src/main/resources/static/images/mathis.png" width="200">
 
 ## Descrizione
 Mathis è un progetto open source scritto in Java che implementa un agente AI conversazionale tramite Telegram, dotato di funzionalità RAG (Retrieval-Augmented Generation). 
