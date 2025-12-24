@@ -33,5 +33,4 @@ public class DocumentIngestionService{
 		log.info(String.format("%s -> %s", VectorStore.class.getSimpleName(), "store in vector database"));
 		vectorStore.accept(documents);
 	}
-
 }

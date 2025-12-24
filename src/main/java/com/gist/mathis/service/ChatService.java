@@ -31,6 +31,9 @@ public class ChatService {
 	@Value("classpath:/prompts/welcome.st")
 	private Resource welcomeResource;
 	
+	@Value("classpath:/prompts/ingest.st")
+	private Resource ingestResource;
+	
 	@Autowired
 	private MistralAiChatModel chatModel;
 	
@@ -96,6 +99,30 @@ public class ChatService {
 		log.info(String.format("Calling MistralAI"));
 		
 		String responseBody = welcomeChatClient.prompt(prompt)
+			// Set advisor parameters at runtime
+			.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
+			.call()
+			.content();
+
+		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
+	}
+	
+	public ChatMessage ingest(String conversationId, String language, String documentName) {	
+		log.info(String.format("%s -> %s", ChatService.class.getSimpleName(), "welcome"));
+		log.info(String.format("Create chatClient [vectorStore: %s]", vectorStore.getName()));
+		
+		PromptTemplate ingestPromptTemplate = new PromptTemplate(this.ingestResource);
+		Prompt prompt = ingestPromptTemplate.create(Map.of("language", language, "documentName", documentName));
+		
+		ChatClient ingestChatClient = ChatClient.builder(chatModel)
+			    .defaultAdvisors(
+			        QuestionAnswerAdvisor.builder(vectorStore).build()
+			    )
+			    .build();
+		
+		log.info(String.format("Calling MistralAI"));
+		
+		String responseBody = ingestChatClient.prompt(prompt)
 			// Set advisor parameters at runtime
 			.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
 			.call()
