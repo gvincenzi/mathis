@@ -1,11 +1,13 @@
 package com.gist.mathis.service;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.mistralai.MistralAiChatModel;
 import org.springframework.ai.template.st.StTemplateRenderer;
@@ -25,6 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatService {
 	@Value("classpath:/prompts/base.st")
 	private Resource baseTemplateResource;
+	
+	@Value("classpath:/prompts/welcome.st")
+	private Resource welcomeResource;
 	
 	@Autowired
 	private MistralAiChatModel chatModel;
@@ -46,7 +51,7 @@ public class ChatService {
 		return customPromptTemplate;
 	}
 	
-	public ChatMessage chat(ChatMessage message) {
+	private ChatClient getChatClient() {
 		if(this.chatClient == null) {
 			log.info(String.format("Create chatClient [vectorStore: %s]", vectorStore.getName()));
 			this.chatClient = ChatClient.builder(chatModel)
@@ -57,11 +62,15 @@ public class ChatService {
 				    .build();
 		}
 		
+		return this.chatClient;
+	}
+	
+	public ChatMessage chat(ChatMessage message) {
 		log.info(String.format("%s -> %s", ChatService.class.getSimpleName(), "chat"));
 		String conversationId = message.getConversationId() == null ? UUID.randomUUID().toString() : message.getConversationId();
 		log.info(String.format("ChatMessage -> [%s][%s][%s]", message.getUserType().name(), conversationId, message.getBody()));
 		log.info(String.format("Calling MistralAI"));
-		String responseBody = this.chatClient.prompt()
+		String responseBody = getChatClient().prompt()
 			// Set advisor parameters at runtime
 			.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
 			.user(message.getBody())
@@ -69,5 +78,29 @@ public class ChatService {
 			.content();
 		log.info(String.format("MistralAI answer [%s]", responseBody.length()>15 ? responseBody.substring(0, 10)+"..." : responseBody));
 		return new ChatMessage(conversationId, UserTypeEnum.HUMAN.equals(message.getUserType()) ? UserTypeEnum.AI : UserTypeEnum.HUMAN, responseBody);
+	}
+
+	public ChatMessage welcome(String conversationId, String language) {	
+		log.info(String.format("%s -> %s", ChatService.class.getSimpleName(), "welcome"));
+		log.info(String.format("Create chatClient [vectorStore: %s]", vectorStore.getName()));
+		
+		PromptTemplate welcomePromptTemplate = new PromptTemplate(this.welcomeResource);
+		Prompt prompt = welcomePromptTemplate.create(Map.of("language", language));
+		
+		ChatClient welcomeChatClient = ChatClient.builder(chatModel)
+			    .defaultAdvisors(
+			        QuestionAnswerAdvisor.builder(vectorStore).build()
+			    )
+			    .build();
+		
+		log.info(String.format("Calling MistralAI"));
+		
+		String responseBody = welcomeChatClient.prompt(prompt)
+			// Set advisor parameters at runtime
+			.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
+			.call()
+			.content();
+
+		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
 	}
 }

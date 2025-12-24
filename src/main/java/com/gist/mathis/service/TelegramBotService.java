@@ -24,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Profile({ "gist" })
 public class TelegramBotService implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
+	private static final String START = "/start";
+	
 	@Value("${telegram.bot.username}")
 	private String botUsername;
 
@@ -42,9 +44,18 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 	@Override
 	public void consume(Update update) {
 		log.info(String.format("%s -> %s", TelegramBotService.class.getSimpleName(), "consume"));
-		if (update.hasMessage() && update.getMessage().getText() != null) {
+		if (update.hasMessage() && update.getMessage().getText() != null && update.getMessage().getText().startsWith(START)) {
+			String lang = update.getMessage().getCaption() != null ? update.getMessage().getCaption() : update.getMessage().getFrom().getLanguageCode();
 			try {
-				ChatMessage chat = chatService.chat(new ChatMessage(update.getMessage().getChatId().toString(), UserTypeEnum.HUMAN, update.getMessage().getText()));
+				ChatMessage chat = chatService.welcome(Long.toString(update.getMessage().getChatId()),lang);
+				SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
+				telegramClient.execute(message);
+			} catch (TelegramApiException e) {
+				log.error(e.getMessage());
+			}
+		} else if (update.hasMessage() && update.getMessage().getText() != null && !update.getMessage().getText().startsWith(START)) {
+			try {
+				ChatMessage chat = chatService.chat(new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, update.getMessage().getText()));
 				SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
 				telegramClient.execute(message);
 			} catch (TelegramApiException e) {
