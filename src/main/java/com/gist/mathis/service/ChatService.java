@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import com.gist.mathis.controller.entity.ChatMessage;
 import com.gist.mathis.controller.entity.UserTypeEnum;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,19 +35,32 @@ public class ChatService {
 	@Value("classpath:/prompts/ingest.st")
 	private Resource ingestResource;
 	
-	@Autowired
 	private MistralAiChatModel chatModel;
-	
-	@Autowired
 	private VectorStore vectorStore;
-	
-	@Autowired
 	private ChatMemory chatMemory;
 	
 	private ChatClient chatClient;
 	
+	@Autowired
+    public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory) {
+        this.chatModel = chatModel;
+        this.vectorStore = vectorStore;
+        this.chatMemory = chatMemory;
+    }
+	
+	@PostConstruct
+    private void init() {
+		log.info("Init chatClient [vectorStore: {}] via @PostConstruct", vectorStore.getName());
+		this.chatClient = ChatClient.builder(chatModel)
+			    .defaultAdvisors(
+			    	PromptChatMemoryAdvisor.builder(chatMemory).build(),
+			        QuestionAnswerAdvisor.builder(vectorStore).promptTemplate(this.promptTemplate()).build() // RAG advisor
+			    )
+			    .build();
+	}
+	
 	private PromptTemplate promptTemplate() {
-		log.info(String.format("Create promptTemplate [resource: %s]", baseTemplateResource.getFilename()));
+		log.info("Create promptTemplate [resource: {}]", baseTemplateResource.getFilename());
 		PromptTemplate customPromptTemplate = PromptTemplate.builder()
 			    .renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
 			    .resource(baseTemplateResource)
@@ -54,80 +68,58 @@ public class ChatService {
 		return customPromptTemplate;
 	}
 	
-	private ChatClient getChatClient() {
-		if(this.chatClient == null) {
-			log.info(String.format("Create chatClient [vectorStore: %s]", vectorStore.getName()));
-			this.chatClient = ChatClient.builder(chatModel)
-				    .defaultAdvisors(
-				    	PromptChatMemoryAdvisor.builder(chatMemory).build(),
-				        QuestionAnswerAdvisor.builder(vectorStore).promptTemplate(this.promptTemplate()).build() // RAG advisor
-				    )
-				    .build();
-		}
-		
-		return this.chatClient;
-	}
-	
 	public ChatMessage chat(ChatMessage message) {
-		log.info(String.format("%s -> %s", ChatService.class.getSimpleName(), "chat"));
+		log.info("{} -> chat", ChatService.class.getSimpleName());
 		String conversationId = message.getConversationId() == null ? UUID.randomUUID().toString() : message.getConversationId();
-		log.info(String.format("ChatMessage -> [%s][%s][%s]", message.getUserType().name(), conversationId, message.getBody()));
+		log.info("ChatMessage -> [{}][{}][{}]", message.getUserType().name(), conversationId, message.getBody());
 		log.info(String.format("Calling MistralAI"));
-		String responseBody = getChatClient().prompt()
+		String responseBody = this.chatClient.prompt()
 			// Set advisor parameters at runtime
 			.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
 			.user(message.getBody())
 			.call()
 			.content();
-		log.info(String.format("MistralAI answer [%s]", responseBody.length()>15 ? responseBody.substring(0, 10)+"..." : responseBody));
+		log.info("MistralAI answer [{}]", responseBody.length() > 15 ? responseBody.substring(0, 10) + "..." : responseBody);
 		return new ChatMessage(conversationId, UserTypeEnum.HUMAN.equals(message.getUserType()) ? UserTypeEnum.AI : UserTypeEnum.HUMAN, responseBody);
 	}
 
 	public ChatMessage welcome(String conversationId, String language) {	
-		log.info(String.format("%s -> %s", ChatService.class.getSimpleName(), "welcome"));
-		log.info(String.format("Create chatClient [vectorStore: %s]", vectorStore.getName()));
+		log.info("{} -> welcome", ChatService.class.getSimpleName());
+        log.info("Create chatClient [vectorStore: {}]", vectorStore.getName());
 		
 		PromptTemplate welcomePromptTemplate = new PromptTemplate(this.welcomeResource);
 		Prompt prompt = welcomePromptTemplate.create(Map.of("language", language));
 		
-		ChatClient welcomeChatClient = ChatClient.builder(chatModel)
-			    .defaultAdvisors(
-			        QuestionAnswerAdvisor.builder(vectorStore).build()
-			    )
-			    .build();
-		
 		log.info(String.format("Calling MistralAI"));
 		
-		String responseBody = welcomeChatClient.prompt(prompt)
-			// Set advisor parameters at runtime
-			.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
+		String responseBody = createSimpleChatClient().prompt(prompt)
 			.call()
 			.content();
 
 		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
 	}
 	
-	public ChatMessage ingest(String conversationId, String language, String documentName) {	
-		log.info(String.format("%s -> %s", ChatService.class.getSimpleName(), "welcome"));
-		log.info(String.format("Create chatClient [vectorStore: %s]", vectorStore.getName()));
+	public ChatMessage ingest(String conversationId, String language, String documentName) {
+		log.info("{} -> ingest", ChatService.class.getSimpleName());
+        log.info("Create chatClient [vectorStore: {}]", vectorStore.getName());
 		
 		PromptTemplate ingestPromptTemplate = new PromptTemplate(this.ingestResource);
 		Prompt prompt = ingestPromptTemplate.create(Map.of("language", language, "documentName", documentName));
-		
-		ChatClient ingestChatClient = ChatClient.builder(chatModel)
-			    .defaultAdvisors(
-			        QuestionAnswerAdvisor.builder(vectorStore).build()
-			    )
-			    .build();
-		
+			
 		log.info(String.format("Calling MistralAI"));
 		
-		String responseBody = ingestChatClient.prompt(prompt)
-			// Set advisor parameters at runtime
-			.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
+		String responseBody = createSimpleChatClient().prompt(prompt)
 			.call()
 			.content();
 
 		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
 	}
+	
+	private ChatClient createSimpleChatClient() {
+        return ChatClient.builder(chatModel)
+            .defaultAdvisors(
+                QuestionAnswerAdvisor.builder(vectorStore).build()
+            )
+            .build();
+    }
 }

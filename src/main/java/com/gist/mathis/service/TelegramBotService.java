@@ -29,69 +29,97 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Profile({ "gist" })
 public class TelegramBotService implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
-	private static final String START = "/start";
-	
-	@Value("${telegram.bot.username}")
-	private String botUsername;
+    private static final String START = "/start";
+    
+    @Value("${telegram.bot.username}")
+    private String botUsername;
 
-	@Value("${telegram.bot.token}")
-	private String botToken;
-	
-	private final TelegramClient telegramClient;
-	
-	@Autowired
-	private ChatService chatService;
-	
-	@Autowired
-	private DocumentIngestionService documentIngestionService;
+    @Value("${telegram.bot.token}")
+    private String botToken;
+    
+    private final TelegramClient telegramClient;
+    
+    @Autowired
+    private ChatService chatService;
+    
+    @Autowired
+    private DocumentIngestionService documentIngestionService;
 
-	public TelegramBotService(@Value("${telegram.bot.token}") String botToken) {
-		telegramClient = new OkHttpTelegramClient(botToken);
-	}
+    public TelegramBotService(@Value("${telegram.bot.token}") String botToken) {
+        telegramClient = new OkHttpTelegramClient(botToken);
+    }
 
-	@Override
-	public void consume(Update update) {
-		log.info(String.format("%s -> %s", TelegramBotService.class.getSimpleName(), "consume"));
-		if (update.hasMessage() && update.getMessage().getText() != null && update.getMessage().getText().startsWith(START)) {
-			String lang = update.getMessage().getCaption() != null ? update.getMessage().getCaption() : update.getMessage().getFrom().getLanguageCode();
-			try {
-				ChatMessage chat = chatService.welcome(Long.toString(update.getMessage().getChatId()),lang);
-				SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
-				telegramClient.execute(message);
-			} catch (TelegramApiException e) {
-				log.error(e.getMessage());
-			}
-		} else if (update.hasMessage() && update.getMessage().getText() != null && !update.getMessage().getText().startsWith(START)) {
-			try {
-				ChatMessage chat = chatService.chat(new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, update.getMessage().getText()));
-				SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
-				telegramClient.execute(message);
-			} catch (TelegramApiException e) {
-				log.error(e.getMessage());
-			}
-		} else if (update.hasMessage() && update.getMessage().hasDocument()) {
-			try {
-				String lang = update.getMessage().getCaption() != null ? update.getMessage().getCaption() : update.getMessage().getFrom().getLanguageCode();
-				InputStreamResource inputStream = new InputStreamResource(getFile(update.getMessage().getDocument().getFileId()));
-				documentIngestionService.ingest(inputStream);
-				
-				ChatMessage chat = chatService.ingest(Long.toString(update.getMessage().getChatId()),lang,update.getMessage().getDocument().getFileName());
-				SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
-				telegramClient.execute(message);
-			} catch (TelegramApiException | IOException  e) {
-				log.error(e.getMessage());
-			}
-		}
-	}
+    @Override
+    public void consume(Update update) {
+        log.info("Received update: message? {}, document? {}, chatId: {}",
+                update.hasMessage(),
+                update.hasMessage() && update.getMessage().hasDocument(),
+                update.hasMessage() ? update.getMessage().getChatId() : null);
 
-	@Override
-	public LongPollingUpdateConsumer getUpdatesConsumer() {
-		return this;
-	}
-	
-	public InputStream getFile(String fileId) throws TelegramApiException, IOException {
-		GetFile getFile = new GetFile(fileId);
-		String filePath = telegramClient.execute(getFile).getFilePath();
-		return telegramClient.downloadFileAsStream(filePath);
-	}
+        if (update.hasMessage() && update.getMessage().getText() != null && update.getMessage().getText().startsWith(START)) {
+            String lang = update.getMessage().getCaption() != null ?
+                    update.getMessage().getCaption() :
+                    update.getMessage().getFrom().getLanguageCode();
+            log.info("Start command detected from chatId: {}, lang: {}", update.getMessage().getChatId(), lang);
+
+            try {
+                ChatMessage chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), lang);
+                SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
+                telegramClient.execute(message);
+                log.info("Welcome message sent to chatId: {}", chat.getConversationId());
+            } catch (TelegramApiException e) {
+                log.error("Error sending welcome message to chatId {}: {}", update.getMessage().getChatId(), e.getMessage(), e);
+            }
+        } else if (update.hasMessage() && update.getMessage().getText() != null && !update.getMessage().getText().startsWith(START)) {
+            log.info("Received chat message from chatId: {}, text: {}", update.getMessage().getChatId(), update.getMessage().getText());
+            try {
+                ChatMessage chat = chatService.chat(new ChatMessage(
+                        Long.toString(update.getMessage().getChatId()),
+                        UserTypeEnum.HUMAN,
+                        update.getMessage().getText()));
+                SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
+                telegramClient.execute(message);
+                log.info("Chat response sent to chatId: {}", chat.getConversationId());
+            } catch (TelegramApiException e) {
+                log.error("Error processing chat message from chatId {}: {}", update.getMessage().getChatId(), e.getMessage(), e);
+            }
+        } else if (update.hasMessage() && update.getMessage().hasDocument()) {
+            String fileName = update.getMessage().getDocument().getFileName();
+            String fileId = update.getMessage().getDocument().getFileId();
+            String lang = update.getMessage().getCaption() != null ?
+                    update.getMessage().getCaption() :
+                    update.getMessage().getFrom().getLanguageCode();
+            log.info("Received document from chatId: {}, fileName: {}, fileId: {}, lang: {}",
+                    update.getMessage().getChatId(), fileName, fileId, lang);
+
+            try {
+                InputStreamResource inputStream = new InputStreamResource(getFile(fileId));
+                documentIngestionService.ingest(inputStream);
+                log.info("Document {} ingested successfully for chatId: {}", fileName, update.getMessage().getChatId());
+
+                ChatMessage chat = chatService.ingest(Long.toString(update.getMessage().getChatId()), lang, fileName);
+                SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
+                telegramClient.execute(message);
+                log.info("Ingest response sent to chatId: {}", chat.getConversationId());
+            } catch (TelegramApiException | IOException e) {
+                log.error("Error ingesting document {} from chatId {}: {}", fileName, update.getMessage().getChatId(), e.getMessage(), e);
+            }
+        } else {
+            log.warn("Received unsupported update type from chatId: {}", 
+                update.hasMessage() ? update.getMessage().getChatId() : null);
+        }
+    }
+
+    @Override
+    public LongPollingUpdateConsumer getUpdatesConsumer() {
+        return this;
+    }
+    
+    public InputStream getFile(String fileId) throws TelegramApiException, IOException {
+        log.info("Fetching file from Telegram with fileId: {}", fileId);
+        GetFile getFile = new GetFile(fileId);
+        String filePath = telegramClient.execute(getFile).getFilePath();
+        log.info("Downloading file from Telegram filePath: {}", filePath);
+        return telegramClient.downloadFileAsStream(filePath);
+    }
 }
