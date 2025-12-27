@@ -83,12 +83,11 @@ public class ChatService {
 		return new ChatMessage(conversationId, UserTypeEnum.HUMAN.equals(message.getUserType()) ? UserTypeEnum.AI : UserTypeEnum.HUMAN, responseBody);
 	}
 
-	public ChatMessage welcome(String conversationId, String language) {	
+	public ChatMessage welcome(String conversationId, String language, String firstname) {	
 		log.info("{} -> welcome", ChatService.class.getSimpleName());
-        log.info("Create chatClient [vectorStore: {}]", vectorStore.getName());
 		
 		PromptTemplate welcomePromptTemplate = new PromptTemplate(this.welcomeResource);
-		Prompt prompt = welcomePromptTemplate.create(Map.of("language", language));
+		Prompt prompt = welcomePromptTemplate.create(Map.of("language", language, "firstname", firstname));
 		
 		log.info(String.format("Calling MistralAI"));
 		
@@ -117,9 +116,6 @@ public class ChatService {
 	
 	private ChatClient createSimpleChatClient() {
         return ChatClient.builder(chatModel)
-            .defaultAdvisors(
-                QuestionAnswerAdvisor.builder(vectorStore).build()
-            )
             .build();
     }
 }
