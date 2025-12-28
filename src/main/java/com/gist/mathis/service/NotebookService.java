@@ -22,6 +22,10 @@ public class NotebookService {
     public List<Notebook> findByUser(User user) {
         return notebookRepository.findByUser(user);
     }
+    
+    public Optional<Notebook> findByUserAndTitle(User user, String title) {
+        return notebookRepository.findByUserAndTitle(user,title);
+    }
 
     public Notebook saveNotebook(Notebook notebook) {
         return notebookRepository.save(notebook);
