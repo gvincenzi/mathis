@@ -127,7 +127,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 					        	chat = chatService.successIntentAction(Long.toString(update.getMessage().getChatId()), lang, user.getFirstname(),intentResponse);
 					            break;
 					        case SEARCH_NOTES:
-					            //handleSearchNotes(user, intentResponse.getEntities(), response);
+					        	chat = chatService.search(new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, update.getMessage().getText()), intentResponse);
 					            break;
 					        case LIST_NOTEBOOKS:
 					        	StringBuilder builder = new StringBuilder();

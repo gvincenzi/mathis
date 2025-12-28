@@ -41,7 +41,7 @@ public class EmbeddingService{
     }
 	
 	public void noteEmbeddings(Note note) {
-        List<String> chunks = splitText(note.getContent(), 512);
+        List<String> chunks = splitText(note.getTitle() + "#" + note.getContent(), 512);
 
         List<Document> documents = new ArrayList<>();
         for (int i = 0; i < chunks.size(); i++) {

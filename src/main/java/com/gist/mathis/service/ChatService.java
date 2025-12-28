@@ -1,6 +1,7 @@
 package com.gist.mathis.service;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
@@ -10,11 +11,13 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.mistralai.MistralAiChatModel;
 import org.springframework.ai.template.st.StTemplateRenderer;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import com.gist.mathis.advisor.SearchingNoteAdvisor;
 import com.gist.mathis.controller.entity.ChatMessage;
 import com.gist.mathis.controller.entity.UserTypeEnum;
 import com.gist.mathis.service.entity.IntentResponse;
@@ -25,6 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ChatService {
+	@Value("classpath:/prompts/search.st")
+	private Resource searchTemplateResource;
+	
 	@Value("classpath:/prompts/analysisIntent.st")
 	private Resource analysisIntentTemplateResource;
 	
@@ -35,13 +41,15 @@ public class ChatService {
 	private Resource welcomeResource;
 	
 	private MistralAiChatModel chatModel;
+	private VectorStore vectorStore;
 	private ChatMemory chatMemory;
 	
-	private ChatClient simpleChatClient;
+	private ChatClient simpleChatClient, ragChatClient;
 	
 	@Autowired
-    public ChatService(MistralAiChatModel chatModel, ChatMemory chatMemory) {
+    public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory) {
         this.chatModel = chatModel;
+        this.vectorStore = vectorStore;
         this.chatMemory = chatMemory;
     }
 	
@@ -52,6 +60,18 @@ public class ChatService {
 		this.simpleChatClient = ChatClient.builder(chatModel)
 				.defaultAdvisors(
 				    	PromptChatMemoryAdvisor.builder(chatMemory).build()
+				)
+				.build();
+		
+		PromptTemplate searchTemplateResource = PromptTemplate.builder()
+				.renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
+				.resource(this.searchTemplateResource)
+				.build();
+		
+		this.ragChatClient = ChatClient.builder(chatModel)
+				.defaultAdvisors(
+				    	PromptChatMemoryAdvisor.builder(chatMemory).build(),
+				    	SearchingNoteAdvisor.builder(vectorStore).promptTemplate(searchTemplateResource).build()
 				)
 				.build();
 	}
@@ -111,6 +131,22 @@ public class ChatService {
 			.content();
 
 		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
+	}
+	
+	public ChatMessage search(ChatMessage message, IntentResponse intentResponse) {
+		log.info("{} -> search", ChatService.class.getSimpleName());
+		String conversationId = message.getConversationId() == null ? UUID.randomUUID().toString() : message.getConversationId();
+		log.info("ChatMessage -> [{}][{}][{}]", message.getUserType().name(), conversationId, message.getBody());
+		
+		log.info(String.format("Calling MistralAI"));
+		
+		String responseBody = this.ragChatClient.prompt()
+			.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
+			.user(intentResponse.getEntities().get("content_to_search"))
+			.call()
+			.content();
+		log.info("MistralAI answer [{}]", responseBody.length() > 15 ? responseBody.substring(0, 10) + "..." : responseBody);
+		return new ChatMessage(conversationId, UserTypeEnum.HUMAN.equals(message.getUserType()) ? UserTypeEnum.AI : UserTypeEnum.HUMAN, responseBody);
 	}
 	
 }
