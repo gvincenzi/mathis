@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.gist.mathis.service.DocumentIngestionService;
+import com.gist.mathis.service.EmbeddingService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/knowledge")
 public class KnowledgeController {
 	@Autowired
-	private DocumentIngestionService documentIngestionService;
+	private EmbeddingService documentIngestionService;
 	
 	@PostMapping(value ="/upload", consumes = "multipart/form-data")
     public ResponseEntity<Void> ingest(@RequestParam("document") MultipartFile document) {

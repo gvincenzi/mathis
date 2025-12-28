@@ -11,9 +11,11 @@ import java.util.Optional;
 
 @Service
 public class NoteService {
-
     @Autowired
     private NoteRepository noteRepository;
+    
+    @Autowired
+    private EmbeddingService embeddingService;
 
     public List<Note> findByNotebook(Notebook notebook) {
         return noteRepository.findByNotebook(notebook);
@@ -24,7 +26,9 @@ public class NoteService {
     }
 
     public Note saveNote(Note note) {
-        return noteRepository.save(note);
+        note = noteRepository.save(note);
+        embeddingService.noteEmbeddings(note);
+        return note;
     }
 
     public void deleteNote(Long noteId) {
