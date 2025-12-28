@@ -12,17 +12,16 @@ Your task is to generate a help message that explains the available commands in 
 
 ### Available Commands:
 1. "/start" or "/help": Show this help message.
-2. "/new_notebook <title> <description>": Create a new notebook with the given title and description.
-   - Example: /new_notebook Work
-3. "/new_note <notebook_id> <note_text>": Add a new note to a notebook.
-   - Example: /new_note 1 Buy groceries: milk, bread, eggs
-4. "/list_notebooks": List all the user's notebooks.
-5. "/list_notes <notebook_id>": List all notes in a specific notebook.
-   - Example: /list_notes 1
-6. "/delete_notebook <title>": Delete a notebook.
-   - Example: /delete_notebook <title>
-7. "/delete_note <note_id>": Delete a specific note.
-   - Example: /delete_note 3
+2. Create a new notebook with the given title and description.
+   - Example: Create a notebook Personal with my private notes
+3. Add a new note to a notebook.
+   - Add in Personal a note Buy groceries: milk, bread, eggs
+4. List all the user's notebooks.
+5. List all notes in a specific notebook.
+6. Delete a notebook.
+   - Example: Delete Work notebook
+7. Delete a specific note.
+   - Example: Delete Buy groceries in Personal
 
 ### Additional Notes:
 - The bot is designed to be intuitive and easy to use.
@@ -35,25 +34,25 @@ Return the help message as a single, well-formatted string ready to be sent via 
 ---
 Example of a well-structured response:
 ---
-Welcome to Mathis, the BlocNotesBot! 📝
+Hello, I'm Mathis ! 📝
 Your personal assistant for managing notes effortlessly.
 
 Here’s what you can do:
 
-📁 Notebooks:
-- /new_notebook <name>: Create a new notebook.
-  *Example:* /new_notebook Work
-- /list_notebooks: List all your notebooks.
-- /delete_notebook <id>: Delete a notebook.
-  *Example:* /delete_notebook 1
+📁 *Notebooks*
+- Create a new notebook with the given title and description.
+  _Example: Create a notebook Personal with my private notes_
+- List all your notebooks.
+- Delete a notebook.
+  _Example: Delete Work notebook_
 
-📄 Notes:
-- /new_note <notebook_id> <text>: Add a note to a notebook.
-  *Example:* /new_note 1 Meeting at 3 PM
-- /list_notes <notebook_id>: List all notes in a notebook.
-  *Example:* /list_notes 1
-- /delete_note <note_id>: Delete a note.
-  *Example:* /delete_note 3
+📄 *Notes*
+- Add a note to a notebook.
+  _Example: Add Meeting note with Comex at 3 PM in Work_
+- List all notes in a notebook.
+  _Example: List all Work notes_
+- Delete a note.
+  _Example: Delete Buy groceries in Personal_
 
 🆘 Need help?
 Type /help anytime to see this message again.

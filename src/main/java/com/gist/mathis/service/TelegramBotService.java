@@ -10,7 +10,6 @@ import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -82,6 +81,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 				try {
 					ChatMessage chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), lang, user.getFirstname());
 					SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
+					message.setParseMode("Markdown");
 					telegramClient.execute(message);
 					log.info("Welcome message sent to chatId: {}", chat.getConversationId());
 				} catch (TelegramApiException e) {
@@ -131,7 +131,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 					            break;
 					        case LIST_NOTEBOOKS:
 					        	StringBuilder builder = new StringBuilder();
-					        	notebookService.findByUser(user).stream().forEach(nb -> builder.append(String.format("- **%s** [*%s*]", nb.getTitle(), nb.getDescription())));
+					        	notebookService.findByUser(user).stream().forEach(nb -> builder.append(String.format("- *%s* _%s_", nb.getTitle(), nb.getDescription())));
 					        	chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.AI, builder.toString());
 					            break;
 					        case LIST_NOTES:
@@ -169,8 +169,9 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 					        	chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), lang, user.getFirstname());
 						}
 						
-					SendMessage message = new SendMessage(chat.getConversationId(), escapeMarkdownV2(chat.getBody()));
-					message.setParseMode(ParseMode.MARKDOWNV2);
+					//SendMessage message = new SendMessage(chat.getConversationId(), "*Gras* _Italique_ [Google](https://google.com)");
+					SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
+					message.setParseMode("Markdown");
 					telegramClient.execute(message);
 					log.info("Chat response sent to chatId: {}", Long.toString(update.getMessage().getChatId()));
 				} catch (TelegramApiException e) {
