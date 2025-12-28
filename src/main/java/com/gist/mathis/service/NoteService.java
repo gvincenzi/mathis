@@ -7,6 +7,7 @@ import com.gist.mathis.model.repository.NoteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NoteService {
@@ -16,6 +17,10 @@ public class NoteService {
 
     public List<Note> findByNotebook(Notebook notebook) {
         return noteRepository.findByNotebook(notebook);
+    }
+    
+    public Optional<Note> findByNotebookAndTitle(Notebook notebook, String title) {
+        return noteRepository.findByNotebookAndTitle(notebook,title);
     }
 
     public Note saveNote(Note note) {

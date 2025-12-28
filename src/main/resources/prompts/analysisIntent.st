@@ -1,4 +1,4 @@
-Your task is to analyze the user's message and return a structured JSON response with the following fields:
+Your task is to analyze the user's message and return only a clean and structured JSON response with the following fields:
 - intent: The user's intention (e.g., "create_notebook", "create_note", "list_notebooks", "list_notes", "delete_notebook", "delete_note", or "unknown").
 - entities: A dictionary of extracted entities based on the intent.
 
@@ -14,23 +14,23 @@ Your task is to analyze the user's message and return a structured JSON response
 
 2. Entity Extraction:
    - For "create_notebook", extract the notebook title and description (e.g., "notebook_title": "Personal", "notebook_description": "My personal notes").
-   - For "create_note", extract the notebook name and note text (e.g., "notebook_title": "Work", "note_text": "Meeting at 3 PM").
+   - For "create_note", extract the notebook name and note title and content (e.g., "notebook_title": "Work", "note_title": "TODO", "note_content": "Meeting at 3 PM").
    - For "list_notes", extract the notebook name or ID (e.g., "notebook_title": "Work" or "notebook_id": "1").
    - For "delete_notebook", extract the notebook name or ID (e.g., "notebook_title": "Work" or "notebook_id": "1").
-   - For "delete_note", extract the note ID (e.g., "note_id": "3").
+   - For "delete_note", extract the the notebook name and note title (e.g., "notebook_title": "Work", "note_title": "TODO").
 
 3. Examples:
    - User: "Create a notebook called Work with my office notes"
      → Intent: "create_notebook", Entities: {"notebook_title": "Work", "notebook_description": "My office notes"}
-   - User: "Add a note to the Work notebook: Buy groceries"
-     → Intent: "create_note", Entities: {"notebook_title": "Work", "note_text": "Buy groceries"}
+   - User: "Add a note Buy groceries to the Home notebook: 5 carrots and bread"
+     → Intent: "create_note", Entities: {"notebook_title": "Work", "note_title": "Buy groceries", "note_content": "5 carrots and bread"}
    - User: "Show me my notebooks"
      → Intent: "list_notebooks", Entities: {}
    - User: "List notes in the Work notebook"
      → Intent: "list_notes", Entities: {"notebook_title": "Work"}
    - User: "Delete the Work notebook"
      → Intent: "delete_notebook", Entities: {"notebook_title": "Work"}
-   - User: "Delete note 3"
-     → Intent: "delete_note", Entities: {"note_id": "3"}
+   - User: "Delete note TODO in Work"
+     → Intent: "delete_note", Entities: {notebook_title": "Work", "note_title": "TODO"}
 
 4. <format>

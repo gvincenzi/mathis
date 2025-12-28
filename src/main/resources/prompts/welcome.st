@@ -11,17 +11,17 @@ Your task is to generate a help message that explains the available commands in 
 5. Encouragement: Encourage the user to explore the bot's features.
 
 ### Available Commands:
-1. `/start` or `/help`: Show this help message.
-2. `/new_notebook <name>`: Create a new notebook with the given name.
+1. "/start" or "/help": Show this help message.
+2. "/new_notebook <title> <description>": Create a new notebook with the given title and description.
    - Example: /new_notebook Work
-3. `/new_note <notebook_id> <note_text>`: Add a new note to a notebook.
+3. "/new_note <notebook_id> <note_text>": Add a new note to a notebook.
    - Example: /new_note 1 Buy groceries: milk, bread, eggs
-4. `/list_notebooks`: List all the user's notebooks.
-5. `/list_notes <notebook_id>`: List all notes in a specific notebook.
+4. "/list_notebooks": List all the user's notebooks.
+5. "/list_notes <notebook_id>": List all notes in a specific notebook.
    - Example: /list_notes 1
-6. `/delete_notebook <notebook_id>`: Delete a notebook.
-   - Example: /delete_notebook 1
-7. `/delete_note <note_id>`: Delete a specific note.
+6. "/delete_notebook <title>": Delete a notebook.
+   - Example: /delete_notebook <title>
+7. "/delete_note <note_id>": Delete a specific note.
    - Example: /delete_note 3
 
 ### Additional Notes:
