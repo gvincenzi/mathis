@@ -27,11 +27,12 @@ public class NoteService {
 
     public Note saveNote(Note note) {
         note = noteRepository.save(note);
-        embeddingService.noteEmbeddings(note);
+        embeddingService.createNoteEmbeddings(note);
         return note;
     }
 
     public void deleteNote(Long noteId) {
+    	embeddingService.removeNoteEmbeddings(noteId);
         noteRepository.deleteById(noteId);
     }
 }

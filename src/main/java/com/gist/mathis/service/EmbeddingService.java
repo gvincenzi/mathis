@@ -11,6 +11,8 @@ import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.ai.transformer.splitter.TextSplitter;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.Filter;
+import org.springframework.ai.vectorstore.filter.Filter.ExpressionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,7 @@ public class EmbeddingService{
         vectorStore.accept(documents);
     }
 	
-	public void noteEmbeddings(Note note) {
+	public void createNoteEmbeddings(Note note) {
         List<String> chunks = splitText(note.getTitle() + "#" + note.getContent(), 512);
 
         List<Document> documents = new ArrayList<>();
@@ -66,4 +68,9 @@ public class EmbeddingService{
         }
         return chunks;
     }
+	
+	public void removeNoteEmbeddings(Long noteId) {
+		var exp = new Filter.Expression(ExpressionType.EQ, new Filter.Key("note_id"), new Filter.Value(noteId));
+		vectorStore.delete(exp);
+	}
 }

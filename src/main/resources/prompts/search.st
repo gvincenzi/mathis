@@ -24,9 +24,8 @@ Example Outputs:
 - *"I've found these notes that match your request:
 
 Title: Meetings (Work notebook)
-Content: Weekly appointments and meeting summaries.
 Title: Summaries (Work notebook)
-Content: Current project summaries.
+
 You can check out these notes anytime! 😊"*
 
 - "I couldn't find the information you were looking for in your notes. 😭"

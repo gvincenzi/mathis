@@ -17,6 +17,7 @@ import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.filter.Filter;
 import org.springframework.ai.vectorstore.filter.FilterExpressionTextParser;
+import org.springframework.ai.vectorstore.filter.Filter.ExpressionType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -24,6 +25,7 @@ import org.springframework.util.StringUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.gist.mathis.service.entity.IntentResponse;
 
 import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
@@ -34,6 +36,8 @@ public class SearchingNoteAdvisor implements BaseAdvisor {
 	public static final String FILTER_EXPRESSION = "qa_filter_expression";
 	
 	private static final int DEFAULT_ORDER = 0;
+	
+	public static final String INTENT_REPONSE = "intent_response";
 
 	private final VectorStore vectorStore;
 
@@ -82,11 +86,13 @@ public class SearchingNoteAdvisor implements BaseAdvisor {
 
 	@Override
 	public ChatClientRequest before(ChatClientRequest chatClientRequest, AdvisorChain advisorChain) {
+		IntentResponse intentResponse = getIntentResponse(chatClientRequest.context());
+		var exp = new Filter.Expression(ExpressionType.EQ, new Filter.Key("notebook_title"), new Filter.Value(intentResponse.getEntities().get("notebook_title")));
 		// 1. Search for similar documents in the vector store.
 		var searchRequestToUse = SearchRequest.from(this.searchRequest)
-			.query(chatClientRequest.prompt().getUserMessage().getText())
+			.query(intentResponse.getEntities().get("content_to_search"))
 			.similarityThreshold(0.7D)
-			.filterExpression(doGetFilterExpression(chatClientRequest.context()))
+			.filterExpression(exp)
 			.build();
 
 		List<Document> documents = this.vectorStore.similaritySearch(searchRequestToUse);
@@ -143,6 +149,16 @@ public class SearchingNoteAdvisor implements BaseAdvisor {
 			return this.searchRequest.getFilterExpression();
 		}
 		return new FilterExpressionTextParser().parse(context.get(FILTER_EXPRESSION).toString());
+	}
+	
+	/**
+	 * Retrieve the conversation ID from the given context or return the default
+	 * conversation ID when not found.
+	 */
+	private IntentResponse getIntentResponse(Map<String, Object> context) {
+		Assert.notNull(context, "context cannot be null");
+		Assert.noNullElements(context.keySet().toArray(), "context cannot contain null keys");
+		return context.containsKey(INTENT_REPONSE) ? (IntentResponse) context.get(INTENT_REPONSE) : null;
 	}
 
 	public static final class Builder {

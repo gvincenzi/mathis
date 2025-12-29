@@ -1,5 +1,6 @@
 package com.gist.mathis.service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -140,9 +141,11 @@ public class ChatService {
 		
 		log.info(String.format("Calling MistralAI"));
 		
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put(ChatMemory.CONVERSATION_ID, conversationId);
+		parameters.put(SearchingNoteAdvisor.INTENT_REPONSE, intentResponse);
 		String responseBody = this.ragChatClient.prompt()
-			.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
-			.user(intentResponse.getEntities().get("content_to_search"))
+			.advisors(advisor -> advisor.params(parameters))
 			.call()
 			.content();
 		log.info("MistralAI answer [{}]", responseBody.length() > 15 ? responseBody.substring(0, 10) + "..." : responseBody);
