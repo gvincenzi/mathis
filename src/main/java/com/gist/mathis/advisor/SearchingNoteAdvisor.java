@@ -45,8 +45,10 @@ public class SearchingNoteAdvisor implements BaseAdvisor {
 
 	private final SearchRequest searchRequest;
 
+	@SuppressWarnings("unused")
 	private final Scheduler scheduler;
 
+	@SuppressWarnings("unused")
 	private final int order;
 	
 	private static final PromptTemplate DEFAULT_PROMPT_TEMPLATE = new PromptTemplate("""

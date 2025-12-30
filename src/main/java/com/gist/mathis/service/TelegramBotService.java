@@ -130,12 +130,22 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 					        	chat = chatService.search(new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, update.getMessage().getText()), intentResponse);
 					            break;
 					        case LIST_NOTEBOOKS:
-					        	StringBuilder builder = new StringBuilder();
-					        	notebookService.findByUser(user).stream().forEach(nb -> builder.append(String.format("- *%s* _%s_", nb.getTitle(), nb.getDescription())));
-					        	chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.AI, builder.toString());
+					        	StringBuilder builderNotebooks = new StringBuilder();
+					        	notebookService.findByUser(user).stream().forEach(nb -> builderNotebooks.append(String.format("- *%s* _%s_\n", nb.getTitle(), nb.getDescription())));
+					        	chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.AI, builderNotebooks.toString());
 					            break;
 					        case LIST_NOTES:
-					            //handleListNotes(user, intentResponse.getEntities(), response);
+					        	notebookToUpdate = notebookService.findByUserAndTitle(user,intentResponse.getEntities().get("notebook_title")).orElseGet(() -> {
+					    			Notebook notebookNew = new Notebook();
+					    			notebookNew.setTitle(intentResponse.getEntities().get("notebook_title"));
+					    			notebookNew.setDescription(intentResponse.getEntities().get("notebook_description"));
+					    			notebookNew.setUser(user);
+					    			notebookNew = notebookService.saveNotebook(notebookNew);
+						    		return notebookNew;
+					    		});
+					        	StringBuilder builderNotes = new StringBuilder();
+					        	noteService.findByNotebook(notebookToUpdate).stream().forEach(note -> builderNotes.append(String.format("- *%s* _%s_\n", note.getTitle(), note.getContent())));
+					        	chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.AI, builderNotes.toString());
 					            break;
 					        case DELETE_NOTEBOOK:
 					        	try {
@@ -143,8 +153,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 					        		notebookService.deleteNotebook(notebookToDelete.getNotebookId());
 					        		chat = chatService.successIntentAction(Long.toString(update.getMessage().getChatId()), lang, user.getFirstname(),intentResponse);
 					        	}catch (NoSuchElementException elementException) {
-					        		//FIXME Write a right message about this case
-									chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), lang, user.getFirstname());
+					        		chat = chatService.noSuchElementException(Long.toString(update.getMessage().getChatId()), lang, user.getFirstname());
 								}
 					            break;
 					        case DELETE_NOTE:
@@ -161,15 +170,13 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 					        		noteService.deleteNote(noteToDelete.getNoteId());
 					        		chat = chatService.successIntentAction(Long.toString(update.getMessage().getChatId()), lang, user.getFirstname(),intentResponse);
 					        	}catch (NoSuchElementException elementException) {
-					        		//FIXME Write a right message about this case
-									chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), lang, user.getFirstname());
+									chat = chatService.noSuchElementException(Long.toString(update.getMessage().getChatId()), lang, user.getFirstname());
 								}
 					            break;
 					        default:
 					        	chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), lang, user.getFirstname());
 						}
 						
-					//SendMessage message = new SendMessage(chat.getConversationId(), "*Gras* _Italique_ [Google](https://google.com)");
 					SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
 					message.setParseMode("Markdown");
 					telegramClient.execute(message);

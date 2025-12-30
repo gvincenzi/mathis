@@ -16,7 +16,7 @@ Your task is to analyze the user's message and return only a clean and structure
 2. Entity Extraction:
    - For "create_notebook", extract the notebook title and description (e.g., "notebook_title": "Personal", "notebook_description": "My personal notes").
    - For "create_note", extract the notebook name and note title and content (e.g., "notebook_title": "Work", "note_title": "TODO", "note_content": "Meeting at 3 PM").
-   - For "list_notes", extract the notebook name or ID (e.g., "notebook_title": "Work" or "notebook_id": "1").
+   - For "list_notes", extract the notebook title (e.g., "notebook_title": "Work").
    - For "delete_notebook", extract the notebook name or ID (e.g., "notebook_title": "Work" or "notebook_id": "1").
    - For "delete_note", extract the notebook name and note title (e.g., "notebook_title": "Work", "note_title": "TODO").
    - For "search_notes", extract informations that must be used to search for notes (e.g., "content_to_search": "Next meeting to join in").

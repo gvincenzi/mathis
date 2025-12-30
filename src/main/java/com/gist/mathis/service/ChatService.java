@@ -41,6 +41,9 @@ public class ChatService {
 	@Value("classpath:/prompts/welcome.st")
 	private Resource welcomeResource;
 	
+	@Value("classpath:/prompts/noSuchElement.st")
+	private Resource noSuchElementResource;
+	
 	private MistralAiChatModel chatModel;
 	private VectorStore vectorStore;
 	private ChatMemory chatMemory;
@@ -82,6 +85,21 @@ public class ChatService {
 		
 		PromptTemplate welcomePromptTemplate = new PromptTemplate(this.welcomeResource);
 		Prompt prompt = welcomePromptTemplate.create(Map.of("language", language, "firstname", firstname));
+		
+		log.info(String.format("Calling MistralAI"));
+		
+		String responseBody = this.simpleChatClient.prompt(prompt)
+			.call()
+			.content();
+
+		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
+	}
+	
+	public ChatMessage noSuchElementException(String conversationId, String language, String firstname) {	
+		log.info("{} -> noSuchElementException", ChatService.class.getSimpleName());
+		
+		PromptTemplate noSuchElementPromptTemplate = new PromptTemplate(this.noSuchElementResource);
+		Prompt prompt = noSuchElementPromptTemplate.create(Map.of("language", language, "firstname", firstname));
 		
 		log.info(String.format("Calling MistralAI"));
 		

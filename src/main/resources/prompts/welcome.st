@@ -29,7 +29,9 @@ Your task is to generate a help message that explains the available commands in 
 - The message should be visually appealing when displayed in Telegram (e.g., use emojis sparingly if helpful).
 
 ### Output Format:
-Return the help message as a single, well-formatted string ready to be sent via Telegram. Use markdown formatting (e.g., bold, italics) if it enhances readability.
+Return the help message as a single, well-formatted string ready to be sent via Telegram. 
+Use markdown formatting (e.g., bold, italics) if it enhances readability.
+Provide only the confirmation message, with no preamble, explanation, or introductory line.
 
 ---
 Example of a well-structured response:
