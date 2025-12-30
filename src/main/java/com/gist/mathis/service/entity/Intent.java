@@ -8,5 +8,6 @@ public enum Intent {
     DELETE_NOTEBOOK,
     DELETE_NOTE,
     SEARCH_NOTES,
+    SEARCH_DOCUMENTS,
     UNKNOWN
 }

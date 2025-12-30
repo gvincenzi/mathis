@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
@@ -32,11 +33,17 @@ public class ChatService {
 	@Value("classpath:/prompts/search.st")
 	private Resource searchTemplateResource;
 	
+	@Value("classpath:/prompts/searchDocument.st")
+	private Resource searchDocumentTemplateResource;
+	
 	@Value("classpath:/prompts/analysisIntent.st")
 	private Resource analysisIntentTemplateResource;
 	
 	@Value("classpath:/prompts/successIntentAction.st")
 	private Resource successIntentActionTemplateResource;
+	
+	@Value("classpath:/prompts/successDocumentAction.st")
+	private Resource successDocumentActionResource;
 	
 	@Value("classpath:/prompts/welcome.st")
 	private Resource welcomeResource;
@@ -48,7 +55,7 @@ public class ChatService {
 	private VectorStore vectorStore;
 	private ChatMemory chatMemory;
 	
-	private ChatClient simpleChatClient, ragChatClient;
+	private ChatClient simpleChatClient, noteRAGChatClient, documentRAGChatClient;
 	
 	@Autowired
     public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory) {
@@ -72,10 +79,22 @@ public class ChatService {
 				.resource(this.searchTemplateResource)
 				.build();
 		
-		this.ragChatClient = ChatClient.builder(chatModel)
+		this.noteRAGChatClient = ChatClient.builder(chatModel)
 				.defaultAdvisors(
 				    	PromptChatMemoryAdvisor.builder(chatMemory).build(),
 				    	SearchingNoteAdvisor.builder(vectorStore).promptTemplate(searchTemplateResource).build()
+				)
+				.build();
+		
+		PromptTemplate documentSearchPromptTemplate = PromptTemplate.builder()
+			    .renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
+			    .resource(this.searchDocumentTemplateResource)
+			    .build();
+		
+		this.documentRAGChatClient = ChatClient.builder(chatModel)
+				.defaultAdvisors(
+				    	PromptChatMemoryAdvisor.builder(chatMemory).build(),
+				    	QuestionAnswerAdvisor.builder(vectorStore).promptTemplate(documentSearchPromptTemplate).build()
 				)
 				.build();
 	}
@@ -152,6 +171,21 @@ public class ChatService {
 		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
 	}
 	
+	public ChatMessage successDocumentAction(String conversationId, String language, String firstname, String filename, String notebook) {	
+		log.info("{} -> successDocumentAction", ChatService.class.getSimpleName());
+		
+		PromptTemplate successDocumentActionPromptTemplate = new PromptTemplate(this.successDocumentActionResource);
+		Prompt prompt = successDocumentActionPromptTemplate.create(Map.of("language", language, "firstname", firstname, "filename", filename, "notebook", notebook));
+		
+		log.info(String.format("Calling MistralAI"));
+		
+		String responseBody = this.simpleChatClient.prompt(prompt)
+			.call()
+			.content();
+
+		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
+	}
+	
 	public ChatMessage search(ChatMessage message, IntentResponse intentResponse) {
 		log.info("{} -> search", ChatService.class.getSimpleName());
 		String conversationId = message.getConversationId() == null ? UUID.randomUUID().toString() : message.getConversationId();
@@ -162,8 +196,26 @@ public class ChatService {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(ChatMemory.CONVERSATION_ID, conversationId);
 		parameters.put(SearchingNoteAdvisor.INTENT_REPONSE, intentResponse);
-		String responseBody = this.ragChatClient.prompt()
+		String responseBody = this.noteRAGChatClient.prompt()
 			.advisors(advisor -> advisor.params(parameters))
+			.call()
+			.content();
+		log.info("MistralAI answer [{}]", responseBody.length() > 15 ? responseBody.substring(0, 10) + "..." : responseBody);
+		return new ChatMessage(conversationId, UserTypeEnum.HUMAN.equals(message.getUserType()) ? UserTypeEnum.AI : UserTypeEnum.HUMAN, responseBody);
+	}
+	
+	public ChatMessage searchInDocuments(ChatMessage message, IntentResponse intentResponse) {
+		log.info("{} -> searchInDocuments", ChatService.class.getSimpleName());
+		String conversationId = message.getConversationId() == null ? UUID.randomUUID().toString() : message.getConversationId();
+		log.info("ChatMessage -> [{}][{}][{}]", message.getUserType().name(), conversationId, message.getBody());
+		
+		log.info(String.format("Calling MistralAI"));
+		
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put(ChatMemory.CONVERSATION_ID, conversationId);
+		String responseBody = this.documentRAGChatClient.prompt()
+			.advisors(advisor -> advisor.params(parameters))
+			.user(intentResponse.getEntities().get("content_to_search"))
 			.call()
 			.content();
 		log.info("MistralAI answer [{}]", responseBody.length() > 15 ? responseBody.substring(0, 10) + "..." : responseBody);

@@ -11,6 +11,7 @@ Your task is to analyze the user's message and return only a clean and structure
    - If the user wants to delete a notebook, set intent to "delete_notebook".
    - If the user wants to delete a note, set intent to "delete_note".
    - If the user wants to search for something in notes, set intent to "search_notes".
+   - If the user wants to search for something in documents (or in knowledge base), set intent to "search_documents".
    - If the intent is unclear, set intent to "unknown".
 
 2. Entity Extraction:
@@ -20,6 +21,7 @@ Your task is to analyze the user's message and return only a clean and structure
    - For "delete_notebook", extract the notebook name or ID (e.g., "notebook_title": "Work" or "notebook_id": "1").
    - For "delete_note", extract the notebook name and note title (e.g., "notebook_title": "Work", "note_title": "TODO").
    - For "search_notes", extract informations that must be used to search for notes (e.g., "content_to_search": "Next meeting to join in").
+   - For "search_documents", extract informations that must be used to search for notes (e.g., "content_to_search": "Next meeting to join in").
 
 3. Examples:
    - User: "Create a notebook called Work with my office notes"
@@ -33,8 +35,10 @@ Your task is to analyze the user's message and return only a clean and structure
    - User: "Delete the Work notebook"
      → Intent: "delete_notebook", Entities: {"notebook_title": "Work"}
    - User: "Delete note TODO in Work"
-     → Intent: "delete_note", Entities: {notebook_title": "Work", "note_title": "TODO"}
+     → Intent: "delete_note", Entities: {"notebook_title": "Work", "note_title": "TODO"}
    - User: "Search for my next meeting to join in"
-     → Intent: "delete_note", Entities: {content_to_search": "next meeting to join in"}
+     → Intent: "search_notes", Entities: {"content_to_search": "next meeting to join in"}
+   - User: "Search in documents for the bus number to go to airport"
+     → Intent: "search_documents", Entities: {"content_to_search": "bus number to go to airport"}
 
 4. <format>

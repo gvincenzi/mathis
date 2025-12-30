@@ -27,7 +27,7 @@ public class EmbeddingService{
 	@Autowired
 	private VectorStore vectorStore;
 	
-	public void ingest(Resource resource) {
+	public void createDocumentNoteEmbeddings(Note note, Resource resource) {
         log.info("{} -> ingest", EmbeddingService.class.getSimpleName());
         log.info("resource filename: {}", resource.getFilename());
 
@@ -37,6 +37,15 @@ public class EmbeddingService{
         log.info("{} -> split into chunks", TokenTextSplitter.class.getSimpleName());
         TextSplitter splitter = new TokenTextSplitter();
         List<Document> documents = splitter.split(tikaDocumentReader.read());
+        
+        documents.forEach(doc -> 
+        {
+        	Map<String, Object> metadata = doc.getMetadata();
+            metadata.put("note_id", note.getNoteId());
+            metadata.put("title", note.getTitle());
+            metadata.put("notebook_id", note.getNotebook().getNotebookId());
+            metadata.put("notebook_title", note.getNotebook().getTitle());
+        });
 
         log.info("{} -> store in vector database ({} documents)", VectorStore.class.getSimpleName(), documents.size());
         vectorStore.accept(documents);
