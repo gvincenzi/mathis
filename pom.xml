@@ -10,15 +10,16 @@
 	</parent>
 
 	<groupId>com.gist</groupId>
-	<artifactId>mathis</artifactId>
+	<artifactId>mathis_responsabitaly</artifactId>
 	<version>1.0.0</version>
 	<name>Mathis</name>
-	<description>GIST Agent</description>
+	<description>Mathis Responsabitaly Assistant</description>
 
 	<properties>
 		<java.version>17</java.version>
 		<spring-ai.version>1.1.2</spring-ai.version>
 		<telegram.version>8.0.0</telegram.version>
+		<springdoc-openapi.version>2.8.12</springdoc-openapi.version>
 	</properties>
 
 	<dependencies>
@@ -26,6 +27,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		
+		<dependency>
+	      <groupId>org.springframework.boot</groupId>
+	      <artifactId>spring-boot-starter-data-jpa</artifactId>
+	    </dependency>
 
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
@@ -63,6 +69,12 @@
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
+		
+		<dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc-openapi.version}</version>
+        </dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -1,5 +1,6 @@
 package com.gist.mathis.service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,7 +40,7 @@ public class ChatService {
 	private VectorStore vectorStore;
 	private ChatMemory chatMemory;
 	
-	private ChatClient chatClient;
+	private ChatClient chatClient, simpleChatClient;
 	
 	@Autowired
     public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory) {
@@ -51,31 +52,39 @@ public class ChatService {
 	@PostConstruct
     private void init() {
 		log.info("Init chatClient [vectorStore: {}] via @PostConstruct", vectorStore.getName());
-		this.chatClient = ChatClient.builder(chatModel)
-			    .defaultAdvisors(
-			    	PromptChatMemoryAdvisor.builder(chatMemory).build(),
-			        QuestionAnswerAdvisor.builder(vectorStore).promptTemplate(this.promptTemplate()).build() // RAG advisor
-			    )
-			    .build();
-	}
-	
-	private PromptTemplate promptTemplate() {
+		
+		this.simpleChatClient = ChatClient.builder(chatModel)
+				.defaultAdvisors(
+				    	PromptChatMemoryAdvisor.builder(chatMemory).build()
+				)
+				.build();
+		
 		log.info("Create promptTemplate [resource: {}]", baseTemplateResource.getFilename());
-		PromptTemplate customPromptTemplate = PromptTemplate.builder()
+		PromptTemplate basePromptTemplate = PromptTemplate.builder()
 			    .renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
 			    .resource(baseTemplateResource)
 			    .build();
-		return customPromptTemplate;
+		
+		this.chatClient = ChatClient.builder(chatModel)
+			    .defaultAdvisors(
+			    	PromptChatMemoryAdvisor.builder(chatMemory).build(),
+			        QuestionAnswerAdvisor.builder(vectorStore).promptTemplate(basePromptTemplate).build()
+			    )
+			    .build();
 	}
 	
 	public ChatMessage chat(ChatMessage message) {
 		log.info("{} -> chat", ChatService.class.getSimpleName());
 		String conversationId = message.getConversationId() == null ? UUID.randomUUID().toString() : message.getConversationId();
 		log.info("ChatMessage -> [{}][{}][{}]", message.getUserType().name(), conversationId, message.getBody());
+		
 		log.info(String.format("Calling MistralAI"));
+		
+		
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		parameters.put(ChatMemory.CONVERSATION_ID, conversationId);
 		String responseBody = this.chatClient.prompt()
-			// Set advisor parameters at runtime
-			.advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
+			.advisors(advisor -> advisor.params(parameters))
 			.user(message.getBody())
 			.call()
 			.content();
@@ -83,16 +92,15 @@ public class ChatService {
 		return new ChatMessage(conversationId, UserTypeEnum.HUMAN.equals(message.getUserType()) ? UserTypeEnum.AI : UserTypeEnum.HUMAN, responseBody);
 	}
 
-	public ChatMessage welcome(String conversationId, String language) {	
+	public ChatMessage welcome(String conversationId, String firstname) {	
 		log.info("{} -> welcome", ChatService.class.getSimpleName());
-        log.info("Create chatClient [vectorStore: {}]", vectorStore.getName());
 		
 		PromptTemplate welcomePromptTemplate = new PromptTemplate(this.welcomeResource);
-		Prompt prompt = welcomePromptTemplate.create(Map.of("language", language));
+		Prompt prompt = welcomePromptTemplate.create(Map.of("firstname", firstname));
 		
 		log.info(String.format("Calling MistralAI"));
 		
-		String responseBody = createSimpleChatClient().prompt(prompt)
+		String responseBody = this.simpleChatClient.prompt(prompt)
 			.call()
 			.content();
 
@@ -101,25 +109,16 @@ public class ChatService {
 	
 	public ChatMessage ingest(String conversationId, String language, String documentName) {
 		log.info("{} -> ingest", ChatService.class.getSimpleName());
-        log.info("Create chatClient [vectorStore: {}]", vectorStore.getName());
 		
 		PromptTemplate ingestPromptTemplate = new PromptTemplate(this.ingestResource);
 		Prompt prompt = ingestPromptTemplate.create(Map.of("language", language, "documentName", documentName));
 			
 		log.info(String.format("Calling MistralAI"));
 		
-		String responseBody = createSimpleChatClient().prompt(prompt)
+		String responseBody = this.simpleChatClient.prompt(prompt)
 			.call()
 			.content();
 
 		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
 	}
-	
-	private ChatClient createSimpleChatClient() {
-        return ChatClient.builder(chatModel)
-            .defaultAdvisors(
-                QuestionAnswerAdvisor.builder(vectorStore).build()
-            )
-            .build();
-    }
 }
