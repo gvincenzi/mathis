@@ -3,6 +3,7 @@ package com.gist.mathis.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,7 +22,7 @@ public class KnowledgeController {
 	@Autowired
 	private KnowledgeService knowledgeService;
 	
-	@PostMapping(value ="/ingest", consumes = "multipart/form-data")
+	@PostMapping(value ="/", consumes = "multipart/form-data")
     public ResponseEntity<Void> ingest(@RequestParam("document") MultipartFile document, @RequestParam("title") String title, @RequestParam("description") String description, @RequestParam("url") String url) {
 		log.info(String.format("%s -> %s", KnowledgeController.class.getSimpleName(), "ingest"));
 		
@@ -33,5 +34,12 @@ public class KnowledgeController {
 		
 		knowledgeService.saveKnowledge(document.getResource(), knowledge);
         return new ResponseEntity<Void>(HttpStatus.ACCEPTED);
+    }
+	
+	@DeleteMapping(value ="/", consumes = "multipart/form-data")
+    public ResponseEntity<Void> delete(@RequestParam("knowledgeId") Long knowledgeId) {
+		log.info(String.format("%s -> %s", KnowledgeController.class.getSimpleName(), "ingest"));
+		knowledgeService.deleteById(knowledgeId);
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 }

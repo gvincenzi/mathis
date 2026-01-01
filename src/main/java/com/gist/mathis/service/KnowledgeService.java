@@ -8,6 +8,8 @@ import java.util.Set;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.Filter;
+import org.springframework.ai.vectorstore.filter.Filter.ExpressionType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -58,4 +60,11 @@ public class KnowledgeService {
 		
 		return knowledges;
     }
+
+	public void deleteById(Long knowledgeId) {
+		knowledgeRepository.deleteById(knowledgeId);
+		var exp = new Filter.Expression(ExpressionType.EQ, new Filter.Key("knowledge_id"), new Filter.Value(knowledgeId));
+		vectorStore.delete(exp);
+	}
+	
 }
