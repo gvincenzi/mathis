@@ -1,8 +1,10 @@
 package com.gist.mathis.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Profile({ "gist" })
 public class TelegramBotService implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 	private static final String LIST_DOCUMENTS_TEXT = "Lista dei documenti disponibili";
+	private static final String ASK_DOCUMENTS_TEXT = "Ecco i documenti che potrebbero interesarti (se me la chiedi posso darti la lista completa dei documenti disponibili)";
 
 	private static final String START = "/start";
 
@@ -101,7 +104,8 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 							chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, LIST_DOCUMENTS_TEXT, getInlineKeyboard(knowledges));
 							break;
 						case ASK_FOR_DOCUMENT : 
-							//TODO Action
+							Set<Knowledge> knowledgesByIntentQuery = knowledgeService.findByVectorialSearch(intentResponse);
+							chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, ASK_DOCUMENTS_TEXT, getInlineKeyboard(knowledgesByIntentQuery));
 							break;
 						case GENERIC_QUESTION : chat = chatService.chat(new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, update.getMessage().getText())); break;
 					}
@@ -133,7 +137,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 		return this;
 	}
 	
-	private InlineKeyboardMarkup getInlineKeyboard(List<Knowledge> knowledges) {
+	private InlineKeyboardMarkup getInlineKeyboard(Collection<Knowledge> knowledges) {
 		List<InlineKeyboardRow> inlineKeyboardRows = new ArrayList<>(knowledges.size());
 		
 		knowledges.forEach(k -> {
