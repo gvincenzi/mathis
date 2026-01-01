@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.gist.mathis.service.DocumentIngestionService;
+import com.gist.mathis.model.entity.Knowledge;
+import com.gist.mathis.service.KnowledgeService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,12 +19,19 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/knowledge")
 public class KnowledgeController {
 	@Autowired
-	private DocumentIngestionService documentIngestionService;
+	private KnowledgeService knowledgeService;
 	
-	@PostMapping(value ="/upload", consumes = "multipart/form-data")
-    public ResponseEntity<Void> ingest(@RequestParam("document") MultipartFile document) {
+	@PostMapping(value ="/ingest", consumes = "multipart/form-data")
+    public ResponseEntity<Void> ingest(@RequestParam("document") MultipartFile document, @RequestParam("title") String title, @RequestParam("description") String description, @RequestParam("url") String url) {
 		log.info(String.format("%s -> %s", KnowledgeController.class.getSimpleName(), "ingest"));
-		documentIngestionService.ingest(document.getResource());
+		
+		Knowledge knowledge = new Knowledge();
+		knowledge.setTitle(title);
+		knowledge.setDescription(description);
+		knowledge.setFilename(document.getOriginalFilename());
+		knowledge.setUrl(url);
+		
+		knowledgeService.saveKnowledge(document.getResource(), knowledge);
         return new ResponseEntity<Void>(HttpStatus.ACCEPTED);
     }
 }

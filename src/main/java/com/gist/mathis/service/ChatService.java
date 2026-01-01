@@ -10,6 +10,7 @@ import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvi
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.mistralai.MistralAiChatModel;
 import org.springframework.ai.template.st.StTemplateRenderer;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import com.gist.mathis.controller.entity.ChatMessage;
 import com.gist.mathis.controller.entity.UserTypeEnum;
+import com.gist.mathis.service.entity.IntentResponse;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ChatService {
+	@Value("classpath:/prompts/analysisIntent.st")
+	private Resource analysisIntentTemplateResource;
+	
 	@Value("classpath:/prompts/base.st")
 	private Resource baseTemplateResource;
 	
@@ -105,6 +110,30 @@ public class ChatService {
 			.content();
 
 		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
+	}
+	
+	public IntentResponse analyzeUserMessage(ChatMessage chatMessage, String firstname) {
+		log.info("{} -> analyzeUserMessage", ChatService.class.getSimpleName());
+		
+		BeanOutputConverter<IntentResponse> beanOutputConverter = new BeanOutputConverter<>(IntentResponse.class);
+		String format = beanOutputConverter.getFormat();
+		
+		PromptTemplate analysisIntentTemplate = PromptTemplate.builder()
+				.renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
+				.resource(this.analysisIntentTemplateResource)
+				.build();
+		Prompt prompt = analysisIntentTemplate.create(Map.of("format", format));	
+
+		log.info(String.format("Calling MistralAI"));
+		
+		String responseBody = this.simpleChatClient.prompt(prompt)
+			.user(chatMessage.getBody())
+			.call()
+			.content();
+		log.info("responseBody : {}",responseBody);
+		IntentResponse intentResponse = beanOutputConverter.convert(responseBody.replace("`", ""));
+
+		return intentResponse;
 	}
 	
 	public ChatMessage ingest(String conversationId, String language, String documentName) {
