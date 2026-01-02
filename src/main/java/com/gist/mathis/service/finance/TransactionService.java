@@ -1,5 +1,6 @@
 package com.gist.mathis.service.finance;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import org.springframework.ai.chat.client.ChatClient;
@@ -54,7 +55,7 @@ public class TransactionService {
 		transaction.setDate(transactionRequest.getDate());
 		transaction.setDescription(transactionRequest.getDescription());
 		transaction.setType(transactionRequest.getType());
-		transaction.setDocumentItemNumber(transactionRepository.findLastDocumentItemNumber(transactionRequest.getDate().getYear())+1);
+		if(transactionRequest.getAmount().compareTo(BigDecimal.ZERO)>0) transaction.setDocumentItemNumber(transactionRepository.findLastDocumentItemNumber(transactionRequest.getDate().getYear())+1);
 		
 		transaction.setTransactionDetail(transactionDetail);
 		

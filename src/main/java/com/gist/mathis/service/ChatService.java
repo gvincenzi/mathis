@@ -38,9 +38,6 @@ public class ChatService {
 	@Value("classpath:/prompts/welcome.st")
 	private Resource welcomeResource;
 	
-	@Value("classpath:/prompts/ingest.st")
-	private Resource ingestResource;
-	
 	private MistralAiChatModel chatModel;
 	private VectorStore vectorStore;
 	private ChatMemory chatMemory;
@@ -134,20 +131,5 @@ public class ChatService {
 		IntentResponse intentResponse = beanOutputConverter.convert(responseBody.replace("`", ""));
 
 		return intentResponse;
-	}
-	
-	public ChatMessage ingest(String conversationId, String language, String documentName) {
-		log.info("{} -> ingest", ChatService.class.getSimpleName());
-		
-		PromptTemplate ingestPromptTemplate = new PromptTemplate(this.ingestResource);
-		Prompt prompt = ingestPromptTemplate.create(Map.of("language", language, "documentName", documentName));
-			
-		log.info(String.format("Calling MistralAI"));
-		
-		String responseBody = this.simpleChatClient.prompt(prompt)
-			.call()
-			.content();
-
-		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
 	}
 }
