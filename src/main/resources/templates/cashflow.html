@@ -117,8 +117,10 @@
 		    </tfoot>
 		</table>
 
-
-
+		<hr>
+		<a th:href="@{/web/cashflow/edit?year={year}(year=${year})}" class="btn btn-secondary fw-bold">Modifica la tabella</a>
+		<a th:href="@{/api/finance/export/{year}(year=${year})}" class="btn btn-secondary fw-bold">Genera l'excel</a>
+		<hr>
     </main>
 
     <footer class="mt-auto text-black-50">

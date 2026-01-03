@@ -74,3 +74,9 @@
 .uscita {
     color: #ff0000;
 }
+
+.col-descrizione {
+    min-width: 500px;
+    width: 30%;
+    max-width: 500px;
+}

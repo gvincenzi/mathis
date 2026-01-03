@@ -1,6 +1,7 @@
 package com.gist.mathis.service.finance;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.ai.chat.client.ChatClient;
@@ -87,5 +88,9 @@ public class TransactionService {
 		TransactionDetail transactionDetail = beanOutputConverter.convert(responseBody.replace("`json", "").replace("`", ""));
 
 		return transactionDetail;
+	}
+	
+	public List<Transaction> saveAll(List<Transaction> transactions){
+		return transactionRepository.saveAll(transactions);
 	}
 }
