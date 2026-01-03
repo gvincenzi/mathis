@@ -1,0 +1,76 @@
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    font-size: 0.95em;
+}
+
+.report-table th, .report-table td {
+    border: 1px solid #999;
+    padding: 4px 6px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.report-table th {
+    background: #d3d3d3;
+    font-weight: bold;
+}
+
+.cassa-entrate-header,
+.banca-entrate-header {
+    background: #008000;
+    color: #fff;
+}
+
+.cassa-uscite-header,
+.banca-uscite-header {
+    background: #ff0000;
+    color: #fff;
+}
+
+.residui-header {
+    background: #ffa500;
+    font-weight: bold;
+    color: #000;
+    text-align: left;
+}
+
+.residui-value {
+    background: #ffa500;
+    font-weight: bold;
+    color: #000;
+    text-align: right;
+}
+
+.cassa-entrate-total,
+.banca-entrate-total {
+    background: #008000;
+    color: #fff;
+    font-weight: bold;
+}
+
+.cassa-uscite-total,
+.banca-uscite-total {
+    background: #ff0000;
+    color: #fff;
+    font-weight: bold;
+}
+
+.tot-label {
+    background: #d3d3d3;
+    font-weight: bold;
+}
+
+.saldo-header {
+    background: #ffa500;
+    font-weight: bold;
+}
+
+.currency {
+    text-align: right;
+}
+
+.uscita {
+    color: #ff0000;
+}

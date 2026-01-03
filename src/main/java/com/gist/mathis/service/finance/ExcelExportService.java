@@ -20,15 +20,13 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gist.mathis.model.entity.finance.Transaction;
 import com.gist.mathis.model.entity.finance.TransactionType;
-import com.gist.mathis.model.repository.finance.TransactionRepository;
 
 @Service
-public class ExcelExportService {
+public class ExcelExportService extends CashFlowService {
 	XSSFColor gray = new XSSFColor(new byte[] { (byte) 211, (byte) 211, (byte) 211 }, null);
 	XSSFColor red = new XSSFColor(new byte[] { (byte) 255, (byte) 0, (byte) 0 }, null);
 	XSSFColor green = new XSSFColor(new byte[] { (byte) 0, (byte) 128, (byte) 0 }, null);
@@ -36,25 +34,10 @@ public class ExcelExportService {
 	XSSFColor black = new XSSFColor(new byte[] { (byte) 0, (byte) 0, (byte) 0 }, null);
 	XSSFColor white = new XSSFColor(new byte[] { (byte) 255, (byte) 255, (byte) 255 }, null);
 	
-	@Autowired
-	private TransactionRepository transactionRepository;
-
 	public byte[] generateExcelReport(int year) throws IOException {
-		List<Transaction> allTransactions = transactionRepository.findByYearOrderByDateAsc(year);
-		
-		List<Transaction> allPreviousYearTransactions = transactionRepository.findResidualPreviousYear(year);
-		BigDecimal initialCashBalance = allPreviousYearTransactions.stream()
-			    .filter(t -> TransactionType.CASH.equals(t.getType()))
-			    .map(Transaction::getAmount)
-			    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-			BigDecimal initialBankBalance = allPreviousYearTransactions.stream()
-			    .filter(t -> TransactionType.BANK.equals(t.getType()))
-			    .map(Transaction::getAmount)
-			    .reduce(BigDecimal.ZERO, BigDecimal::add);
-		
+		CashFlowDTO dto = prepareCashFlowReport(year);
 		try (XSSFWorkbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-			createCombinedSheet(workbook, allTransactions, initialCashBalance, initialBankBalance);
+			createCombinedSheet(workbook, dto.getAllTransactions(), dto.getInitialCashBalance(), dto.getInitialBankBalance());
 			workbook.write(out);
 			return out.toByteArray();
 		}
