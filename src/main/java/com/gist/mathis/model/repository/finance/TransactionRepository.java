@@ -14,6 +14,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 	@Query(value = "SELECT * FROM transactions WHERE EXTRACT(YEAR FROM date) = :year ORDER BY date ASC", nativeQuery = true)
 	List<Transaction> findByYearOrderByDateAsc(@Param("year") int year);
 	
+	@Query(value = "SELECT * FROM transactions WHERE EXTRACT(YEAR FROM date) < :year ORDER BY date ASC", nativeQuery = true)
+	List<Transaction> findResidualPreviousYear(@Param("year") int year);
+	
 	@Query(value = "SELECT MAX(document_item_number) FROM transactions WHERE EXTRACT(YEAR FROM date) = :year", nativeQuery = true)
 	Integer findLastDocumentItemNumber(@Param("year") int year);
 }
