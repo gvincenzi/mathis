@@ -55,7 +55,9 @@ public class TransactionService {
 		transaction.setDate(transactionRequest.getDate());
 		transaction.setDescription(transactionRequest.getDescription());
 		transaction.setType(transactionRequest.getType());
-		if(transactionRequest.getAmount().compareTo(BigDecimal.ZERO)>0) transaction.setDocumentItemNumber(transactionRepository.findLastDocumentItemNumber(transactionRequest.getDate().getYear())+1);
+		Integer lastDocumentItemNumber = transactionRepository.findLastDocumentItemNumber(transactionRequest.getDate().getYear());
+		lastDocumentItemNumber = lastDocumentItemNumber == null ? 0 : lastDocumentItemNumber;
+		if(transactionRequest.getAmount().compareTo(BigDecimal.ZERO)>0) transaction.setDocumentItemNumber(+1);
 		
 		transaction.setTransactionDetail(transactionDetail);
 		

@@ -31,7 +31,7 @@ public class Transaction {
 	@Enumerated(EnumType.STRING)
 	private TransactionType type;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "transaction_detail_id")
     private TransactionDetail transactionDetail;
 	

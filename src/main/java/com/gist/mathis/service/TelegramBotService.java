@@ -1,5 +1,6 @@
 package com.gist.mathis.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -10,13 +11,16 @@ import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -24,7 +28,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gist.mathis.controller.entity.ChatMessage;
 import com.gist.mathis.controller.entity.TransactionRequest;
@@ -32,6 +35,7 @@ import com.gist.mathis.controller.entity.UserTypeEnum;
 import com.gist.mathis.model.entity.Knowledge;
 import com.gist.mathis.model.entity.User;
 import com.gist.mathis.service.entity.IntentResponse;
+import com.gist.mathis.service.finance.ExcelExportService;
 import com.gist.mathis.service.finance.TransactionService;
 
 import lombok.Data;
@@ -43,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @Profile({ "gist" })
 public class TelegramBotService implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 	private static final String LIST_DOCUMENTS_TEXT = "Lista dei documenti disponibili";
-	private static final String ASK_DOCUMENTS_TEXT = "Ecco i documenti che potrebbero interesarti (se me la chiedi posso darti la lista completa dei documenti disponibili)";
+	private static final String ASK_DOCUMENTS_TEXT = "Ecco i documenti che potrebbero interessarti (se me la chiedi posso darti la lista completa dei documenti disponibili)";
 	private static final String ADD_TRANSACTION_TEXT = "✅ *Transazione aggiunta al rendiconto dell’associazione!*\n";
 
 	private static final String START = "/start";
@@ -67,6 +71,9 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 	
 	@Autowired
 	private TransactionService transactionService;
+	
+	@Autowired
+	private ExcelExportService excelExportService;
 
 	public TelegramBotService(@Value("${telegram.bot.token}") String botToken) {
 		telegramClient = new OkHttpTelegramClient(botToken);
@@ -122,6 +129,13 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 							transactionService.addTransaction(transactionRequest);
 							chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, String.format(ADD_TRANSACTION_TEXT));
 							break;
+						case ASK_CASHFLOW :
+							ByteArrayResource resource = new ByteArrayResource(excelExportService.generateExcelReport(Integer.parseInt(intentResponse.getEntities().get("year"))));
+					        String fileName = "cashflow_" + intentResponse.getEntities().get("year") + ".xlsx";
+							SendDocument doc = new SendDocument(botToken, new InputFile(resource.getInputStream(), fileName));
+							doc.setChatId(chatId);
+							telegramClient.execute(doc);
+							return;
 						case GENERIC_QUESTION : chat = chatService.chat(new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, update.getMessage().getText())); break;
 					}
 					
@@ -130,7 +144,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 					message.setReplyMarkup(chat.getInlineKeyboardMarkup());
 					telegramClient.execute(message);
 					log.info("Chat response sent to chatId: {}", chat.getConversationId());
-				} catch (TelegramApiException | JsonProcessingException e) {
+				} catch (TelegramApiException | IOException | NumberFormatException e) {
 					log.error("Error processing chat message from chatId {}: {}", update.getMessage().getChatId(), e.getMessage(), e);
 				}
 			} else if (update.hasCallbackQuery()) {

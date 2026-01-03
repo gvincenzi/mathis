@@ -14,11 +14,30 @@ Ricevi una descrizione di una transazione:
 Scegli dalla lista fornita l’oggetto più appropriato e **restituisci SOLO quell’oggetto JSON** (senza spiegazioni, senza altro testo) rispettando questo schema:
 <format>
 
-Esempio:
+---- Esempi di risposte ben interpretate
+Esempio#1:
 - Descrizione della transazione : "QUOTA ASSOCIATIVA - Associazione We Work Italia"
 - Voce di dettaglio corretta : 
 -- "id": 28  
 -- "code": "A1"  
 -- "description": "Entrate da quote associative e apporti dei fondatori"
+-- "category": "Entrate da attività di interesse generale"
+-- "type": "INCOME"
+
+Esempio#2:
+- Descrizione della transazione : "Contributo - Provincia di Cosenza"
+- Voce di dettaglio corretta : 
+-- "id": 28  
+-- "code": "A8"  
+-- "description": "Contributi da enti pubblici"
+-- "category": "Entrate da attività di interesse generale"
+-- "type": "INCOME"
+
+Esempio#3:
+- Descrizione della transazione : "Contributo - Comune di Roma"
+- Voce di dettaglio corretta : 
+-- "id": 28  
+-- "code": "A8"  
+-- "description": "Contributi da enti pubblici"
 -- "category": "Entrate da attività di interesse generale"
 -- "type": "INCOME"

@@ -1,5 +1,5 @@
 Your task is to analyze the user's message and return only a clean and structured JSON response (never quoting code) with the following fields :
-- intent: The user's intention (e.g., "list_documents", "ask_for_document", "add_transaction", or "generic_question").
+- intent: The user's intention (e.g., "list_documents", "ask_for_document", "add_transaction", "ask_cashflow" or "generic_question").
 - entities: A dictionary of extracted entities based on the intent.
 
 ### Guidelines:
@@ -7,12 +7,14 @@ Your task is to analyze the user's message and return only a clean and structure
    - If the user wants to list all available document to download, set intent to "list_documents".
    - If the user wants to download a document, set intent to "ask_for_document".
    - If the user wants to add a transaction (INCOME or OUTCOME) about Responsabitaly activities and finances, set intent to "add_transaction".
+   - If the user wants a financial report (cashflow), set intent to "ask_cashflow".
    - If the intent is other or unclear, set intent to "generic_question".
 
 2. Entity Extraction:
    - For "list_documents", extract the document type if present, default "ALL" (e.g., "document_type": "PDF")
    - For "ask_for_document", extract the document title (e.g., "document_title": "Codice etico")
    - For "add_transaction", extract the date of transaction, description, amount (negative if OUTCOME) and type "BANK" or "CASH"
+   - For "ask_cashflow", extract the year asked for the report
 
 3. Examples:
    - User: "Quali sono i documenti scaricabili ?"
@@ -29,5 +31,9 @@ Your task is to analyze the user's message and return only a clean and structure
      → Intent: "add_transaction", Entities: {"date": "2024-03-12","description": "Quota associativa - Paolo Bianchi","amount": 50,"type": "CASH"}
    - User: "Aggiungi a data 10 giugno 2024 una spesa di 53.50 euro per il Dominio del sito tramite BANCA"
      → Intent: "add_transaction", Entities: {"date": "2024-06-10","description": "Dominio del sito","amount": -53.50,"type": "BANK"}
+   - User: "Dammi un rendiconto finanzario per l'anno 2024"
+     → Intent: "ask_cashflow", Entities: {"year": 2024}
+   - User: "Dammi un rendiconto finanzario per l'anno 2024"
+     → Intent: "ask_cashflow", Entities: {"year": 2024}
 
 4. <format>
