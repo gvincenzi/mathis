@@ -29,6 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ChatService {
+	@Value("classpath:/prompts/adminRoleCheckFailed.st")
+	private Resource adminRoleCheckFailedTemplateResource;
+	
 	@Value("classpath:/prompts/analysisIntent.st")
 	private Resource analysisIntentTemplateResource;
 	
@@ -131,5 +134,20 @@ public class ChatService {
 		IntentResponse intentResponse = beanOutputConverter.convert(responseBody.replace("`", ""));
 
 		return intentResponse;
+	}
+
+	public ChatMessage adminRoleCheckFailed(String conversationId, String firstname) {
+		log.info("{} -> adminRoleCheckFailed", ChatService.class.getSimpleName());
+		
+		PromptTemplate adminRoleCheckFailedPromptTemplate = new PromptTemplate(this.adminRoleCheckFailedTemplateResource);
+		Prompt prompt = adminRoleCheckFailedPromptTemplate.create(Map.of("firstname", firstname));
+		
+		log.info(String.format("Calling MistralAI"));
+		
+		String responseBody = this.simpleChatClient.prompt(prompt)
+			.call()
+			.content();
+
+		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
 	}
 }

@@ -84,7 +84,7 @@ public class TransactionService {
 				.call()
 				.content();
 		log.info("responseBody : {}",responseBody);
-		TransactionDetail transactionDetail = beanOutputConverter.convert(responseBody.replace("`", ""));
+		TransactionDetail transactionDetail = beanOutputConverter.convert(responseBody.replace("`json", "").replace("`", ""));
 
 		return transactionDetail;
 	}

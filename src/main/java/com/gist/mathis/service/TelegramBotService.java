@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gist.mathis.controller.entity.ChatMessage;
 import com.gist.mathis.controller.entity.TransactionRequest;
 import com.gist.mathis.controller.entity.UserTypeEnum;
+import com.gist.mathis.model.entity.AuthorityEnum;
 import com.gist.mathis.model.entity.Knowledge;
 import com.gist.mathis.model.entity.User;
 import com.gist.mathis.service.entity.IntentResponse;
@@ -93,6 +94,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 				newUser.setUsername(update.getMessage().getFrom().getUserName());
 				newUser.setFirstname(update.getMessage().getFrom().getFirstName());
 				newUser.setLastname(update.getMessage().getFrom().getLastName());
+				newUser.getAuthorities().add(AuthorityEnum.ROLE_USER);
 				return userService.saveUser(newUser);
 			});
 
@@ -124,18 +126,33 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 							chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, ASK_DOCUMENTS_TEXT, getInlineKeyboard(knowledgesByIntentQuery));
 							break;
 						case ADD_TRANSACTION :
-							BeanOutputConverter<TransactionRequest> beanOutputConverter = new BeanOutputConverter<>(TransactionRequest.class);
-							TransactionRequest transactionRequest = beanOutputConverter.convert(new ObjectMapper().writeValueAsString(intentResponse.getEntities()));							
-							transactionService.addTransaction(transactionRequest);
-							chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, String.format(ADD_TRANSACTION_TEXT));
+							if(checkAdminRole(user)) {
+								BeanOutputConverter<TransactionRequest> beanOutputConverter = new BeanOutputConverter<>(TransactionRequest.class);
+								TransactionRequest transactionRequest = beanOutputConverter.convert(new ObjectMapper().writeValueAsString(intentResponse.getEntities()));							
+								transactionService.addTransaction(transactionRequest);
+								chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, String.format(ADD_TRANSACTION_TEXT));
+								
+							} else {
+								chat = chatService.adminRoleCheckFailed(Long.toString(update.getMessage().getChatId()), user.getFirstname());
+								SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
+								message.setParseMode("Markdown");
+							}
 							break;
 						case ASK_CASHFLOW :
-							ByteArrayResource resource = new ByteArrayResource(excelExportService.generateExcelReport(Integer.parseInt(intentResponse.getEntities().get("year"))));
-					        String fileName = "cashflow_" + intentResponse.getEntities().get("year") + ".xlsx";
-							SendDocument doc = new SendDocument(botToken, new InputFile(resource.getInputStream(), fileName));
-							doc.setChatId(chatId);
-							telegramClient.execute(doc);
-							return;
+							if(checkAdminRole(user)) {
+								ByteArrayResource resource = new ByteArrayResource(excelExportService.generateExcelReport(Integer.parseInt(intentResponse.getEntities().get("year"))));
+						        String fileName = "cashflow_" + intentResponse.getEntities().get("year") + ".xlsx";
+								SendDocument doc = new SendDocument(botToken, new InputFile(resource.getInputStream(), fileName));
+								doc.setChatId(chatId);
+								telegramClient.execute(doc);
+								return;
+							} else {
+								chat = chatService.adminRoleCheckFailed(Long.toString(update.getMessage().getChatId()), user.getFirstname());
+								SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
+								message.setParseMode("Markdown");
+								log.info("Welcome message sent to chatId: {}", chat.getConversationId());
+							}
+							break;
 						case GENERIC_QUESTION : chat = chatService.chat(new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, update.getMessage().getText())); break;
 					}
 					
@@ -159,6 +176,10 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 				log.warn("Received unsupported update type from chatId: {}", update.hasMessage() ? update.getMessage().getChatId() : null);
 			}
 		}
+	}
+
+	private Boolean checkAdminRole(User user) {
+		return user.getAuthorities().contains(AuthorityEnum.ROLE_ADMIN);
 	}
 
 	@Override
