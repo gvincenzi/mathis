@@ -86,6 +86,7 @@ body {
     color: var(--mathis-teal) !important; /* Colore dei link del menu */
     border-bottom: 2px solid transparent; /* Per l'effetto sottolineatura */
     padding-bottom: 0.5rem; /* Spazio per la sottolineatura */
+    text-decoration: none; /* Rimuove la sottolineatura di default */
     transition: all 0.2s ease-in-out;
 }
 
@@ -93,11 +94,13 @@ body {
 .navbar-nav .nav-link:focus {
     color: var(--bs-link-hover-color) !important; /* Colore al passaggio del mouse */
     border-bottom-color: var(--bs-link-hover-color); /* Sottolineatura al passaggio del mouse */
+    text-decoration: none; /* Assicura che non ci sia doppia sottolineatura */
 }
 
 .navbar-nav .nav-link.active {
     color: var(--mathis-light-gray) !important; /* Colore del link attivo */
     border-bottom-color: var(--mathis-light-gray); /* Sottolineatura per il link attivo */
+    text-decoration: none; /* Assicura che non ci sia doppia sottolineatura */
 }
 
 /* --- REGOLE GENERALI --- */
@@ -135,7 +138,7 @@ hr {
     box-shadow: 0 0 0 0.25rem rgba(0, 192, 144, 0.25);
 }
 
-/* NUOVO: Stile per il bottone primario (blu Mathis) */
+/* Stile per il bottone primario (blu Mathis) */
 .btn-primary {
     background-color: var(--mathis-blue);
     border-color: var(--mathis-blue);
