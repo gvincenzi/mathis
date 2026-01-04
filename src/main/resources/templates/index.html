@@ -18,28 +18,21 @@
 
 <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
     <header class="mb-auto">
-		<img th:src="@{/images/logo.jpg}" alt="GIST Logo" style="width: 50px;">
+        <!-- Qui usiamo la classe logo-icon per il logo grande -->
+        <a th:href="@{/}" class="d-inline-block">
+            <img th:src="@{/images/mathis.png}" alt="Mathis Logo" class="logo-icon">
+        </a>
     </header>
 
     <main class="px-3">
         <h1>Mathis</h1>
         <p class="lead">Un agente AI per il knowledge management personale, conversazionale e open source</p>
-		<hr>
-			<form class="row g-2 align-items-center" 
-			      th:action="@{/web/cashflow}" 
-			      method="get">
-			    <div class="col-4">
-			        <input class="form-control" type="number" id="year" name="year" min="2000" max="2100" placeholder="Inserisci anno" required/>
-			    </div>
-			    <div class="col-4">
-			        <button class="btn btn-secondary fw-bold border-white bg-white" type="submit">Vai al cashflow</button>
-			    </div>
-			</form>
+		<p class="lead"><a th:href="@{/web/homepage}" class="btn btn-lg btn-secondary fw-bold">Entra nell'amministrazione</a></p>
     </main>
 
     <footer class="mt-auto text-white-50">
-        <p>Mathis is a open source poject on <a href="https://github.com/gvincenzi/mathis" class="text-white">GitHub</a>, developed by <a
-                href="https://www.linkedin.com/in/giuseppevincenzi/?originalSubdomain=fr" class="text-white">Giuseppe Vincenzi</a></p>
+        <p>Mathis is a open source poject on <a href="https://github.com/gvincenzi/mathis">GitHub</a>, developed by <a
+                href="https://www.linkedin.com/in/giuseppevincenzi/?originalSubdomain=fr">Giuseppe Vincenzi</a></p>
     </footer>
 </div>
 

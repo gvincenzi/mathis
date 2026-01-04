@@ -2,15 +2,25 @@
  * Globals
  */
 
+/* Definisci le variabili CSS per i tuoi colori all'interno del tema scuro di Bootstrap */
+[data-bs-theme="dark"] {
+    /* Colori del logo */
+    --mathis-blue: #003367;
+    --mathis-teal: #00C090;
+    --mathis-light-gray: #F5F5F5;
 
-/* Custom default button */
-.btn-secondary,
-.btn-secondary:hover,
-.btn-secondary:focus {
-    color: #333;
-    text-shadow: none; /* Prevent inheritance from `body` */
+    /* Mappa i colori del logo alle variabili di Bootstrap per un uso più semplice */
+    --bs-primary: var(--mathis-blue);
+    --bs-secondary: var(--mathis-teal); /* Usiamo il verde acqua come colore secondario per i bottoni */
+    --bs-info: var(--mathis-teal); /* Un'altra opzione per l'accento */
+
+    /* Colori di testo e sfondo per il tema scuro */
+    --bs-body-bg: #1a1a1a; /* Un nero leggermente più morbido per lo sfondo */
+    --bs-body-color: var(--mathis-light-gray); /* Colore del testo principale */
+    --bs-heading-color: var(--mathis-light-gray); /* Colore per gli H1, H2, ecc. */
+    --bs-link-color: var(--mathis-teal); /* Colore dei link */
+    --bs-link-hover-color: #00e0a0; /* Verde acqua leggermente più chiaro al passaggio del mouse */
 }
-
 
 /*
  * Base structure
@@ -19,90 +29,137 @@
 body {
     text-shadow: 0 .05rem .1rem rgba(0, 0, 0, .5);
     box-shadow: inset 0 0 5rem rgba(0, 0, 0, .5);
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
 }
 
 .cover-container {
     max-width: 42em;
 }
 
-
-/*
- * Header
- */
-
-.nav-masthead .nav-link {
-    color: rgba(255, 255, 255, .5);
-    border-bottom: .25rem solid transparent;
+/* --- REGOLE PER IL LOGO GRANDE NELLA PAGINA DI BENVENUTO (index.html) --- */
+.logo-icon {
+    width: 90px; /* Dimensione del logo grande */
+    height: auto;
+    margin-bottom: 1.5rem; /* Spazio sotto il logo */
+    transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out; /* Transizione fluida per gli effetti */
+    filter: drop-shadow(0 0 8px rgba(0, 192, 144, 0.4)); /* Ombra iniziale sottile con il colore accent */
 }
 
-.nav-masthead .nav-link:hover,
-.nav-masthead .nav-link:focus {
-    border-bottom-color: rgba(255, 255, 255, .25);
+.logo-icon:hover {
+    transform: scale(1.1); /* Ingrandisce leggermente al passaggio del mouse */
+    filter: drop-shadow(0 0 20px rgba(0, 192, 144, 0.8)); /* Ombra più pronunciata al passaggio del mouse */
+    cursor: pointer; /* Indica che è cliccabile */
 }
 
-.nav-masthead .nav-link + .nav-link {
-    margin-left: 1rem;
+/* --- REGOLE PER IL LOGO NELLA NAVBAR (homepage.html) --- */
+.logo-navbar {
+    width: 40px; /* Dimensione più piccola per il logo nella navbar */
+    height: auto;
+    margin-right: 10px; /* Spazio tra il logo e il testo "Mathis" */
+    filter: drop-shadow(0 0 5px rgba(0, 192, 144, 0.3)); /* Ombra sottile */
+    transition: transform 0.3s ease-in-out;
 }
 
-.nav-masthead .active {
-    color: #fff;
-    border-bottom-color: #fff;
+.logo-navbar:hover {
+    transform: scale(1.05); /* Leggero ingrandimento al passaggio del mouse */
 }
 
-
-.bd-placeholder-img {
-    font-size: 1.125rem;
-    text-anchor: middle;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
+.navbar-brand {
+    color: var(--mathis-light-gray) !important; /* Colore del testo "Mathis" nel brand */
+    display: flex; /* Allinea il logo e il testo */
+    align-items: center;
+}
+.navbar-brand:hover {
+    color: var(--bs-link-hover-color) !important; /* Colore al passaggio del mouse */
 }
 
-@media (min-width: 768px) {
-    .bd-placeholder-img-lg {
-        font-size: 3.5rem;
-    }
+/* --- REGOLE PER I LINK DELLA NAVBAR --- */
+.navbar-nav .nav-link {
+    color: var(--mathis-teal) !important; /* Colore dei link del menu */
+    border-bottom: 2px solid transparent; /* Per l'effetto sottolineatura */
+    padding-bottom: 0.5rem; /* Spazio per la sottolineatura */
+    transition: all 0.2s ease-in-out;
 }
 
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+    color: var(--bs-link-hover-color) !important; /* Colore al passaggio del mouse */
+    border-bottom-color: var(--bs-link-hover-color); /* Sottolineatura al passaggio del mouse */
+}
+
+.navbar-nav .nav-link.active {
+    color: var(--mathis-light-gray) !important; /* Colore del link attivo */
+    border-bottom-color: var(--mathis-light-gray); /* Sottolineatura per il link attivo */
+}
+
+/* --- REGOLE GENERALI --- */
+
+/* Stile per l'intestazione H1 */
+main h1 {
+    color: var(--bs-heading-color);
+    text-shadow: 0 0 10px rgba(0, 192, 144, 0.5);
+    margin-top: 0; /* Rimuovi il margin-top di default se presente, il logo ha già margin-bottom */
+}
+
+/* Stile per la linea orizzontale */
+hr {
+    border-top: 1px solid var(--mathis-teal);
+    opacity: 0.7;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Stile per il bottone "Vai al cashflow" */
+.btn-secondary {
+    background-color: var(--mathis-teal);
+    border-color: var(--mathis-teal);
+    color: var(--mathis-blue);
+    font-weight: bold;
+    text-shadow: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+    background-color: var(--bs-link-hover-color);
+    border-color: var(--bs-link-hover-color);
+    color: var(--mathis-blue);
+    box-shadow: 0 0 0 0.25rem rgba(0, 192, 144, 0.25);
+}
+
+/* Stile per i link */
+a {
+    color: var(--bs-link-color);
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+    color: var(--bs-link-hover-color);
+    text-decoration: underline;
+}
+
+/* Stile per l'input del form (se presente in altre pagine) */
+.form-control {
+    background-color: rgba(0, 51, 103, 0.3);
+    border-color: var(--mathis-blue);
+    color: var(--mathis-light-gray);
+    transition: all 0.2s ease-in-out;
+}
+.form-control::placeholder {
+    color: rgba(245, 245, 245, 0.7);
+}
+.form-control:focus {
+    background-color: rgba(0, 51, 103, 0.5);
+    border-color: var(--mathis-teal);
+    box-shadow: 0 0 0 0.25rem rgba(0, 192, 144, 0.25);
+    color: var(--mathis-light-gray);
+}
+
+/* Media query per il logo (mantenuta) */
 @media (max-width: 500px) {
-    .logo {
+    .logo { /* Questa classe non è più usata direttamente, ma la lascio per sicurezza se fosse usata altrove */
         display: none;
     }
-}
-
-.b-example-divider {
-    height: 3rem;
-    background-color: rgba(0, 0, 0, .1);
-    border: solid rgba(0, 0, 0, .15);
-    border-width: 1px 0;
-    box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
-}
-
-.b-example-vr {
-    flex-shrink: 0;
-    width: 1.5rem;
-    height: 100vh;
-}
-
-.bi {
-    vertical-align: -.125em;
-    fill: currentColor;
-}
-
-.nav-scroller {
-    position: relative;
-    z-index: 2;
-    height: 2.75rem;
-    overflow-y: hidden;
-}
-
-.nav-scroller .nav {
-    display: flex;
-    flex-wrap: nowrap;
-    padding-bottom: 1rem;
-    margin-top: -1px;
-    overflow-x: auto;
-    text-align: center;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
 }
