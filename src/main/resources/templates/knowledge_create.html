@@ -1,0 +1,105 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark h-100" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Mathis - Add Knowledge</title>
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+            crossorigin="anonymous"></script>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" th:href="@{/styles/main.css}"/>
+</head>
+<body class="d-flex h-100 text-center text-bg-dark">
+
+<div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
+    <header class="mb-auto">
+        <!-- Navbar Bootstrap -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <!-- Logo e Brand Name -->
+                <a class="navbar-brand" th:href="@{/}">
+                    <img th:src="@{/images/mathis.png}" alt="Mathis Logo" class="logo-navbar">
+                    Mathis
+                </a>
+                <!-- Toggler per mobile -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <!-- Voci del menu -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/web/homepage}">Home</a>
+                        </li>
+						<li class="nav-item">
+							<!-- Link Knowledge attivo per questa pagina -->
+							<a class="nav-link active" aria-current="page" th:href="@{/web/knowledge}">Knowledge</a>
+						</li>						
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/web/cashflow(year=${#dates.year(#dates.createNow())})}">Cashflow</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/logout}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="px-3 flex-grow-1">
+        <h1 class="mb-4">Add New Knowledge Item</h1>
+
+        <!-- Form per aggiungere un nuovo Knowledge -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <form th:action="@{/web/knowledge/ingest}" method="post" enctype="multipart/form-data" class="text-start">
+                    <!-- Campo File -->
+                    <div class="mb-3">
+                        <label for="document" class="form-label">Document (PDF, DOCX, TXT, etc.)</label>
+                        <input type="file" class="form-control" id="document" name="document" required>
+                    </div>
+
+                    <!-- Campo Title -->
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+
+                    <!-- Campo Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+
+                    <!-- Campo URL -->
+                    <div class="mb-3">
+                        <label for="url" class="form-label">URL</label>
+                        <input type="url" class="form-control" id="url" name="url">
+                    </div>
+
+                    <!-- Bottoni di azione -->
+                    <div class="d-flex justify-content-end mt-4">
+                        <div class="btn-group" role="group" aria-label="Knowledge form actions">
+                            <a th:href="@{/web/knowledge}" class="btn btn-secondary fw-bold">Cancel</a>
+                            <button type="submit" class="btn btn-primary fw-bold">Add Knowledge</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-auto text-white-50">
+        <p>Mathis is a open source project on <a href="https://github.com/gvincenzi/mathis">GitHub</a>, developed by <a
+                href="https://www.linkedin.com/in/giuseppevincenzi/?originalSubdomain=fr">Giuseppe Vincenzi</a></p>
+    </footer>
+</div>
+
+</body>
+</html>

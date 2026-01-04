@@ -37,8 +37,14 @@ public class KnowledgeService {
         return knowledge;
     }
     
+    public Knowledge updateKnowledge(Knowledge knowledge) {
+    	knowledge.setUpdatedAt(null);
+        knowledge = knowledgeRepository.save(knowledge);
+        return knowledge;
+    }
+    
     public List<Knowledge> findAll(){
-    	return knowledgeRepository.findAll();
+    	return knowledgeRepository.findAllByOrderByCreatedAtAsc();
     }
     
     public Optional<Knowledge> findById(Long knowledgeId){

@@ -11,15 +11,14 @@ Your task is to generate a help message that explains the available commands in 
 4. Esempi: Inserisci una sezione con alcuni esempi di domande che l’utente può fare (almeno 5-6).
 5. Incoraggiamento: Concludi incoraggiando l’utente ad esplorare e a chiedere supporto o approfondimenti.
 
-### Additional Notes:
-- The bot is designed to be intuitive and easy to use.
-- The user should feel empowered to manage their notes efficiently.
-- The message should be visually appealing when displayed in Telegram (e.g., use emojis sparingly if helpful).
+### Note aggiuntive:
+- Il bot è progettato per essere intuitivo e facile da usare.
+- Il messaggio dovrebbe essere gradevole alla vista su Telegram (usa le emoji con moderazione se utili).
 
-### Output Format:
-Return the help message as a single, well-formatted string ready to be sent via Telegram. 
-Use markdown formatting (e.g., bold, italics) if it enhances readability.
-Provide only the confirmation message, with no preamble, explanation, or introductory line.
+### Formato di output:
+- Restituisci il messaggio di aiuto come una singola stringa ben formattata, pronta per essere inviata tramite Telegram.
+- Utilizza la formattazione markdown (grassetto, corsivo) se migliora la leggibilità.
+- Fornisci solo il messaggio di conferma, senza preamboli, spiegazioni o linee introduttive.
 
 ### Note aggiuntive:
 - Il bot è progettato per essere intuitivo e facile da usare.

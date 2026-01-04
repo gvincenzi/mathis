@@ -1,7 +1,12 @@
 package com.gist.mathis.service;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.ai.chat.client.ChatClient;
@@ -16,12 +21,22 @@ import org.springframework.ai.template.st.StTemplateRenderer;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gist.mathis.controller.entity.ChatMessage;
+import com.gist.mathis.controller.entity.TransactionRequest;
 import com.gist.mathis.controller.entity.UserTypeEnum;
+import com.gist.mathis.model.entity.AuthorityEnum;
+import com.gist.mathis.model.entity.Knowledge;
 import com.gist.mathis.service.entity.IntentResponse;
+import com.gist.mathis.service.finance.ExcelExportService;
+import com.gist.mathis.service.finance.TransactionService;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +44,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ChatService {
+	private static final String LIST_DOCUMENTS_TEXT = "Lista dei documenti disponibili";
+	private static final String ASK_DOCUMENTS_TEXT = "Ecco i documenti che potrebbero interessarti (se me la chiedi posso darti la lista completa dei documenti disponibili)";
+	private static final String ADD_TRANSACTION_TEXT = "✅ *Transazione aggiunta al rendiconto dell’associazione!*\n";
+	
+	@Value("classpath:/prompts/adminRoleCheckFailed.st")
+	private Resource adminRoleCheckFailedTemplateResource;
+	
 	@Value("classpath:/prompts/analysisIntent.st")
 	private Resource analysisIntentTemplateResource;
 	
@@ -38,20 +60,23 @@ public class ChatService {
 	@Value("classpath:/prompts/welcome.st")
 	private Resource welcomeResource;
 	
-	@Value("classpath:/prompts/ingest.st")
-	private Resource ingestResource;
-	
-	private MistralAiChatModel chatModel;
-	private VectorStore vectorStore;
-	private ChatMemory chatMemory;
+	private final KnowledgeService knowledgeService;
+	private final TransactionService transactionService;
+	private final ExcelExportService excelExportService;
+	private final MistralAiChatModel chatModel;
+	private final VectorStore vectorStore;
+	private final ChatMemory chatMemory;
 	
 	private ChatClient chatClient, simpleChatClient;
 	
 	@Autowired
-    public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory) {
+    public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory, KnowledgeService knowledgeService, TransactionService transactionService, ExcelExportService excelExportService) {
         this.chatModel = chatModel;
         this.vectorStore = vectorStore;
         this.chatMemory = chatMemory;
+        this.knowledgeService = knowledgeService;
+        this.transactionService = transactionService;
+        this.excelExportService = excelExportService;
     }
 	
 	@PostConstruct
@@ -78,7 +103,58 @@ public class ChatService {
 			    .build();
 	}
 	
-	public ChatMessage chat(ChatMessage message) {
+	public ChatMessage chat(ChatMessage message) throws NumberFormatException, IOException {
+		IntentResponse intentResponse = analyzeUserMessage(message);
+		ChatMessage chat = null;
+
+		switch (intentResponse.getIntentValue()) {
+			case LIST_DOCUMENTS :
+				List<Knowledge> knowledges = knowledgeService.findAll();
+				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, LIST_DOCUMENTS_TEXT, getInlineKeyboard(knowledges));
+				break;
+			case ASK_FOR_DOCUMENT : 
+				Set<Knowledge> knowledgesByIntentQuery = knowledgeService.findByVectorialSearch(intentResponse);
+				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, ASK_DOCUMENTS_TEXT, getInlineKeyboard(knowledgesByIntentQuery));
+				break;
+			case ADD_TRANSACTION :
+				if(AuthorityEnum.ROLE_ADMIN.equals(message.getUserAuth())) {
+					BeanOutputConverter<TransactionRequest> beanOutputConverter = new BeanOutputConverter<>(TransactionRequest.class);
+					TransactionRequest transactionRequest = beanOutputConverter.convert(new ObjectMapper().writeValueAsString(intentResponse.getEntities()));							
+					transactionService.addTransaction(transactionRequest);
+					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, String.format(ADD_TRANSACTION_TEXT));
+				} else {
+					chat = adminRoleCheckFailed(message.getConversationId());
+				}
+				break;
+			case ASK_CASHFLOW :
+				if(AuthorityEnum.ROLE_ADMIN.equals(message.getUserAuth())) {
+					ByteArrayResource resource = new ByteArrayResource(excelExportService.generateExcelReport(Integer.parseInt(intentResponse.getEntities().get("year"))));
+					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, "cashflow_" + intentResponse.getEntities().get("year") + ".xlsx", resource);
+				} else {
+					chat = adminRoleCheckFailed(message.getConversationId());
+				}
+				break;
+			case GENERIC_QUESTION : chat = genericQuestion(message); break;
+		}
+		return chat;
+	}
+	
+	public ChatMessage welcome(String conversationId, String firstname) {	
+		log.info("{} -> welcome", ChatService.class.getSimpleName());
+		
+		PromptTemplate welcomePromptTemplate = new PromptTemplate(this.welcomeResource);
+		Prompt prompt = welcomePromptTemplate.create(Map.of("firstname", firstname));
+		
+		log.info(String.format("Calling MistralAI"));
+		
+		String responseBody = this.simpleChatClient.prompt(prompt)
+			.call()
+			.content();
+
+		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
+	}
+	
+	private ChatMessage genericQuestion(ChatMessage message) {
 		log.info("{} -> chat", ChatService.class.getSimpleName());
 		String conversationId = message.getConversationId() == null ? UUID.randomUUID().toString() : message.getConversationId();
 		log.info("ChatMessage -> [{}][{}][{}]", message.getUserType().name(), conversationId, message.getBody());
@@ -96,23 +172,8 @@ public class ChatService {
 		log.info("MistralAI answer [{}]", responseBody.length() > 15 ? responseBody.substring(0, 10) + "..." : responseBody);
 		return new ChatMessage(conversationId, UserTypeEnum.HUMAN.equals(message.getUserType()) ? UserTypeEnum.AI : UserTypeEnum.HUMAN, responseBody);
 	}
-
-	public ChatMessage welcome(String conversationId, String firstname) {	
-		log.info("{} -> welcome", ChatService.class.getSimpleName());
-		
-		PromptTemplate welcomePromptTemplate = new PromptTemplate(this.welcomeResource);
-		Prompt prompt = welcomePromptTemplate.create(Map.of("firstname", firstname));
-		
-		log.info(String.format("Calling MistralAI"));
-		
-		String responseBody = this.simpleChatClient.prompt(prompt)
-			.call()
-			.content();
-
-		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
-	}
 	
-	public IntentResponse analyzeUserMessage(ChatMessage chatMessage, String firstname) {
+	private IntentResponse analyzeUserMessage(ChatMessage chatMessage) {
 		log.info("{} -> analyzeUserMessage", ChatService.class.getSimpleName());
 		
 		BeanOutputConverter<IntentResponse> beanOutputConverter = new BeanOutputConverter<>(IntentResponse.class);
@@ -135,13 +196,13 @@ public class ChatService {
 
 		return intentResponse;
 	}
-	
-	public ChatMessage ingest(String conversationId, String language, String documentName) {
-		log.info("{} -> ingest", ChatService.class.getSimpleName());
+
+	private ChatMessage adminRoleCheckFailed(String conversationId) {
+		log.info("{} -> adminRoleCheckFailed", ChatService.class.getSimpleName());
 		
-		PromptTemplate ingestPromptTemplate = new PromptTemplate(this.ingestResource);
-		Prompt prompt = ingestPromptTemplate.create(Map.of("language", language, "documentName", documentName));
-			
+		PromptTemplate adminRoleCheckFailedPromptTemplate = new PromptTemplate(this.adminRoleCheckFailedTemplateResource);
+		Prompt prompt = adminRoleCheckFailedPromptTemplate.create();
+		
 		log.info(String.format("Calling MistralAI"));
 		
 		String responseBody = this.simpleChatClient.prompt(prompt)
@@ -149,5 +210,21 @@ public class ChatService {
 			.content();
 
 		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
+	}
+
+	
+	private InlineKeyboardMarkup getInlineKeyboard(Collection<Knowledge> knowledges) {
+		List<InlineKeyboardRow> inlineKeyboardRows = new ArrayList<>(knowledges.size());
+		
+		knowledges.forEach(k -> {
+			List<InlineKeyboardButton> rowInline = new ArrayList<>();
+			InlineKeyboardButton kBtn = new InlineKeyboardButton(String.format("%s",k.getTitle()));
+			//kBtn.setUrl(k.getUrl());
+			kBtn.setCallbackData(String.format("knowledge#%d", k.getKnowledgeId()));
+			rowInline.add(kBtn);
+			inlineKeyboardRows.add(new InlineKeyboardRow(rowInline));
+		});
+		
+		return new InlineKeyboardMarkup(inlineKeyboardRows);
 	}
 }

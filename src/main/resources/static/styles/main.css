@@ -1,0 +1,183 @@
+/*
+ * Globals
+ */
+
+/* Definisci le variabili CSS per i tuoi colori all'interno del tema scuro di Bootstrap */
+[data-bs-theme="dark"] {
+    /* Colori del logo Mathis */
+    --mathis-blue: #003367;
+    --mathis-teal: #00C090;
+    --mathis-light-gray: #F5F5F5;
+
+    /* Mappa i colori del logo alle variabili di Bootstrap per un uso più semplice */
+    --bs-primary: var(--mathis-blue);
+    --bs-secondary: var(--mathis-teal); /* Usiamo il verde acqua come colore secondario per i bottoni */
+    --bs-info: var(--mathis-teal); /* Un'altra opzione per l'accento */
+
+    /* Colori di testo e sfondo per il tema scuro */
+    --bs-body-bg: #1a1a1a; /* Un nero leggermente più morbido per lo sfondo */
+    --bs-body-color: var(--mathis-light-gray); /* Colore del testo principale */
+    --bs-heading-color: var(--mathis-light-gray); /* Colore per gli H1, H2, ecc. */
+    --bs-link-color: var(--mathis-teal); /* Colore dei link */
+    --bs-link-hover-color: #00e0a0; /* Verde acqua leggermente più chiaro al passaggio del mouse */
+
+    /* Colori di base per la tabella Bootstrap in tema scuro (se non sovrascritti da cashflow.css) */
+    --bs-table-bg: var(--bs-body-bg);
+    --bs-table-color: var(--bs-body-color);
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.05); /* Striscia più chiara */
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.08); /* Sfondo al passaggio del mouse */
+    --bs-table-border-color: rgba(255, 255, 255, 0.15); /* Colore del bordo della tabella */
+
+    /* NUOVE VARIABILI PER GLOW/SHADOW */
+    --mathis-glow-teal: rgba(0, 192, 144, 0.4); /* Glow leggero per accenti */
+    --mathis-glow-teal-strong: rgba(0, 192, 144, 0.6); /* Glow più forte per hover/focus */
+    --mathis-glow-blue: rgba(0, 51, 103, 0.5); /* Glow per il blu */
+}
+
+/*
+ * Base structure
+ */
+
+body {
+    text-shadow: 0 .05rem .1rem rgba(0, 0, 0, .5);
+    box-shadow: inset 0 0 5rem rgba(0, 0, 0, .5);
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+}
+
+.cover-container {
+    /* MODIFICATO: Aumenta la larghezza massima del contenitore principale */
+    max-width: 75%; /* O un valore fisso come 60em, a seconda delle preferenze */
+}
+
+/* --- REGOLE PER IL LOGO GRANDE NELLA PAGINA DI BENVENUTO (index.html) --- */
+.logo-icon {
+    width: 90px; /* Dimensione del logo grande */
+    height: auto;
+    margin-bottom: 1.5rem; /* Spazio sotto il logo */
+    transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out; /* Transizione fluida per gli effetti */
+    filter: drop-shadow(0 0 8px var(--mathis-glow-teal)); /* Ombra iniziale sottile con il colore accent */
+}
+
+.logo-icon:hover {
+    transform: scale(1.1); /* Ingrandisce leggermente al passaggio del mouse */
+    filter: drop-shadow(0 0 20px var(--mathis-glow-teal-strong)); /* Ombra più pronunciata al passaggio del mouse */
+    cursor: pointer; /* Indica che è cliccabile */
+}
+
+/* --- REGOLE PER IL LOGO NELLA NAVBAR (homepage.html, cashflow.html, cashflow_edit.html) --- */
+.logo-navbar {
+    width: 40px; /* Dimensione più piccola per il logo nella navbar */
+    height: auto;
+    margin-right: 10px; /* Spazio tra il logo e il testo "Mathis" */
+    filter: drop-shadow(0 0 5px var(--mathis-glow-teal)); /* Ombra sottile */
+    transition: transform 0.3s ease-in-out;
+}
+
+.logo-navbar:hover {
+    transform: scale(1.05); /* Leggero ingrandimento al passaggio del mouse */
+}
+
+.navbar-brand {
+    color: var(--mathis-light-gray) !important; /* Colore del testo "Mathis" nel brand */
+    display: flex; /* Allinea il logo e il testo */
+    align-items: center;
+}
+.navbar-brand:hover {
+    color: var(--bs-link-hover-color) !important; /* Colore al passaggio del mouse */
+}
+
+/* --- REGOLE PER I LINK DELLA NAVBAR --- */
+.navbar-nav .nav-link {
+    color: var(--mathis-teal) !important; /* Colore dei link del menu */
+    border-bottom: 2px solid transparent; /* Per l'effetto sottolineatura */
+    padding-bottom: 0.5rem; /* Spazio per la sottolineatura */
+    text-decoration: none; /* Rimuove la sottolineatura di default */
+    transition: all 0.2s ease-in-out;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+    color: var(--bs-link-hover-color) !important; /* Colore al passaggio del mouse */
+    border-bottom-color: var(--bs-link-hover-color); /* Sottolineatura al passaggio del mouse */
+    text-decoration: none; /* Assicura che non ci sia doppia sottolineatura */
+}
+
+.navbar-nav .nav-link.active {
+    color: var(--mathis-light-gray) !important; /* Colore del link attivo */
+    border-bottom-color: var(--mathis-light-gray); /* Sottolineatura per il link attivo */
+    text-decoration: none; /* Assicura che non ci sia doppia sottolineatura */
+}
+
+/* --- REGOLE GENERALI --- */
+
+/* Stile per l'intestazione H1 */
+main h1 {
+    color: var(--bs-heading-color);
+    text-shadow: 0 0 10px var(--mathis-glow-teal); /* Usa la variabile per il glow */
+    margin-top: 0;
+}
+
+/* Stile per la linea orizzontale */
+hr {
+    border-top: 1px solid var(--mathis-teal);
+    opacity: 0.7;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Stile per il bottone secondario (verde acqua) */
+.btn-secondary {
+    background-color: var(--mathis-teal);
+    border-color: var(--mathis-teal);
+    color: var(--mathis-blue);
+    font-weight: bold;
+    text-shadow: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+    background-color: var(--bs-link-hover-color);
+    border-color: var(--bs-link-hover-color);
+    color: var(--mathis-blue);
+    box-shadow: 0 0 0 0.25rem var(--mathis-glow-teal-strong); /* Usa il glow più forte */
+}
+
+/* Stile per il bottone primario (blu Mathis) */
+.btn-primary {
+    background-color: var(--mathis-blue);
+    border-color: var(--mathis-blue);
+    color: var(--mathis-light-gray);
+    font-weight: bold;
+    text-shadow: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #004488; /* Blu leggermente più scuro al hover */
+    border-color: #004488;
+    color: var(--mathis-light-gray);
+    box-shadow: 0 0 0 0.25rem var(--mathis-glow-blue); /* Ombra con il blu Mathis */
+}
+
+
+/* Stile per i link */
+a {
+    color: var(--bs-link-color);
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+    color: var(--bs-link-hover-color);
+    text-decoration: underline;
+}
+
+/* Media query per il logo (mantenuta) */
+@media (max-width: 500px) {
+    .logo {
+        display: none;
+    }
+}

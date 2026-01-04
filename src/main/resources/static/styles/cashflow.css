@@ -1,0 +1,142 @@
+/*
+ * Cashflow Specific Styles
+ */
+
+/* Variabili per i colori specifici della tabella, basati sui colori Mathis */
+[data-bs-theme="dark"] {
+    --cashflow-entrate-bg: var(--mathis-teal); /* Verde acqua per entrate */
+    --cashflow-entrate-text: var(--mathis-blue); /* Blu scuro per testo entrate */
+
+    --cashflow-uscite-bg: #dc3545; /* Rosso per uscite */
+    --cashflow-uscite-text: var(--mathis-light-gray); /* Grigio chiaro per testo uscite */
+
+    --cashflow-residui-bg: #ffc107; /* Arancione per residui/saldo */
+    --cashflow-residui-text: var(--mathis-blue); /* Blu scuro per testo residui/saldo */
+
+    /* Override di alcune variabili Bootstrap per la tabella */
+    --bs-table-bg: var(--bs-body-bg);
+    --bs-table-color: var(--bs-body-color);
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.05); /* Striscia più chiara */
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.08); /* Sfondo al passaggio del mouse */
+    --bs-table-border-color: rgba(255, 255, 255, 0.15); /* Colore del bordo della tabella */
+}
+
+.table {
+    margin-bottom: 1rem; /* Spazio sotto la tabella */
+    font-size: 0.9rem; /* Dimensione del font leggermente ridotta per la tabella */
+}
+
+.table th, .table td {
+    border-color: var(--bs-table-border-color);
+    padding: 0.5rem 0.75rem; /* Padding leggermente maggiore */
+    vertical-align: middle; /* Allineamento verticale al centro */
+}
+
+.table thead th {
+    background-color: var(--bs-primary); /* Usa il blu Mathis per le intestazioni generali */
+    color: var(--mathis-light-gray);
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Colori specifici per le intestazioni di Entrate/Uscite */
+.cassa-entrate-header,
+.banca-entrate-header {
+    background-color: var(--cashflow-entrate-bg);
+    color: var(--cashflow-entrate-text);
+}
+
+.cassa-uscite-header,
+.banca-uscite-header {
+    background-color: var(--cashflow-uscite-bg);
+    color: var(--cashflow-uscite-text);
+}
+
+/* Riga "Residui" */
+.residui-row td {
+    background-color: var(--cashflow-residui-bg);
+    color: var(--cashflow-residui-text);
+    font-weight: bold;
+}
+.residui-row .residui-header {
+    text-align: start; /* Allinea a sinistra l'etichetta "Residui" */
+}
+.residui-row .residui-value {
+    text-align: end; /* Allinea a destra i valori dei residui */
+}
+
+
+/* Righe Totali e Saldo nel footer della tabella */
+.table tfoot td {
+    font-weight: bold;
+    background-color: var(--bs-table-striped-bg); /* Sfondo consistente con le righe striped */
+    color: var(--bs-body-color);
+}
+
+.table tfoot .cassa-entrate-total,
+.table tfoot .banca-entrate-total {
+    background-color: var(--cashflow-entrate-bg);
+    color: var(--cashflow-entrate-text);
+    text-align: end;
+}
+
+.table tfoot .cassa-uscite-total,
+.table tfoot .banca-uscite-total {
+    background-color: var(--cashflow-uscite-bg);
+    color: var(--cashflow-uscite-text);
+    text-align: end;
+}
+
+.table tfoot .tot-label {
+    background-color: var(--bs-primary); /* Blu Mathis per le etichette "TOT. ENTRATE/USCITE" */
+    color: var(--mathis-light-gray);
+    text-align: center;
+}
+
+.table tfoot .saldo-header {
+    background-color: var(--cashflow-residui-bg);
+    color: var(--cashflow-residui-text);
+    text-align: center;
+}
+
+/* Allineamento valute */
+.currency {
+    text-align: end;
+}
+
+/* Colore testo per uscite */
+.uscita {
+    color: var(--cashflow-uscite-bg); /* Testo rosso per importi negativi */
+}
+
+/* Larghezza specifica per la colonna descrizione */
+.col-descrizione {
+    min-width: 200px; /* Larghezza minima per la descrizione */
+    width: 30%;
+    max-width: 400px;
+    text-align: start; /* La descrizione dovrebbe essere allineata a sinistra */
+}
+
+/* Form controls all'interno della tabella (per cashflow_edit.html) */
+.table .form-control,
+.table .form-select {
+    background-color: rgba(0, 51, 103, 0.3); /* Blu Mathis semi-trasparente */
+    border-color: var(--mathis-blue);
+    color: var(--mathis-light-gray);
+    font-size: 0.875rem; /* Dimensione form-control-sm */
+    padding: 0.25rem 0.5rem; /* Padding form-control-sm */
+}
+.table .form-control::placeholder {
+    color: rgba(245, 245, 245, 0.7);
+}
+.table .form-control:focus,
+.table .form-select:focus {
+    background-color: rgba(0, 51, 103, 0.5);
+    border-color: var(--mathis-teal);
+    box-shadow: 0 0 0 0.25rem rgba(0, 192, 144, 0.25);
+    color: var(--mathis-light-gray);
+}
+.table .form-select {
+    /* Freccia personalizzata per il select in tema scuro */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23F5F5F5' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}

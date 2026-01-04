@@ -1,10 +1,7 @@
 package com.gist.mathis.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.io.IOException;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,20 +11,19 @@ import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import com.gist.mathis.controller.entity.ChatMessage;
 import com.gist.mathis.controller.entity.UserTypeEnum;
 import com.gist.mathis.model.entity.Knowledge;
-import com.gist.mathis.model.entity.User;
-import com.gist.mathis.service.entity.IntentResponse;
+import com.gist.mathis.model.entity.MathisUser;
+import com.gist.mathis.service.security.MathisUserDetailsService;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -37,9 +33,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Profile({ "gist" })
 public class TelegramBotService implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
-	private static final String LIST_DOCUMENTS_TEXT = "Lista dei documenti disponibili";
-	private static final String ASK_DOCUMENTS_TEXT = "Ecco i documenti che potrebbero interesarti (se me la chiedi posso darti la lista completa dei documenti disponibili)";
-
 	private static final String START = "/start";
 
 	@Value("${telegram.bot.username}")
@@ -51,14 +44,14 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 	private final TelegramClient telegramClient;
 
 	@Autowired
-	private UserService userService;
+	private MathisUserDetailsService userService;
 
 	@Autowired
 	private ChatService chatService;
 	
 	@Autowired
 	private KnowledgeService knowledgeService;
-
+	
 	public TelegramBotService(@Value("${telegram.bot.token}") String botToken) {
 		telegramClient = new OkHttpTelegramClient(botToken);
 	}
@@ -68,23 +61,18 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 		log.info("Received update: message? {}, document? {}, chatId: {}", update.hasMessage(),
 				update.hasMessage() && update.getMessage().hasDocument(),
 				update.hasMessage() ? update.getMessage().getChatId() : null);
-
+		
+		ChatMessage chat;
+		
 		if (update.hasMessage() || update.hasCallbackQuery()) {
 			Long chatId = update.hasMessage() ? update.getMessage().getChatId() : update.getCallbackQuery().getMessage().getChatId();
-			User user = userService.findByChatId(chatId).orElseGet(() -> {
-				User newUser = new User();
-				newUser.setChatId(update.getMessage().getChatId());
-				newUser.setUsername(update.getMessage().getFrom().getUserName());
-				newUser.setFirstname(update.getMessage().getFrom().getFirstName());
-				newUser.setLastname(update.getMessage().getFrom().getLastName());
-				return userService.saveUser(newUser);
-			});
+			MathisUser user = userService.findOrCreateByTelegram(update);
 
 			if (update.hasMessage() && update.getMessage().getText() != null && update.getMessage().getText().startsWith(START)) {
 				log.info("Start command detected from chatId: {}", update.getMessage().getChatId());
 
 				try {
-					ChatMessage chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), user.getFirstname());
+					chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), user.getFirstname());
 					SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
 					message.setParseMode("Markdown");
 					telegramClient.execute(message);
@@ -95,27 +83,19 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 			} else if (update.hasMessage() && update.getMessage().getText() != null && !update.getMessage().getText().startsWith(START)) {
 				log.info("Received chat message from chatId: {}, text: {}", update.getMessage().getChatId(), update.getMessage().getText());
 				try {
-					IntentResponse intentResponse = chatService.analyzeUserMessage(new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, update.getMessage().getText()),user.getFirstname());
-					ChatMessage chat = null;
-		
-					switch (intentResponse.getIntentValue()) {
-						case LIST_DOCUMENTS :
-							List<Knowledge> knowledges = knowledgeService.findAll();
-							chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, LIST_DOCUMENTS_TEXT, getInlineKeyboard(knowledges));
-							break;
-						case ASK_FOR_DOCUMENT : 
-							Set<Knowledge> knowledgesByIntentQuery = knowledgeService.findByVectorialSearch(intentResponse);
-							chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, ASK_DOCUMENTS_TEXT, getInlineKeyboard(knowledgesByIntentQuery));
-							break;
-						case GENERIC_QUESTION : chat = chatService.chat(new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, update.getMessage().getText())); break;
+					chat = chatService.chat(new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, update.getMessage().getText(), user.getAuth()));
+					if(chat.getResource() != null) {
+						SendDocument doc = new SendDocument(botToken, new InputFile(chat.getResource().getInputStream(), chat.getBody()));
+						doc.setChatId(chatId);
+						telegramClient.execute(doc);
+					} else {
+						SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
+						message.setParseMode("Markdown");
+						message.setReplyMarkup(chat.getInlineKeyboardMarkup());
+						telegramClient.execute(message);
 					}
-					
-					SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
-					message.setParseMode("Markdown");
-					message.setReplyMarkup(chat.getInlineKeyboardMarkup());
-					telegramClient.execute(message);
 					log.info("Chat response sent to chatId: {}", chat.getConversationId());
-				} catch (TelegramApiException e) {
+				} catch (TelegramApiException | IOException | NumberFormatException e) {
 					log.error("Error processing chat message from chatId {}: {}", update.getMessage().getChatId(), e.getMessage(), e);
 				}
 			} else if (update.hasCallbackQuery()) {
@@ -137,22 +117,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 		return this;
 	}
 	
-	private InlineKeyboardMarkup getInlineKeyboard(Collection<Knowledge> knowledges) {
-		List<InlineKeyboardRow> inlineKeyboardRows = new ArrayList<>(knowledges.size());
-		
-		knowledges.forEach(k -> {
-			List<InlineKeyboardButton> rowInline = new ArrayList<>();
-			InlineKeyboardButton kBtn = new InlineKeyboardButton(String.format("%s",k.getTitle()));
-			//kBtn.setUrl(k.getUrl());
-			kBtn.setCallbackData(String.format("knowledge#%d", k.getKnowledgeId()));
-			rowInline.add(kBtn);
-			inlineKeyboardRows.add(new InlineKeyboardRow(rowInline));
-		});
-		
-		return new InlineKeyboardMarkup(inlineKeyboardRows);
-	}
-	
-	private SendMessage handleCallbackQuery(String callbackData, Long chatId, User user) {
+	private SendMessage handleCallbackQuery(String callbackData, Long chatId, MathisUser user) {
 		SendMessage message = null;
 		String callBackAction = callbackData.substring(0,callbackData.indexOf("#"));
 		switch (callBackAction) {

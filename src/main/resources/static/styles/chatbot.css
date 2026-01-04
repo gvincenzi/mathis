@@ -1,0 +1,159 @@
+/* --- CHAT INTERFACE STYLES --- */
+
+/* Contenitore principale della chat */
+#chat-container {
+    /* Altezza predefinita per la chat (es. sulla homepage) */
+    max-height: 50vh; /* MODIFICATO: Altezza più piccola per la homepage */
+    background-color: #000000; /* Sfondo nero */
+    border: 1px solid var(--mathis-teal); /* Bordo sottile con il colore accent */
+    border-radius: 15px; /* Bordi arrotondati per richiamare il logo */
+    box-shadow: 0 0 20px var(--mathis-glow-teal); /* Aggiunge un glow sottile al contenitore */
+}
+
+/* Regola specifica per la chat a schermo intero */
+/* Questa regola sovrascriverà max-height per #chat-container quando la chat è a schermo intero */
+body.full-chat-page #chat-container {
+    max-height: none; /* Rimuove il limite di altezza */
+    height: 100%; /* Fa sì che occupi tutta l'altezza disponibile */
+}
+
+/* Rimuovi l'h1 dalla pagina full-chat se non lo vuoi */
+body.full-chat-page main h1 {
+    display: none;
+}
+
+/* Area dei messaggi */
+#chat-messages {
+    display: flex;
+    flex-direction: column;
+    padding-right: 10px; /* Spazio per la scrollbar */
+}
+
+/* Stile generico per ogni messaggio */
+.chat-message {
+    max-width: 80%; /* Limita la larghezza del messaggio */
+    padding: 8px 12px;
+    border-radius: 15px; /* Bordi arrotondati */
+    word-wrap: break-word; /* Va a capo se il testo è troppo lungo */
+    text-align: start; /* Allinea il testo all'inizio del bubble */
+}
+
+/* Stile per i messaggi dell'utente */
+.user-message {
+    background-color: var(--mathis-blue); /* Blu Mathis */
+    color: var(--mathis-light-gray);
+    margin-left: auto; /* Spinge il messaggio a destra */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Ombra solo per i messaggi dell'utente */
+}
+
+/* Stile per i messaggi dell'AI */
+.ai-message {
+    background-color: transparent; /* Nessuno sfondo */
+    color: var(--mathis-teal); /* Font verde Mathis */
+    margin-right: auto; /* Spinge il messaggio a sinistra */
+}
+
+/* Stile per l'input della chat */
+#chat-input {
+    resize: none; /* Impedisce il ridimensionamento manuale della textarea */
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--mathis-teal); /* Bordo verde */
+    color: var(--mathis-light-gray);
+    border-radius: 8px; /* Bordi leggermente arrotondati */
+}
+
+#chat-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+#chat-input:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--mathis-teal);
+    box-shadow: 0 0 0 0.25rem var(--mathis-glow-teal-strong); /* Glow più forte al focus */
+}
+
+/* Stile per il bottone di invio */
+#send-button {
+    border-radius: 8px; /* Imposta un border-radius uniforme su tutti gli angoli */
+}
+
+/* Stile per l'indicatore di caricamento */
+.loading-indicator {
+    font-style: italic;
+    color: var(--mathis-teal); /* Colore verde Mathis */
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 15px;
+    background-color: transparent; /* Nessuno sfondo */
+    max-width: fit-content; /* Adatta la larghezza al contenuto */
+}
+
+/* Stili per gli elementi Markdown all'interno dei messaggi AI */
+.ai-message p {
+    margin-bottom: 0.5rem; /* Spazio tra paragrafi */
+}
+
+.ai-message ul,
+.ai-message ol {
+    margin-left: 1.5rem; /* Indentazione per le liste */
+    margin-bottom: 0.5rem;
+}
+
+.ai-message li {
+    margin-bottom: 0.25rem;
+}
+
+.ai-message a {
+    color: var(--bs-link-color); /* Usa il colore dei link definito in main.css */
+    text-decoration: underline;
+}
+
+.ai-message pre {
+    background-color: rgba(0, 0, 0, 0.5); /* Sfondo scuro per blocchi di codice, leggermente trasparente */
+    padding: 0.75rem;
+    border-radius: 8px; /* Bordi arrotondati per i blocchi di codice */
+    overflow-x: auto; /* Scroll orizzontale per codice lungo */
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace; /* Font per codice */
+    font-size: 0.9em;
+    color: var(--mathis-light-gray); /* Colore testo codice */
+    border: 1px solid var(--mathis-teal); /* Bordo sottile con il colore accent */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Ombra per i blocchi di codice */
+}
+
+.ai-message code {
+    background-color: rgba(0, 0, 0, 0.3); /* Sfondo per codice inline */
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+    font-size: 0.85em;
+    color: var(--mathis-light-gray);
+}
+
+.ai-message strong,
+.ai-message b {
+    color: var(--mathis-light-gray); /* Assicura che il grassetto sia ben visibile */
+}
+
+.ai-message em,
+.ai-message i {
+    color: var(--mathis-light-gray); /* Assicura che il corsivo sia ben visibile */
+}
+
+/* Scrollbar Styling per la chat */
+#chat-messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+#chat-messages::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05); /* Sfondo della traccia della scrollbar */
+    border-radius: 10px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb {
+    background: var(--mathis-teal); /* Colore del "pollice" della scrollbar */
+    border-radius: 10px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-link-hover-color); /* Colore al passaggio del mouse */
+}
