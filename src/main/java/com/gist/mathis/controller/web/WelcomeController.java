@@ -10,7 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 public class WelcomeController {
 	@GetMapping("/web/homepage")
-    public String cashflow(Model model) {
+    public String homepage(Model model) {
         return "homepage";
+    }
+	
+	@GetMapping("/web/fullchat")
+    public String fullChatPage(Model model) {
+        model.addAttribute("showFullChatButton", false);
+        return "full_chat";
     }
 }

@@ -2,11 +2,24 @@
 
 /* Contenitore principale della chat */
 #chat-container {
-    max-height: 80vh; /* Aumenta l'altezza massima per una finestra più grande */
-    background-color: #000000; /* MODIFICATO: Sfondo nero */
+    /* Altezza predefinita per la chat (es. sulla homepage) */
+    max-height: 50vh; /* MODIFICATO: Altezza più piccola per la homepage */
+    background-color: #000000; /* Sfondo nero */
     border: 1px solid var(--mathis-teal); /* Bordo sottile con il colore accent */
     border-radius: 15px; /* Bordi arrotondati per richiamare il logo */
     box-shadow: 0 0 20px var(--mathis-glow-teal); /* Aggiunge un glow sottile al contenitore */
+}
+
+/* Regola specifica per la chat a schermo intero */
+/* Questa regola sovrascriverà max-height per #chat-container quando la chat è a schermo intero */
+body.full-chat-page #chat-container {
+    max-height: none; /* Rimuove il limite di altezza */
+    height: 100%; /* Fa sì che occupi tutta l'altezza disponibile */
+}
+
+/* Rimuovi l'h1 dalla pagina full-chat se non lo vuoi */
+body.full-chat-page main h1 {
+    display: none;
 }
 
 /* Area dei messaggi */
@@ -23,7 +36,6 @@
     border-radius: 15px; /* Bordi arrotondati */
     word-wrap: break-word; /* Va a capo se il testo è troppo lungo */
     text-align: start; /* Allinea il testo all'inizio del bubble */
-    /* Rimosso box-shadow generico per i messaggi, lo applichiamo solo all'utente */
 }
 
 /* Stile per i messaggi dell'utente */
@@ -36,17 +48,16 @@
 
 /* Stile per i messaggi dell'AI */
 .ai-message {
-    background-color: transparent; /* MODIFICATO: Nessuno sfondo */
-    color: var(--mathis-teal); /* MODIFICATO: Font verde Mathis */
+    background-color: transparent; /* Nessuno sfondo */
+    color: var(--mathis-teal); /* Font verde Mathis */
     margin-right: auto; /* Spinge il messaggio a sinistra */
-    /* Rimosso box-shadow, dato che non c'è sfondo */
 }
 
 /* Stile per l'input della chat */
 #chat-input {
     resize: none; /* Impedisce il ridimensionamento manuale della textarea */
     background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--mathis-teal); /* MODIFICATO: Bordo verde */
+    border: 1px solid var(--mathis-teal); /* Bordo verde */
     color: var(--mathis-light-gray);
     border-radius: 8px; /* Bordi leggermente arrotondati */
 }
@@ -61,6 +72,7 @@
     box-shadow: 0 0 0 0.25rem var(--mathis-glow-teal-strong); /* Glow più forte al focus */
 }
 
+/* Stile per il bottone di invio */
 #send-button {
     border-radius: 8px; /* Imposta un border-radius uniforme su tutti gli angoli */
 }
@@ -68,13 +80,12 @@
 /* Stile per l'indicatore di caricamento */
 .loading-indicator {
     font-style: italic;
-    color: var(--mathis-teal); /* MODIFICATO: Colore verde Mathis */
+    color: var(--mathis-teal); /* Colore verde Mathis */
     margin-top: 10px;
     padding: 8px 12px;
     border-radius: 15px;
-    background-color: transparent; /* MODIFICATO: Nessuno sfondo */
+    background-color: transparent; /* Nessuno sfondo */
     max-width: fit-content; /* Adatta la larghezza al contenuto */
-    /* Rimosso box-shadow, dato che non c'è sfondo */
 }
 
 /* Stili per gli elementi Markdown all'interno dei messaggi AI */
