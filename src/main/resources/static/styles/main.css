@@ -46,7 +46,8 @@ body {
 }
 
 .cover-container {
-    max-width: 42em;
+    /* MODIFICATO: Aumenta la larghezza massima del contenitore principale */
+    max-width: 75%; /* O un valore fisso come 60em, a seconda delle preferenze */
 }
 
 /* --- REGOLE PER IL LOGO GRANDE NELLA PAGINA DI BENVENUTO (index.html) --- */
