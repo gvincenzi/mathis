@@ -57,4 +57,8 @@ public class MathisUserDetailsService implements UserDetailsService{
     	
     	return user;
     }
+    
+	public MathisUser getMathisUser(String username) throws UsernameNotFoundException {
+		return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+	}
 }
