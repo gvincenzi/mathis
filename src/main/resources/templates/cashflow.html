@@ -53,14 +53,21 @@
     <main class="px-3 flex-grow-1">
         <h1 class="mb-4">Cashflow Anno [[${year}]]</h1>
 
-        <!-- Bottoni raggruppati e allineati a destra, prima della tabella -->
-        <div class="d-flex justify-content-end mt-4 mb-4"> <!-- Cambiato da justify-content-center a justify-content-end -->
+        <!-- Contenitore per la selezione dell'anno e il button group, allineati a destra -->
+        <div class="d-flex justify-content-end align-items-center mt-4 mb-4">
+            <!-- Form per la selezione dell'anno -->
+            <form th:action="@{/web/cashflow}" method="get" class="d-flex me-3">
+                <input type="number" id="yearInput" name="year" th:value="${year}" min="2000" max="2100"
+                       class="form-control form-control-sm text-center" style="width: 100px;" />
+                <button type="submit" class="btn btn-primary btn-sm fw-bold ms-2">Vai all'anno</button>
+            </form>
+
+            <!-- Button group esistente -->
             <div class="btn-group" role="group" aria-label="Cashflow actions">
                 <a th:href="@{/web/cashflow/edit(year=${year})}" class="btn btn-secondary fw-bold">Modifica la tabella</a>
                 <a th:href="@{/api/finance/export/{year}(year=${year})}" class="btn btn-secondary fw-bold">Genera l'excel</a>
             </div>
         </div>
-        <!-- Rimosso l'hr qui -->
 
         <div class="table-responsive"> <!-- Rende la tabella scrollabile su schermi piccoli -->
             <table class="table table-dark table-striped table-bordered table-hover">
@@ -155,7 +162,6 @@
                 </tfoot>
             </table>
         </div>
-        <!-- Rimosso l'hr qui -->
     </main>
 
     <footer class="mt-auto text-white-50">
