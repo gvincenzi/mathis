@@ -18,13 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/api/knowledge")
-public class KnowledgeController {
+public class KnowledgeBaseController {
 	@Autowired
 	private KnowledgeService knowledgeService;
 	
-	@PostMapping(value ="/", consumes = "multipart/form-data")
+	@PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<Void> ingest(@RequestParam("document") MultipartFile document, @RequestParam("title") String title, @RequestParam("description") String description, @RequestParam("url") String url) {
-		log.info(String.format("%s -> %s", KnowledgeController.class.getSimpleName(), "ingest"));
+		log.info(String.format("%s -> %s", KnowledgeBaseController.class.getSimpleName(), "ingest"));
 		
 		Knowledge knowledge = new Knowledge();
 		knowledge.setTitle(title);
@@ -36,9 +36,9 @@ public class KnowledgeController {
         return new ResponseEntity<Void>(HttpStatus.ACCEPTED);
     }
 	
-	@DeleteMapping(value ="/", consumes = "multipart/form-data")
+	@DeleteMapping(consumes = "multipart/form-data")
     public ResponseEntity<Void> delete(@RequestParam("knowledgeId") Long knowledgeId) {
-		log.info(String.format("%s -> %s", KnowledgeController.class.getSimpleName(), "ingest"));
+		log.info(String.format("%s -> %s", KnowledgeBaseController.class.getSimpleName(), "ingest"));
 		knowledgeService.deleteById(knowledgeId);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }

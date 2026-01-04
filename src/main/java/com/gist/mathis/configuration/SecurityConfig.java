@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.NEVER))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/images/**", "/styles/**").permitAll()
+                        .requestMatchers("/", "/images/**", "/styles/**", "/api/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(withDefaults())
                 .logout(logout -> logout
