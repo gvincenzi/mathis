@@ -4,7 +4,7 @@
 
 /* Definisci le variabili CSS per i tuoi colori all'interno del tema scuro di Bootstrap */
 [data-bs-theme="dark"] {
-    /* Colori del logo */
+    /* Colori del logo Mathis */
     --mathis-blue: #003367;
     --mathis-teal: #00C090;
     --mathis-light-gray: #F5F5F5;
@@ -20,6 +20,13 @@
     --bs-heading-color: var(--mathis-light-gray); /* Colore per gli H1, H2, ecc. */
     --bs-link-color: var(--mathis-teal); /* Colore dei link */
     --bs-link-hover-color: #00e0a0; /* Verde acqua leggermente più chiaro al passaggio del mouse */
+
+    /* Colori di base per la tabella Bootstrap in tema scuro (se non sovrascritti da cashflow.css) */
+    --bs-table-bg: var(--bs-body-bg);
+    --bs-table-color: var(--bs-body-color);
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.05); /* Striscia più chiara */
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.08); /* Sfondo al passaggio del mouse */
+    --bs-table-border-color: rgba(255, 255, 255, 0.15); /* Colore del bordo della tabella */
 }
 
 /*
@@ -52,7 +59,7 @@ body {
     cursor: pointer; /* Indica che è cliccabile */
 }
 
-/* --- REGOLE PER IL LOGO NELLA NAVBAR (homepage.html) --- */
+/* --- REGOLE PER IL LOGO NELLA NAVBAR (homepage.html, cashflow.html, cashflow_edit.html) --- */
 .logo-navbar {
     width: 40px; /* Dimensione più piccola per il logo nella navbar */
     height: auto;
@@ -99,7 +106,7 @@ body {
 main h1 {
     color: var(--bs-heading-color);
     text-shadow: 0 0 10px rgba(0, 192, 144, 0.5);
-    margin-top: 0; /* Rimuovi il margin-top di default se presente, il logo ha già margin-bottom */
+    margin-top: 0;
 }
 
 /* Stile per la linea orizzontale */
@@ -110,7 +117,7 @@ hr {
     margin-bottom: 1.5rem;
 }
 
-/* Stile per il bottone "Vai al cashflow" */
+/* Stile per il bottone secondario (verde acqua) */
 .btn-secondary {
     background-color: var(--mathis-teal);
     border-color: var(--mathis-teal);
@@ -128,6 +135,25 @@ hr {
     box-shadow: 0 0 0 0.25rem rgba(0, 192, 144, 0.25);
 }
 
+/* NUOVO: Stile per il bottone primario (blu Mathis) */
+.btn-primary {
+    background-color: var(--mathis-blue);
+    border-color: var(--mathis-blue);
+    color: var(--mathis-light-gray);
+    font-weight: bold;
+    text-shadow: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #004488; /* Blu leggermente più scuro al hover */
+    border-color: #004488;
+    color: var(--mathis-light-gray);
+    box-shadow: 0 0 0 0.25rem rgba(0, 51, 103, 0.5); /* Ombra con il blu Mathis */
+}
+
+
 /* Stile per i link */
 a {
     color: var(--bs-link-color);
@@ -140,26 +166,9 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Stile per l'input del form (se presente in altre pagine) */
-.form-control {
-    background-color: rgba(0, 51, 103, 0.3);
-    border-color: var(--mathis-blue);
-    color: var(--mathis-light-gray);
-    transition: all 0.2s ease-in-out;
-}
-.form-control::placeholder {
-    color: rgba(245, 245, 245, 0.7);
-}
-.form-control:focus {
-    background-color: rgba(0, 51, 103, 0.5);
-    border-color: var(--mathis-teal);
-    box-shadow: 0 0 0 0.25rem rgba(0, 192, 144, 0.25);
-    color: var(--mathis-light-gray);
-}
-
 /* Media query per il logo (mantenuta) */
 @media (max-width: 500px) {
-    .logo { /* Questa classe non è più usata direttamente, ma la lascio per sicurezza se fosse usata altrove */
+    .logo {
         display: none;
     }
 }

@@ -1,98 +1,168 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark h-100" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-		<table class="report-table">
-		    <thead>
-		        <tr>
-		            <th>Data Reg.</th>
-		            <th>Descrizione</th>
-		            <th>n° e data doc.</th>
-		            <th>Voce</th>
-		            <th class="cassa-entrate-header">CASSA&gt; ENTRATE (A)</th>
-		            <th class="cassa-uscite-header">CASSA&gt; USCITE (B)</th>
-		            <th class="banca-entrate-header">BANCA&gt; ENTRATE (A)</th>
-		            <th class="banca-uscite-header">BANCA&gt; USCITE (B)</th>
-		        </tr>
-				<tr>
-				    <td colspan="4" class="residui-header">Residui anno precedente</td>
-				    <td class="residui-value" th:text="${initialCashBalance &gt; 0} ? |€ ${#numbers.formatDecimal(initialCashBalance, 1, 'COMMA', 2, 'POINT')}| : ''"></td>
-				    <td class="residui-value" th:text="${initialCashBalance &lt; 0} ? |€ ${#numbers.formatDecimal(initialCashBalance.abs(), 1, 'COMMA', 2, 'POINT')}| : ''"></td>
-				    <td class="residui-value" th:text="${initialBankBalance &gt; 0} ? |€ ${#numbers.formatDecimal(initialBankBalance, 1, 'COMMA', 2, 'POINT')}| : ''"></td>
-				    <td class="residui-value" th:text="${initialBankBalance &lt; 0} ? |€ ${#numbers.formatDecimal(initialBankBalance.abs(), 1, 'COMMA', 2, 'POINT')}| : ''"></td>
-				</tr>
+    <title>Mathis - Cashflow [[${year}]]</title>
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+            crossorigin="anonymous"></script>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" th:href="@{/styles/main.css}"/>
+    <link rel="stylesheet" th:href="@{/styles/cashflow.css}"/> <!-- Inclusione del CSS specifico per cashflow -->
+</head>
+<body class="d-flex h-100 text-center text-bg-dark">
 
-		    </thead>
-		    <tbody>
-		        <tr th:each="transaction : ${transactions}">
-		            <td th:text="${#temporals.format(transaction.date, 'dd-MMM-yy')}"></td>
-		            <td th:text="${transaction.description}"></td>
-		            <td th:text="${transaction.formattedDocumentNumber}"></td>
-		            <td th:text="${transaction.transactionDetail != null ? transaction.transactionDetail.code : ''}"></td>
+<div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
+    <header class="mb-auto">
+        <!-- Navbar Bootstrap -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <!-- Logo e Brand Name -->
+                <a class="navbar-brand" th:href="@{/}">
+                    <img th:src="@{/images/mathis.png}" alt="Mathis Logo" class="logo-navbar">
+                    Mathis
+                </a>
+                <!-- Toggler per mobile -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <!-- Voci del menu -->
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <!-- Link Cashflow attivo per questa pagina -->
+                            <a class="nav-link active" aria-current="page" th:href="@{/web/cashflow(year=${year})}">Cashflow</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/logout}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-		            <!-- CASSA ENTRATE (A) -->
-		            <td th:if="${transaction.type.name() == 'CASH' and transaction.amount &gt; 0}"
-		                class="currency"
-		                th:text="|€ ${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}|"></td>
-		            <td th:if="${!(transaction.type.name() == 'CASH' and transaction.amount &gt; 0)}"></td>
+    <main class="px-3 flex-grow-1">
+        <h1 class="mb-4">Cashflow Anno [[${year}]]</h1>
 
-		            <!-- CASSA USCITE (B) -->
-		            <td th:if="${transaction.type.name() == 'CASH' and transaction.amount &lt; 0}"
-		                class="currency uscita"
-		                th:text="|€ ${#numbers.formatDecimal(transaction.amount.abs(), 1, 'COMMA', 2, 'POINT')}|"></td>
-		            <td th:if="${!(transaction.type.name() == 'CASH' and transaction.amount &lt; 0)}"></td>
+        <!-- Bottoni raggruppati e allineati a destra, prima della tabella -->
+        <div class="d-flex justify-content-end mt-4 mb-4"> <!-- Cambiato da justify-content-center a justify-content-end -->
+            <div class="btn-group" role="group" aria-label="Cashflow actions">
+                <a th:href="@{/web/cashflow/edit(year=${year})}" class="btn btn-secondary fw-bold">Modifica la tabella</a>
+                <a th:href="@{/api/finance/export/{year}(year=${year})}" class="btn btn-secondary fw-bold">Genera l'excel</a>
+            </div>
+        </div>
+        <!-- Rimosso l'hr qui -->
 
-		            <!-- BANCA ENTRATE (A) -->
-		            <td th:if="${transaction.type.name() == 'BANK' and transaction.amount &gt; 0}"
-		                class="currency"
-		                th:text="|€ ${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}|"></td>
-		            <td th:if="${!(transaction.type.name() == 'BANK' and transaction.amount &gt; 0)}"></td>
+        <div class="table-responsive"> <!-- Rende la tabella scrollabile su schermi piccoli -->
+            <table class="table table-dark table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Data Reg.</th>
+                        <th class="col-descrizione">Descrizione</th>
+                        <th>n° e data doc.</th>
+                        <th>Voce</th>
+                        <th class="cassa-entrate-header">CASSA&gt; ENTRATE (A)</th>
+                        <th class="cassa-uscite-header">CASSA&gt; USCITE (B)</th>
+                        <th class="banca-entrate-header">BANCA&gt; ENTRATE (A)</th>
+                        <th class="banca-uscite-header">BANCA&gt; USCITE (B)</th>
+                    </tr>
+                    <tr class="residui-row"> <!-- Classe per stilizzare la riga residui -->
+                        <td colspan="4" class="residui-header">Residui anno precedente</td>
+                        <td class="residui-value" th:text="${initialCashBalance &gt; 0} ? |€ ${#numbers.formatDecimal(initialCashBalance, 1, 'COMMA', 2, 'POINT')}| : ''"></td>
+                        <td class="residui-value" th:text="${initialCashBalance &lt; 0} ? |€ ${#numbers.formatDecimal(initialCashBalance.abs(), 1, 'COMMA', 2, 'POINT')}| : ''"></td>
+                        <td class="residui-value" th:text="${initialBankBalance &gt; 0} ? |€ ${#numbers.formatDecimal(initialBankBalance, 1, 'COMMA', 2, 'POINT')}| : ''"></td>
+                        <td class="residui-value" th:text="${initialBankBalance &lt; 0} ? |€ ${#numbers.formatDecimal(initialBankBalance.abs(), 1, 'COMMA', 2, 'POINT')}| : ''"></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="transaction : ${transactions}">
+                        <td th:text="${#temporals.format(transaction.date, 'dd-MMM-yy')}"></td>
+                        <td th:text="${transaction.description}" class="text-start"></td>
+                        <td th:text="${transaction.formattedDocumentNumber}"></td>
+                        <td th:text="${transaction.transactionDetail != null ? transaction.transactionDetail.code : ''}"></td>
 
-		            <!-- BANCA USCITE (B) -->
-		            <td th:if="${transaction.type.name() == 'BANK' and transaction.amount &lt; 0}"
-		                class="currency uscita"
-		                th:text="|€ ${#numbers.formatDecimal(transaction.amount.abs(), 1, 'COMMA', 2, 'POINT')}|"></td>
-		            <td th:if="${!(transaction.type.name() == 'BANK' and transaction.amount &lt; 0)}"></td>
-		        </tr>
-		    </tbody>
-		    <tfoot>
-		        <tr>
-		            <td colspan="4"></td>
-		            <td class="cassa-entrate-total"
-		                th:text="|€ ${#numbers.formatDecimal(totalCashEntrate, 1, 'COMMA', 2, 'POINT')}|"></td>
-		            <td class="cassa-uscite-total"
-		                th:text="|€ ${#numbers.formatDecimal(totalCashUscite, 1, 'COMMA', 2, 'POINT')}|"></td>
-		            <td class="banca-entrate-total"
-		                th:text="|€ ${#numbers.formatDecimal(totalBankEntrate, 1, 'COMMA', 2, 'POINT')}|"></td>
-		            <td class="banca-uscite-total"
-		                th:text="|€ ${#numbers.formatDecimal(totalBankUscite, 1, 'COMMA', 2, 'POINT')}|"></td>
-		        </tr>
-		        <tr>
-		            <td colspan="4"></td>
-		            <td class="tot-label">TOT. ENTRATE</td>
-		            <td class="tot-label">TOT. USCITE</td>
-		            <td class="tot-label">TOT. ENTRATE</td>
-		            <td class="tot-label">TOT. USCITE</td>
-		        </tr>
-		        <tr>
-		            <td colspan="4"></td>
-		            <td class="saldo-header">SALDO (anno corrente)</td>
-		            <td class="currency"
-		                th:text="|€ ${#numbers.formatDecimal(totalCashEntrate - totalCashUscite, 1, 'COMMA', 2, 'POINT')}|"></td>
-		            <td class="saldo-header">SALDO (anno corrente)</td>
-		            <td class="currency"
-		                th:text="|€ ${#numbers.formatDecimal(totalBankEntrate - totalBankUscite, 1, 'COMMA', 2, 'POINT')}|"></td>
-		        </tr>
-		        <tr>
-		            <td colspan="4"></td>
-		            <td class="saldo-header">SALDO (con residuo)</td>
-		            <td class="currency"
-		                th:text="|€ ${#numbers.formatDecimal((totalCashEntrate - totalCashUscite) + initialCashBalance, 1, 'COMMA', 2, 'POINT')}|"></td>
-		            <td class="saldo-header">SALDO (con residuo)</td>
-		            <td class="currency"
-		                th:text="|€ ${#numbers.formatDecimal((totalBankEntrate - totalBankUscite) + initialBankBalance, 1, 'COMMA', 2, 'POINT')}|"></td>
-		        </tr>
-		    </tfoot>
-		</table>
+                        <!-- CASSA ENTRATE (A) -->
+                        <td th:if="${transaction.type.name() == 'CASH' and transaction.amount &gt; 0}"
+                            class="currency"
+                            th:text="|€ ${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}|"></td>
+                        <td th:if="${!(transaction.type.name() == 'CASH' and transaction.amount &gt; 0)}"></td>
 
-		<hr>
-		<a th:href="@{/web/cashflow/edit?year={year}(year=${year})}" class="btn btn-secondary fw-bold">Modifica la tabella</a>
-		<a th:href="@{/api/finance/export/{year}(year=${year})}" class="btn btn-secondary fw-bold">Genera l'excel</a>
-		<hr>
+                        <!-- CASSA USCITE (B) -->
+                        <td th:if="${transaction.type.name() == 'CASH' and transaction.amount &lt; 0}"
+                            class="currency uscita"
+                            th:text="|€ ${#numbers.formatDecimal(transaction.amount.abs(), 1, 'COMMA', 2, 'POINT')}|"></td>
+                        <td th:if="${!(transaction.type.name() == 'CASH' and transaction.amount &lt; 0)}"></td>
+
+                        <!-- BANCA ENTRATE (A) -->
+                        <td th:if="${transaction.type.name() == 'BANK' and transaction.amount &gt; 0}"
+                            class="currency"
+                            th:text="|€ ${#numbers.formatDecimal(transaction.amount, 1, 'COMMA', 2, 'POINT')}|"></td>
+                        <td th:if="${!(transaction.type.name() == 'BANK' and transaction.amount &gt; 0)}"></td>
+
+                        <!-- BANCA USCITE (B) -->
+                        <td th:if="${transaction.type.name() == 'BANK' and transaction.amount &lt; 0}"
+                            class="currency uscita"
+                            th:text="|€ ${#numbers.formatDecimal(transaction.amount.abs(), 1, 'COMMA', 2, 'POINT')}|"></td>
+                        <td th:if="${!(transaction.type.name() == 'BANK' and transaction.amount &lt; 0)}"></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4"></td>
+                        <td class="cassa-entrate-total"
+                            th:text="|€ ${#numbers.formatDecimal(totalCashEntrate, 1, 'COMMA', 2, 'POINT')}|"></td>
+                        <td class="cassa-uscite-total"
+                            th:text="|€ ${#numbers.formatDecimal(totalCashUscite, 1, 'COMMA', 2, 'POINT')}|"></td>
+                        <td class="banca-entrate-total"
+                            th:text="|€ ${#numbers.formatDecimal(totalBankEntrate, 1, 'COMMA', 2, 'POINT')}|"></td>
+                        <td class="banca-uscite-total"
+                            th:text="|€ ${#numbers.formatDecimal(totalBankUscite, 1, 'COMMA', 2, 'POINT')}|"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"></td>
+                        <td class="tot-label">TOT. ENTRATE</td>
+                        <td class="tot-label">TOT. USCITE</td>
+                        <td class="tot-label">TOT. ENTRATE</td>
+                        <td class="tot-label">TOT. USCITE</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"></td>
+                        <td class="saldo-header">SALDO (anno corrente)</td>
+                        <td class="currency"
+                            th:text="|€ ${#numbers.formatDecimal(totalCashEntrate - totalCashUscite, 1, 'COMMA', 2, 'POINT')}|"></td>
+                        <td class="saldo-header">SALDO (anno corrente)</td>
+                        <td class="currency"
+                            th:text="|€ ${#numbers.formatDecimal(totalBankEntrate - totalBankUscite, 1, 'COMMA', 2, 'POINT')}|"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4"></td>
+                        <td class="saldo-header">SALDO (con residuo)</td>
+                        <td class="currency"
+                            th:text="|€ ${#numbers.formatDecimal((totalCashEntrate - totalCashUscite) + initialCashBalance, 1, 'COMMA', 2, 'POINT')}|"></td>
+                        <td class="saldo-header">SALDO (con residuo)</td>
+                        <td class="currency"
+                            th:text="|€ ${#numbers.formatDecimal((totalBankEntrate - totalBankUscite) + initialBankBalance, 1, 'COMMA', 2, 'POINT')}|"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <!-- Rimosso l'hr qui -->
+    </main>
+
+    <footer class="mt-auto text-white-50">
+        <p>Mathis is a open source project on <a href="https://github.com/gvincenzi/mathis">GitHub</a>, developed by <a
+                href="https://www.linkedin.com/in/giuseppevincenzi/?originalSubdomain=fr">Giuseppe Vincenzi</a></p>
+    </footer>
+</div>
+
+</body>
+</html>
