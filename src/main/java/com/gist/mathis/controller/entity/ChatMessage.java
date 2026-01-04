@@ -6,8 +6,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import com.gist.mathis.model.entity.AuthorityEnum;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class ChatMessage {
 	String conversationId;
 	UserTypeEnum userType;

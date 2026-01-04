@@ -1,0 +1,72 @@
+/* --- CHAT INTERFACE STYLES --- */
+
+/* Contenitore principale della chat */
+#chat-container {
+    max-height: 70vh; /* Limita l'altezza per non occupare troppo spazio */
+    background-color: rgba(255, 255, 255, 0.05); /* Sfondo leggermente più chiaro del body */
+    border-color: rgba(255, 255, 255, 0.1); /* Bordo sottile */
+}
+
+/* Area dei messaggi */
+#chat-messages {
+    display: flex;
+    flex-direction: column;
+    padding-right: 10px; /* Spazio per la scrollbar */
+}
+
+/* Stile generico per ogni messaggio */
+.chat-message {
+    max-width: 80%; /* Limita la larghezza del messaggio */
+    padding: 8px 12px;
+    border-radius: 15px; /* Bordi arrotondati */
+    word-wrap: break-word; /* Va a capo se il testo è troppo lungo */
+    text-align: start; /* Allinea il testo all'inizio del bubble */
+}
+
+/* Stile per i messaggi dell'utente */
+.user-message {
+    background-color: var(--mathis-blue); /* Blu Mathis */
+    color: var(--mathis-light-gray);
+    margin-left: auto; /* Spinge il messaggio a destra */
+}
+
+/* Stile per i messaggi dell'AI */
+.ai-message {
+    background-color: var(--mathis-teal); /* Verde acqua Mathis */
+    color: var(--mathis-blue); /* Testo scuro sul verde acqua */
+    margin-right: auto; /* Spinge il messaggio a sinistra */
+}
+
+/* Stile per l'input della chat */
+#chat-input {
+    resize: none; /* Impedisce il ridimensionamento manuale della textarea */
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--mathis-light-gray);
+}
+
+#chat-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+#chat-input:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--mathis-teal);
+    box-shadow: 0 0 0 0.25rem rgba(0, 192, 144, 0.25);
+}
+
+/* Stile per l'indicatore di caricamento */
+.loading-indicator {
+    font-style: italic;
+    color: var(--bs-secondary); /* Usa il colore secondario per l'indicatore */
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 15px;
+    background-color: rgba(0, 192, 144, 0.2); /* Sfondo leggermente trasparente */
+    max-width: fit-content; /* Adatta la larghezza al contenuto */
+}
+
+/* Rimuovi il box-shadow di default per i bottoni Bootstrap in tema scuro se non desiderato */
+.btn-primary:focus, .btn-secondary:focus {
+    box-shadow: none;
+}
