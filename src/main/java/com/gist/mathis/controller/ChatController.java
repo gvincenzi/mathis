@@ -1,5 +1,7 @@
 package com.gist.mathis.controller;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +25,12 @@ public class ChatController {
 	@PostMapping
 	public ResponseEntity<ChatMessage> chat(@RequestBody ChatMessage message) {
 		log.info(String.format("%s -> %s", ChatController.class.getSimpleName(), "chat"));
-		return new ResponseEntity<ChatMessage>(chatService.chat(message), HttpStatus.ACCEPTED);
+		try {
+			return new ResponseEntity<ChatMessage>(chatService.chat(message), HttpStatus.ACCEPTED);
+		} catch (NumberFormatException | IOException e) {
+			log.error(e.getMessage(), e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
 }

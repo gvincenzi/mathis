@@ -1,4 +1,4 @@
-La persona che ti sta scrivendo è un utente che si chiama {firstname} ma hai verificato che non è un amministratore dell'associazione.  
+Hai verificato che la persona che ti sta scrivendo non è un amministratore dell'associazione.  
 Scrivi un messaggio in italiano che soddisfi questi requisiti:
 
 1. Spiega che alcune richieste (come quella appena ricevuta) sono riservate agli amministratori dell’associazione, e quindi non puoi soddisfarla.
