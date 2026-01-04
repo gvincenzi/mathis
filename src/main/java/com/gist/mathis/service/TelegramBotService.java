@@ -34,10 +34,11 @@ import com.gist.mathis.controller.entity.TransactionRequest;
 import com.gist.mathis.controller.entity.UserTypeEnum;
 import com.gist.mathis.model.entity.AuthorityEnum;
 import com.gist.mathis.model.entity.Knowledge;
-import com.gist.mathis.model.entity.User;
+import com.gist.mathis.model.entity.MathisUser;
 import com.gist.mathis.service.entity.IntentResponse;
 import com.gist.mathis.service.finance.ExcelExportService;
 import com.gist.mathis.service.finance.TransactionService;
+import com.gist.mathis.service.security.MathisUserDetailsService;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +63,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 	private final TelegramClient telegramClient;
 
 	@Autowired
-	private UserService userService;
+	private MathisUserDetailsService userService;
 
 	@Autowired
 	private ChatService chatService;
@@ -88,15 +89,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 
 		if (update.hasMessage() || update.hasCallbackQuery()) {
 			Long chatId = update.hasMessage() ? update.getMessage().getChatId() : update.getCallbackQuery().getMessage().getChatId();
-			User user = userService.findByChatId(chatId).orElseGet(() -> {
-				User newUser = new User();
-				newUser.setChatId(update.getMessage().getChatId());
-				newUser.setUsername(update.getMessage().getFrom().getUserName());
-				newUser.setFirstname(update.getMessage().getFrom().getFirstName());
-				newUser.setLastname(update.getMessage().getFrom().getLastName());
-				newUser.getAuthorities().add(AuthorityEnum.ROLE_USER);
-				return userService.saveUser(newUser);
-			});
+			MathisUser user = userService.findOrCreateByTelegram(update);
 
 			if (update.hasMessage() && update.getMessage().getText() != null && update.getMessage().getText().startsWith(START)) {
 				log.info("Start command detected from chatId: {}", update.getMessage().getChatId());
@@ -126,7 +119,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 							chat = new ChatMessage(Long.toString(update.getMessage().getChatId()), UserTypeEnum.HUMAN, ASK_DOCUMENTS_TEXT, getInlineKeyboard(knowledgesByIntentQuery));
 							break;
 						case ADD_TRANSACTION :
-							if(checkAdminRole(user)) {
+							if(AuthorityEnum.ROLE_ADMIN.equals(user.getAuth())) {
 								BeanOutputConverter<TransactionRequest> beanOutputConverter = new BeanOutputConverter<>(TransactionRequest.class);
 								TransactionRequest transactionRequest = beanOutputConverter.convert(new ObjectMapper().writeValueAsString(intentResponse.getEntities()));							
 								transactionService.addTransaction(transactionRequest);
@@ -139,7 +132,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 							}
 							break;
 						case ASK_CASHFLOW :
-							if(checkAdminRole(user)) {
+							if(AuthorityEnum.ROLE_ADMIN.equals(user.getAuth())) {
 								ByteArrayResource resource = new ByteArrayResource(excelExportService.generateExcelReport(Integer.parseInt(intentResponse.getEntities().get("year"))));
 						        String fileName = "cashflow_" + intentResponse.getEntities().get("year") + ".xlsx";
 								SendDocument doc = new SendDocument(botToken, new InputFile(resource.getInputStream(), fileName));
@@ -178,10 +171,6 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 		}
 	}
 
-	private Boolean checkAdminRole(User user) {
-		return user.getAuthorities().contains(AuthorityEnum.ROLE_ADMIN);
-	}
-
 	@Override
 	public LongPollingUpdateConsumer getUpdatesConsumer() {
 		return this;
@@ -202,7 +191,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 		return new InlineKeyboardMarkup(inlineKeyboardRows);
 	}
 	
-	private SendMessage handleCallbackQuery(String callbackData, Long chatId, User user) {
+	private SendMessage handleCallbackQuery(String callbackData, Long chatId, MathisUser user) {
 		SendMessage message = null;
 		String callBackAction = callbackData.substring(0,callbackData.indexOf("#"));
 		switch (callBackAction) {
