@@ -44,10 +44,6 @@
 							<a class="nav-link" th:href="@{/web/knowledge}">Knowledge</a>
 						</li>
                         <li class="nav-item">
-                            <!-- Aggiunto il parametro 'year' all'URL del cashflow, impostato all'anno corrente -->
-                            <a class="nav-link" th:href="@{/web/cashflow(year=${#dates.year(#dates.createNow())})}">Cashflow</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" th:href="@{/logout}">Logout</a>
                         </li>
                     </ul>

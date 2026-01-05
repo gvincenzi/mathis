@@ -21,22 +21,16 @@ import org.springframework.ai.template.st.StTemplateRenderer;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gist.mathis.controller.entity.ChatMessage;
-import com.gist.mathis.controller.entity.TransactionRequest;
 import com.gist.mathis.controller.entity.UserTypeEnum;
-import com.gist.mathis.model.entity.AuthorityEnum;
 import com.gist.mathis.model.entity.Knowledge;
 import com.gist.mathis.service.entity.IntentResponse;
-import com.gist.mathis.service.finance.ExcelExportService;
-import com.gist.mathis.service.finance.TransactionService;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -44,9 +38,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ChatService {
-	private static final String LIST_DOCUMENTS_TEXT = "Lista dei documenti disponibili";
-	private static final String ASK_DOCUMENTS_TEXT = "Ecco i documenti che potrebbero interessarti (se me la chiedi posso darti la lista completa dei documenti disponibili)";
-	private static final String ADD_TRANSACTION_TEXT = "✅ *Transazione aggiunta al rendiconto dell’associazione!*\n";
+	private static final String LIST_DOCUMENTS_TEXT = "List of available documents";
+	private static final String ASK_DOCUMENTS_TEXT = "Here are the documents that might interest you (if you ask me, I can give you the complete list of available documents)";
 	
 	@Value("classpath:/prompts/adminRoleCheckFailed.st")
 	private Resource adminRoleCheckFailedTemplateResource;
@@ -60,9 +53,13 @@ public class ChatService {
 	@Value("classpath:/prompts/welcome.st")
 	private Resource welcomeResource;
 	
+	@Value("${owner.name}")
+	private String ownerName;
+
+	@Value("${owner.website}")
+	private String ownerWebsite;
+	
 	private final KnowledgeService knowledgeService;
-	private final TransactionService transactionService;
-	private final ExcelExportService excelExportService;
 	private final MistralAiChatModel chatModel;
 	private final VectorStore vectorStore;
 	private final ChatMemory chatMemory;
@@ -70,13 +67,11 @@ public class ChatService {
 	private ChatClient chatClient, simpleChatClient;
 	
 	@Autowired
-    public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory, KnowledgeService knowledgeService, TransactionService transactionService, ExcelExportService excelExportService) {
+    public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory, KnowledgeService knowledgeService) {
         this.chatModel = chatModel;
         this.vectorStore = vectorStore;
         this.chatMemory = chatMemory;
         this.knowledgeService = knowledgeService;
-        this.transactionService = transactionService;
-        this.excelExportService = excelExportService;
     }
 	
 	@PostConstruct
@@ -92,6 +87,7 @@ public class ChatService {
 		log.info("Create promptTemplate [resource: {}]", baseTemplateResource.getFilename());
 		PromptTemplate basePromptTemplate = PromptTemplate.builder()
 			    .renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
+			    .variables(Map.of("owner_name", ownerName, "owner_website", ownerWebsite))
 			    .resource(baseTemplateResource)
 			    .build();
 		
@@ -116,24 +112,6 @@ public class ChatService {
 				Set<Knowledge> knowledgesByIntentQuery = knowledgeService.findByVectorialSearch(intentResponse);
 				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, ASK_DOCUMENTS_TEXT, getInlineKeyboard(knowledgesByIntentQuery));
 				break;
-			case ADD_TRANSACTION :
-				if(AuthorityEnum.ROLE_ADMIN.equals(message.getUserAuth())) {
-					BeanOutputConverter<TransactionRequest> beanOutputConverter = new BeanOutputConverter<>(TransactionRequest.class);
-					TransactionRequest transactionRequest = beanOutputConverter.convert(new ObjectMapper().writeValueAsString(intentResponse.getEntities()));							
-					transactionService.addTransaction(transactionRequest);
-					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, String.format(ADD_TRANSACTION_TEXT));
-				} else {
-					chat = adminRoleCheckFailed(message.getConversationId());
-				}
-				break;
-			case ASK_CASHFLOW :
-				if(AuthorityEnum.ROLE_ADMIN.equals(message.getUserAuth())) {
-					ByteArrayResource resource = new ByteArrayResource(excelExportService.generateExcelReport(Integer.parseInt(intentResponse.getEntities().get("year"))));
-					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, "cashflow_" + intentResponse.getEntities().get("year") + ".xlsx", resource);
-				} else {
-					chat = adminRoleCheckFailed(message.getConversationId());
-				}
-				break;
 			case GENERIC_QUESTION : chat = genericQuestion(message); break;
 		}
 		return chat;
@@ -143,7 +121,7 @@ public class ChatService {
 		log.info("{} -> welcome", ChatService.class.getSimpleName());
 		
 		PromptTemplate welcomePromptTemplate = new PromptTemplate(this.welcomeResource);
-		Prompt prompt = welcomePromptTemplate.create(Map.of("firstname", firstname));
+		Prompt prompt = welcomePromptTemplate.create(Map.of("firstname", firstname, "owner_name", ownerName, "owner_website", ownerWebsite));
 		
 		log.info(String.format("Calling MistralAI"));
 		
@@ -197,6 +175,7 @@ public class ChatService {
 		return intentResponse;
 	}
 
+	@SuppressWarnings("unused")
 	private ChatMessage adminRoleCheckFailed(String conversationId) {
 		log.info("{} -> adminRoleCheckFailed", ChatService.class.getSimpleName());
 		
@@ -219,7 +198,6 @@ public class ChatService {
 		knowledges.forEach(k -> {
 			List<InlineKeyboardButton> rowInline = new ArrayList<>();
 			InlineKeyboardButton kBtn = new InlineKeyboardButton(String.format("%s",k.getTitle()));
-			//kBtn.setUrl(k.getUrl());
 			kBtn.setCallbackData(String.format("knowledge#%d", k.getKnowledgeId()));
 			rowInline.add(kBtn);
 			inlineKeyboardRows.add(new InlineKeyboardRow(rowInline));

@@ -19,4 +19,8 @@ spring:
 telegram:
  bot:
   username: your_bot
-  token: 
+  token:
+
+owner:
+ name: GIST
+ website: https://github.com/gvincenzi/mathis
