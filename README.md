@@ -1,10 +1,10 @@
-# Mathis - Un agente AI per il knowledge management personale, conversazionale e open source
+# Mathis - Un agente virtuale per il knowledge management personale, conversazionale e open source
 <img src="src/main/resources/static/images/logo.jpg" width="200">
 <img src="src/main/resources/static/images/mathis.png" width="200">
 
 ## Descrizione
 
-Mathis è un progetto open source scritto in Java che implementa un agente AI conversazionale tramite Telegram, dotato di una base di dati relazionale per la gestione degli utenti, di una base documentale di conoscenza, e di funzionalità RAG (Retrieval-Augmented Generation) per la ricerca nei documenti.  
+Mathis è un progetto open source scritto in Java che implementa un agente software conversazionale tramite Telegram, dotato di una base di dati relazionale per la gestione degli utenti, di una base documentale di conoscenza, e di funzionalità RAG (Retrieval-Augmented Generation) per la ricerca nei documenti.  
 Il codice si basa sulle seguenti librerie e tecnologie:
 
 - [Spring Boot](https://spring.io/projects/spring-boot)
@@ -23,7 +23,7 @@ Mathis è costruito con **Java 17** e si basa su [Spring Boot](https://spring.io
 L'integrazione con **Telegram** è realizzata tramite le librerie [`telegrambots-springboot-longpolling-starter`](https://github.com/rubenlagus/TelegramBots) e `telegrambots-client`, che permettono la comunicazione con gli utenti tramite bot.
 L'interfaccia di gestione della base di conoscenza è realizzata con **Thymeleaf**. 
 
-Per la componente AI e RAG (Retrieval-Augmented Generation), Mathis utilizza [Spring AI](https://spring.io/projects/spring-ai) con il modulo `spring-ai-starter-model-mistral-ai` per accedere ai modelli di MistralAI.  
+Per la componente LLM e RAG (Retrieval-Augmented Generation), Mathis utilizza [Spring AI](https://spring.io/projects/spring-ai) con il modulo `spring-ai-starter-model-mistral-ai` per accedere ai modelli di MistralAI.  
 L'archiviazione e la gestione vettoriale dei documenti è affidata a **PgVector**, tramite `spring-ai-starter-vector-store-pgvector` e `spring-ai-advisors-vector-store`, che facilitano la ricerca semantica dei contenuti.  
 L'estrazione automatica del testo dai documenti caricati è gestita da **Apache Tika** tramite la libreria `spring-ai-tika-document-reader`.
 
@@ -33,8 +33,8 @@ La scelta di queste tecnologie mira a rendere il progetto Mathis una soluzione r
 
 ## Funzionalità
 
-- **Conversazione naturale**: Interazione tramite chat Telegram o direttamente nella homepage della webapp con l'agente AI Mathis.
-- **Gestion del salvataggio degli utenti e di una passwaord di default**: Mathis stocca nella base relazionale gli utenti ed una password temporanea (in questo prototipo la gestione della password non è implementata), e solo dopo interagisce con il resto del sistema.
+- **Conversazione naturale**: Interazione tramite chat Telegram o direttamente nella homepage della webapp con l'agente Mathis.
+- **Gestione del salvataggio degli utenti e di una passwaord di default**: Mathis stocca nella base relazionale gli utenti ed una password temporanea (in questo prototipo la gestione della password non è implementata), e solo dopo interagisce con il resto del sistema.
 - **Riconoscimento dell'intento dell’utente e delle sue autorizzazioni**: Mathis interpreta l’intento dell’utente e reagisce secondo una lista predefinita di azioni possibili, verificando eventualmente se l'utente ha i diritti (Spring Security Authorities).
 - **Caricamento documenti**: Puoi caricare documenti via l'interfaccia web; Mathis li analizza tramite Tika, ne estrae il testo rilevante, e aggiorna il database di conseguenza. Vengono stoccati in una tabella a parte, non vettoriale, la lista dei documenti e gli indirizzi nel web da dove poterli eventualmente scaricare.
 - **Indicizzazione e storage**: I contenuti estratti vengono archiviati e indicizzati su Supabase.
