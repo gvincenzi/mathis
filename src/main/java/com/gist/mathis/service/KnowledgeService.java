@@ -40,6 +40,7 @@ public class KnowledgeService {
     public Knowledge updateKnowledge(Knowledge knowledge) {
     	knowledge.setUpdatedAt(null);
         knowledge = knowledgeRepository.save(knowledge);
+        documentIngestionService.updateMetadata(knowledge);
         return knowledge;
     }
     

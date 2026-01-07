@@ -66,7 +66,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 		
 		if (update.hasMessage() || update.hasCallbackQuery()) {
 			Long chatId = update.hasMessage() ? update.getMessage().getChatId() : update.getCallbackQuery().getMessage().getChatId();
-			MathisUser user = userService.findOrCreateByTelegram(update);
+			MathisUser user = userService.findOrCreateByTelegram(update,chatId);
 
 			if (update.hasMessage() && update.getMessage().getText() != null && update.getMessage().getText().startsWith(START)) {
 				log.info("Start command detected from chatId: {}", update.getMessage().getChatId());

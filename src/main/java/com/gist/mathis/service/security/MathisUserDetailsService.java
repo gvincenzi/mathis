@@ -45,13 +45,13 @@ public class MathisUserDetailsService implements UserDetailsService{
         userRepository.deleteById(userId);
     }
     
-    public MathisUser findOrCreateByTelegram(Update update) {
-    	MathisUser user = userRepository.findByUsername(Long.toString(update.getMessage().getChatId())).orElseGet(() -> {
+    public MathisUser findOrCreateByTelegram(Update update, Long chatId) {
+    	MathisUser user = userRepository.findByUsername(Long.toString(chatId)).orElseGet(() -> {
 			MathisUser newUser = new MathisUser();
-			newUser.setUsername(Long.toString(update.getMessage().getChatId()));
+			newUser.setUsername(Long.toString(chatId));
 			newUser.setFirstname(update.getMessage().getFrom().getFirstName());
 			newUser.setLastname(update.getMessage().getFrom().getLastName());
-			newUser.setPassword(bCryptPasswordEncoder.encode(Long.toString(update.getMessage().getChatId())));
+			newUser.setPassword(bCryptPasswordEncoder.encode(Long.toString(chatId)));
 			return saveUser(newUser);
 		});
     	

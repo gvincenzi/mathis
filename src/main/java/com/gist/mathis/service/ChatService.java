@@ -18,6 +18,7 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.mistralai.MistralAiChatModel;
 import org.springframework.ai.template.st.StTemplateRenderer;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -94,7 +95,9 @@ public class ChatService {
 		this.chatClient = ChatClient.builder(chatModel)
 			    .defaultAdvisors(
 			    	PromptChatMemoryAdvisor.builder(chatMemory).build(),
-			        QuestionAnswerAdvisor.builder(vectorStore).promptTemplate(basePromptTemplate).build()
+			        QuestionAnswerAdvisor.builder(vectorStore)
+			        //.searchRequest(SearchRequest.builder().topK(10).build())
+			        .promptTemplate(basePromptTemplate).build()
 			    )
 			    .build();
 	}
