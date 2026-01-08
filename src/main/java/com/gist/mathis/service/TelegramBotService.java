@@ -1,6 +1,9 @@
 package com.gist.mathis.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -91,7 +97,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 					} else {
 						SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
 						message.setParseMode("Markdown");
-						message.setReplyMarkup(chat.getInlineKeyboardMarkup());
+						message.setReplyMarkup(getInlineKeyboard(chat.getKnowledges()));
 						telegramClient.execute(message);
 					}
 					log.info("Chat response sent to chatId: {}", chat.getConversationId());
@@ -138,5 +144,19 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 		
 		return message;
 		
+	}
+	
+	private InlineKeyboardMarkup getInlineKeyboard(Collection<Knowledge> knowledges) {
+		List<InlineKeyboardRow> inlineKeyboardRows = new ArrayList<>(knowledges.size());
+		
+		knowledges.forEach(k -> {
+			List<InlineKeyboardButton> rowInline = new ArrayList<>();
+			InlineKeyboardButton kBtn = new InlineKeyboardButton(String.format("%s",k.getTitle()));
+			kBtn.setCallbackData(String.format("knowledge#%d", k.getKnowledgeId()));
+			rowInline.add(kBtn);
+			inlineKeyboardRows.add(new InlineKeyboardRow(rowInline));
+		});
+		
+		return new InlineKeyboardMarkup(inlineKeyboardRows);
 	}
 }

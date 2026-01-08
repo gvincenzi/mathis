@@ -44,7 +44,7 @@ public class KnowledgeService {
         return knowledge;
     }
     
-    public List<Knowledge> findAll(){
+    public Set<Knowledge> findAll(){
     	return knowledgeRepository.findAllByOrderByCreatedAtAsc();
     }
     

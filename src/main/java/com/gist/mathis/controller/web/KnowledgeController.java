@@ -1,6 +1,6 @@
 package com.gist.mathis.controller.web;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,7 +29,7 @@ public class KnowledgeController {
 	
 	@GetMapping
     public String knowledges(Model model) {
-		List<Knowledge> knowledges = knowledgeService.findAll();
+		Set<Knowledge> knowledges = knowledgeService.findAll();
 		model.addAttribute("knowledges",knowledges);
         return "knowledge";
     }

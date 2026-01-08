@@ -1,10 +1,7 @@
 package com.gist.mathis.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -23,9 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
 import com.gist.mathis.controller.entity.ChatMessage;
 import com.gist.mathis.controller.entity.UserTypeEnum;
@@ -38,8 +32,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ChatService {
-	private static final String LIST_DOCUMENTS_TEXT = "List of available documents";
-	private static final String ASK_DOCUMENTS_TEXT = "Here are the documents that might interest you (if you ask me, I can give you the complete list of available documents)";
+	@Value("${message.LIST_DOCUMENTS_TEXT}")
+	private String LIST_DOCUMENTS_TEXT;
+	
+	@Value("${message.ASK_DOCUMENTS_TEXT}")
+	private String ASK_DOCUMENTS_TEXT;
 	
 	@Value("classpath:/prompts/adminRoleCheckFailed.st")
 	private Resource adminRoleCheckFailedTemplateResource;
@@ -107,12 +104,12 @@ public class ChatService {
 
 		switch (intentResponse.getIntentValue()) {
 			case LIST_DOCUMENTS :
-				List<Knowledge> knowledges = knowledgeService.findAll();
-				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, LIST_DOCUMENTS_TEXT, getInlineKeyboard(knowledges));
+				Set<Knowledge> knowledges = knowledgeService.findAll();
+				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, LIST_DOCUMENTS_TEXT, knowledges);
 				break;
 			case ASK_FOR_DOCUMENT : 
 				Set<Knowledge> knowledgesByIntentQuery = knowledgeService.findByVectorialSearch(intentResponse);
-				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, ASK_DOCUMENTS_TEXT, getInlineKeyboard(knowledgesByIntentQuery));
+				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, ASK_DOCUMENTS_TEXT, knowledgesByIntentQuery);
 				break;
 			case GENERIC_QUESTION : chat = genericQuestion(message); break;
 		}
@@ -191,20 +188,5 @@ public class ChatService {
 			.content();
 
 		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
-	}
-
-	
-	private InlineKeyboardMarkup getInlineKeyboard(Collection<Knowledge> knowledges) {
-		List<InlineKeyboardRow> inlineKeyboardRows = new ArrayList<>(knowledges.size());
-		
-		knowledges.forEach(k -> {
-			List<InlineKeyboardButton> rowInline = new ArrayList<>();
-			InlineKeyboardButton kBtn = new InlineKeyboardButton(String.format("%s",k.getTitle()));
-			kBtn.setCallbackData(String.format("knowledge#%d", k.getKnowledgeId()));
-			rowInline.add(kBtn);
-			inlineKeyboardRows.add(new InlineKeyboardRow(rowInline));
-		});
-		
-		return new InlineKeyboardMarkup(inlineKeyboardRows);
 	}
 }
