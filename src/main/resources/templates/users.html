@@ -1,0 +1,143 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark h-100" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mathis - Users</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/styles/main.css}"/>
+    <style>
+        .edit-mode-field, .edit-mode-buttons { display: none; }
+    </style>
+</head>
+<body class="d-flex h-100 text-center text-bg-dark">
+<div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
+    <header class="mb-auto">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" th:href="@{/}">
+                    <img th:src="@{/images/mathis.png}" alt="Mathis Logo" class="logo-navbar">
+                    Mathis
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/web/homepage}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/web/knowledge}">Knowledge</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" th:href="@{/web/users}">Users</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/logout}">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="px-3 flex-grow-1">
+        <h1 class="mb-4">Users</h1>
+
+        <div class="d-flex justify-content-end mt-4 mb-4">
+            <div class="btn-group">
+                <a th:href="@{/web/users/new}" class="btn btn-secondary fw-bold">Add User</a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-dark table-striped table-bordered table-hover">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Firstname</th>
+                    <th>Lastname</th>
+                    <th>Authority</th>
+                    <th>Created At</th>
+                    <th>Updated At</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}" th:id="'user-row-' + ${user.userId}">
+                    <form th:action="@{/web/users/update/{id}(id=${user.userId})}" method="post">
+                        <input type="hidden" name="userId" th:value="${user.userId}" />
+
+                        <td th:text="${user.userId}"></td>
+                        <td>
+                            <span class="view-mode-field" th:text="${user.username}"></span>
+                            <input type="text" name="username" th:value="${user.username}" class="form-control form-control-sm edit-mode-field" required />
+                        </td>
+                        <td>
+                            <span class="view-mode-field" th:text="${user.firstname}"></span>
+                            <input type="text" name="firstname" th:value="${user.firstname}" class="form-control form-control-sm edit-mode-field" />
+                        </td>
+                        <td>
+                            <span class="view-mode-field" th:text="${user.lastname}"></span>
+                            <input type="text" name="lastname" th:value="${user.lastname}" class="form-control form-control-sm edit-mode-field" />
+                        </td>
+                        <td>
+                            <span class="view-mode-field" th:text="${user.auth}"></span>
+                            <select name="auth" class="form-select form-select-sm edit-mode-field">
+                                <option th:each="role : ${T(com.gist.mathis.model.entity.AuthorityEnum).values()}"
+                                        th:value="${role}" th:text="${role}" th:selected="${user.auth == role}"></option>
+                            </select>
+                        </td>
+                        <td th:text="${#temporals.format(user.createdAt, 'dd-MMM-yy HH:mm')}"></td>
+                        <td th:text="${#temporals.format(user.updatedAt, 'dd-MMM-yy HH:mm')}"></td>
+                        <td>
+                            <div class="btn-group btn-group-sm view-mode-buttons">
+                                <button type="button" class="btn btn-secondary edit-button">Edit</button>
+                                <a th:href="@{/web/users/delete/{id}(id=${user.userId})}" class="btn btn-danger">Delete</a>
+                            </div>
+                            <div class="btn-group btn-group-sm edit-mode-buttons">
+                                <button type="submit" class="btn btn-primary">Confirm</button>
+                                <button type="button" class="btn btn-secondary cancel-button">Cancel</button>
+                            </div>
+                        </td>
+                    </form>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer class="mt-auto text-white-50">
+        <p>Mathis is a open source project on <a href="https://github.com/gvincenzi/mathis">GitHub</a>, developed by <a
+                href="https://www.linkedin.com/in/giuseppevincenzi/?originalSubdomain=fr">Giuseppe Vincenzi</a></p>
+    </footer>
+</div>
+
+<script th:inline="javascript">
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.edit-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('tr');
+            row.querySelectorAll('.view-mode-field').forEach(field => field.style.display = 'none');
+            row.querySelectorAll('.edit-mode-field').forEach(field => field.style.display = 'block');
+            this.closest('.view-mode-buttons').style.display = 'none';
+            row.querySelector('.edit-mode-buttons').style.display = 'block';
+        });
+    });
+
+    document.querySelectorAll('.cancel-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = this.closest('tr');
+            row.querySelectorAll('.view-mode-field').forEach(field => field.style.display = 'block');
+            row.querySelectorAll('.edit-mode-field').forEach(field => field.style.display = 'none');
+            this.closest('.edit-mode-buttons').style.display = 'none';
+            row.querySelector('.view-mode-buttons').style.display = 'block';
+        });
+    });
+});
+</script>
+</body>
+</html>

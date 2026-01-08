@@ -1,6 +1,8 @@
 package com.gist.mathis.service.security;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,7 @@ public class MathisUserDetailsService implements UserDetailsService{
 	}
 
     public MathisUser saveUser(MathisUser user) {
+    	user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
@@ -60,5 +63,17 @@ public class MathisUserDetailsService implements UserDetailsService{
     
 	public MathisUser getMathisUser(String username) throws UsernameNotFoundException {
 		return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+	}
+
+	public List<MathisUser> findAll() {
+		return userRepository.findAll();
+	}
+
+	public void updateUser(MathisUser existing) {
+		userRepository.save(existing);
+	}
+
+	public Optional<MathisUser> findById(Long userId) {
+		return userRepository.findById(userId);
 	}
 }
