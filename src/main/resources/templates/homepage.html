@@ -57,7 +57,7 @@
 
     <!-- INCLUSIONE DEL FRAMMENTO CHAT -->
     <main class="px-3 d-flex flex-column flex-grow-1">
-        <div th:replace="fragments/chat_content :: chat_main_content(showFullChatButton=${true})"></div>
+		<div th:replace="~{fragments/chat_content :: chat_main_content(showFullChatButton=${true})}"></div>
     </main>
 
     <footer class="mt-auto text-white-50">

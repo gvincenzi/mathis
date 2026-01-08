@@ -24,7 +24,7 @@
     <!-- La sezione main conterrà direttamente il frammento della chat -->
     <!-- Rimosso il p-3 per un layout più edge-to-edge, se vuoi un piccolo bordo interno, rimettilo -->
     <main class="d-flex flex-column flex-grow-1">
-        <div th:replace="fragments/chat_content :: chat_main_content(showFullChatButton=${false})"></div>
+		<div th:replace="~{fragments/chat_content :: chat_main_content(showFullChatButton=${false})}"></div>
     </main>
 
     <!-- INCLUSIONE DEL JAVASCRIPT ESTERNO -->
