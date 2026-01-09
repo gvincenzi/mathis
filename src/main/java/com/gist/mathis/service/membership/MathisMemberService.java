@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.gist.mathis.model.entity.memebrship.MathisMember;
+import com.gist.mathis.model.entity.membership.MathisMember;
 import com.gist.mathis.model.repository.membership.MathisMemberRepository;
 
 @Service

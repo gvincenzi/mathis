@@ -1,8 +1,8 @@
 package com.gist.mathis.controller.web;
 
 import com.gist.mathis.model.entity.MathisUser;
-import com.gist.mathis.model.entity.memebrship.MathisMember;
-import com.gist.mathis.model.entity.memebrship.MathisPositionHeldEnum;
+import com.gist.mathis.model.entity.membership.MathisMember;
+import com.gist.mathis.model.entity.membership.MathisPositionHeldEnum;
 import com.gist.mathis.service.membership.MathisMemberService;
 import com.gist.mathis.service.security.MathisUserDetailsService;
 

@@ -1,4 +1,4 @@
-package com.gist.mathis.model.entity.memebrship;
+package com.gist.mathis.model.entity.membership;
 
 import java.time.LocalDate;
 
