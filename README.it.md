@@ -1,4 +1,4 @@
-#Mathis - Un agente virtuale per il knowledge management personale, conversazionale e open source
+# Mathis - Un agente virtuale per il knowledge management personale, conversazionale e open source
 <img src="src/main/resources/static/images/logo.jpg" width="200">
 <img src="src/main/resources/static/images/mathis.png" width="200">
 
