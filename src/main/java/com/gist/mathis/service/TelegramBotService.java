@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
@@ -37,7 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Slf4j
 @Service
-@Profile({ "gist" })
 public class TelegramBotService implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 	private static final String START = "/start";
 
@@ -97,7 +95,9 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 					} else {
 						SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
 						message.setParseMode("Markdown");
-						message.setReplyMarkup(getInlineKeyboard(chat.getKnowledges()));
+						if(chat.getKnowledges() != null && !chat.getKnowledges().isEmpty()) {
+							message.setReplyMarkup(getInlineKeyboard(chat.getKnowledges()));
+						}
 						telegramClient.execute(message);
 					}
 					log.info("Chat response sent to chatId: {}", chat.getConversationId());
