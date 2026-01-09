@@ -2,7 +2,7 @@
 <img src="src/main/resources/static/images/logo.jpg" width="200">
 <img src="src/main/resources/static/images/mathis.png" width="200">
 
-[![it](https://img.shields.io/badge/lang-it-blue.svg)](https://github.com/gvincenzi/mathis/blob/master/README.it.md)
+[![en](https://img.shields.io/badge/lang-en-green.svg)](https://github.com/gvincenzi/mathis/blob/master/README.md)
 
 ## Descrizione
 
