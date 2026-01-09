@@ -85,7 +85,7 @@
                             <div class="mb-3">
                                 <label for="positionsHeld" class="form-label">Positions Held</label>
                                 <select class="form-select" id="positionsHeld" name="positionsHeld">
-                                    <option th:each="pos : ${T(com.gist.mathis.model.entity.memebrship.MathisPositionHeldEnum).values()}"
+                                    <option th:each="pos : ${T(com.gist.mathis.model.entity.membership.MathisPositionHeldEnum).values()}"
                                             th:value="${pos}" th:text="${pos}"></option>
                                 </select>
                             </div>

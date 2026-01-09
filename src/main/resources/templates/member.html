@@ -105,7 +105,7 @@
                         <td>
                             <span class="view-mode-field" th:text="${member.positionsHeld}"></span>
                             <select name="positionsHeld" class="form-select form-select-sm edit-mode-field">
-                                <option th:each="pos : ${T(com.gist.mathis.model.entity.memebrship.MathisPositionHeldEnum).values()}"
+                                <option th:each="pos : ${T(com.gist.mathis.model.entity.membership.MathisPositionHeldEnum).values()}"
                                         th:value="${pos}" th:text="${pos}" th:selected="${member.positionsHeld == pos}"></option>
                             </select>
                         </td>
@@ -130,6 +130,7 @@
                         <td>
                             <div class="btn-group btn-group-sm view-mode-buttons">
                                 <button type="button" class="btn btn-secondary edit-button">Edit</button>
+								<a th:href="@{/api/membership/card/{id}(id=${member.id})}" class="btn btn-secondary">Card</a>
                                 <a th:href="@{/web/members/delete/{id}(id=${member.id})}" class="btn btn-danger">Delete</a>
                             </div>
                             <div class="btn-group btn-group-sm edit-mode-buttons">

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+                                  http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="membership_card" pageWidth="400" pageHeight="230" columnWidth="400"
+              leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="d5cb9b20-0eae-4f18-9db9-bbc4e3e5a888">
+
+    <!-- Parameters -->
+    <parameter name="firstName" class="java.lang.String"/>
+    <parameter name="lastName" class="java.lang.String"/>
+    <parameter name="taxCode" class="java.lang.String"/>
+    <parameter name="role" class="java.lang.String"/>
+    <parameter name="enrollmentDate" class="java.lang.String"/>
+    <parameter name="placeOfBirth" class="java.lang.String"/>
+    <parameter name="dateOfBirth" class="java.lang.String"/>
+    <parameter name="residenceAddress" class="java.lang.String"/>
+
+    <title>
+        <band height="60">
+            <!-- LOGO 50x50 px -->
+            <image>
+                <reportElement x="10" y="5" width="50" height="50" uuid="b1e4346c-4c3b-4df7-bc87-46e3a0b68e78"/>
+                <imageExpression><![CDATA["static/images/logo.jpg"]]></imageExpression>
+            </image>
+            <staticText>
+                <reportElement x="70" y="5" width="320" height="40" uuid="5dcf80f4-81f2-4c60-8c1e-1d3bcf9b7aef"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="20" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Membership Card]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <detail>
+        <band height="170">
+            <!-- First Name -->
+            <staticText>
+                <reportElement x="20" y="10" width="100" height="20" uuid="d8d774e7-1f47-4abc-8f0a-6e1f5b3891b1"/>
+                <textElement><font isBold="true"/></textElement>
+                <text><![CDATA[First Name:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="10" width="200" height="20" uuid="7ce9932a-1f7d-45f2-b77c-a7fbc31b6c0b"/>
+                <textFieldExpression><![CDATA[$P{firstName}]]></textFieldExpression>
+            </textField>
+            <!-- Last Name -->
+            <staticText>
+                <reportElement x="20" y="30" width="100" height="20" uuid="0e3d2c2f-df7e-4d8a-a8e7-2f2c1a8a4f3d"/>
+                <textElement><font isBold="true"/></textElement>
+                <text><![CDATA[Last Name:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="30" width="200" height="20" uuid="c1e5d40e-6f1a-4a9d-9e8b-8e0c3a6aeb7f"/>
+                <textFieldExpression><![CDATA[$P{lastName}]]></textFieldExpression>
+            </textField>
+            <!-- Tax Code -->
+            <staticText>
+                <reportElement x="20" y="50" width="100" height="20" uuid="e3d22b9d-3f6b-4e1a-a6a7-c6f2c8f4f2a8"/>
+                <textElement><font isBold="true"/></textElement>
+                <text><![CDATA[Tax Code:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="50" width="200" height="20" uuid="e2e9a1d6-df7c-4b3c-b2c6-5f3a8c0d1b0e"/>
+                <textFieldExpression><![CDATA[$P{taxCode}]]></textFieldExpression>
+            </textField>
+            <!-- Place of Birth -->
+            <staticText>
+                <reportElement x="20" y="70" width="100" height="20" uuid="e6d5c21a-4d2a-42b0-bc0e-8b8b12b6d4f1"/>
+                <textElement><font isBold="true"/></textElement>
+                <text><![CDATA[Place of Birth:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="70" width="200" height="20" uuid="8a0c3e5b-6e7d-4e2f-9d3c-2b1f4a9d8c7e"/>
+                <textFieldExpression><![CDATA[$P{placeOfBirth}]]></textFieldExpression>
+            </textField>
+            <!-- Date of Birth -->
+            <staticText>
+                <reportElement x="20" y="90" width="100" height="20" uuid="f1c2b3e4-9a8b-4c5e-8b1d-4e6c7a5b9c8d"/>
+                <textElement><font isBold="true"/></textElement>
+                <text><![CDATA[Date of Birth:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="90" width="200" height="20" uuid="b5a2b3c4-d8e9-4a0b-b7e8-2d3f4a1c6b7e"/>
+                <textFieldExpression><![CDATA[$P{dateOfBirth}]]></textFieldExpression>
+            </textField>
+            <!-- Residence Address -->
+            <staticText>
+                <reportElement x="20" y="110" width="100" height="20" uuid="d6b5c4e3-2a1b-4d0e-9b1c-8d7e6c5b4a3f"/>
+                <textElement><font isBold="true"/></textElement>
+                <text><![CDATA[Residence Address:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="110" width="250" height="20" uuid="a0b1c2d3-e4f5-4a6b-8c7d-9e0f1a2b3c4d"/>
+                <textFieldExpression><![CDATA[$P{residenceAddress}]]></textFieldExpression>
+            </textField>
+            <!-- Role -->
+            <staticText>
+                <reportElement x="20" y="130" width="100" height="20" uuid="e7f6a5b4-c3d2-4e1f-9a8b-7c6d5e4b3a2f"/>
+                <textElement><font isBold="true"/></textElement>
+                <text><![CDATA[Role:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="130" width="200" height="20" uuid="f2e3d4c5-b6a7-8c9d-0b1a-2c3d4e5f6a7b"/>
+                <textFieldExpression><![CDATA[$P{role}]]></textFieldExpression>
+            </textField>
+            <!-- Valid from -->
+            <staticText>
+                <reportElement x="20" y="150" width="100" height="20" uuid="a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"/>
+                <textElement><font isBold="true"/></textElement>
+                <text><![CDATA[Valid from:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="150" width="200" height="20" uuid="b1c2d3e4-f5a6-7b8c-9d0e-1f2a3b4c5d6e"/>
+                <textFieldExpression><![CDATA[$P{enrollmentDate}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+</jasperReport>
