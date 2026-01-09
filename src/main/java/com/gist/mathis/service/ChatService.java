@@ -18,13 +18,19 @@ import org.springframework.ai.template.st.StTemplateRenderer;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gist.mathis.controller.entity.ChatMessage;
+import com.gist.mathis.controller.entity.TransactionRequest;
 import com.gist.mathis.controller.entity.UserTypeEnum;
+import com.gist.mathis.model.entity.AuthorityEnum;
 import com.gist.mathis.model.entity.Knowledge;
 import com.gist.mathis.service.entity.IntentResponse;
+import com.gist.mathis.service.finance.ExcelExportService;
+import com.gist.mathis.service.finance.TransactionService;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +38,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ChatService {
+	@Value("${message.ADD_TRANSACTION_TEXT}")
+	private String ADD_TRANSACTION_TEXT;
+	
 	@Value("${message.LIST_DOCUMENTS_TEXT}")
 	private String LIST_DOCUMENTS_TEXT;
 	
@@ -57,6 +66,8 @@ public class ChatService {
 	private String ownerWebsite;
 	
 	private final KnowledgeService knowledgeService;
+	private final TransactionService transactionService;
+	private final ExcelExportService excelExportService;
 	private final MistralAiChatModel chatModel;
 	private final VectorStore vectorStore;
 	private final ChatMemory chatMemory;
@@ -64,11 +75,13 @@ public class ChatService {
 	private ChatClient chatClient, simpleChatClient;
 	
 	@Autowired
-    public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory, KnowledgeService knowledgeService) {
+    public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory, KnowledgeService knowledgeService, TransactionService transactionService, ExcelExportService excelExportService) {
         this.chatModel = chatModel;
         this.vectorStore = vectorStore;
         this.chatMemory = chatMemory;
         this.knowledgeService = knowledgeService;
+        this.transactionService = transactionService;
+        this.excelExportService = excelExportService;
     }
 	
 	@PostConstruct
@@ -110,6 +123,24 @@ public class ChatService {
 			case ASK_FOR_DOCUMENT : 
 				Set<Knowledge> knowledgesByIntentQuery = knowledgeService.findByVectorialSearch(intentResponse);
 				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, ASK_DOCUMENTS_TEXT, knowledgesByIntentQuery);
+				break;
+			case ADD_TRANSACTION :
+				if(AuthorityEnum.ROLE_ADMIN.equals(message.getUserAuth())) {
+					BeanOutputConverter<TransactionRequest> beanOutputConverter = new BeanOutputConverter<>(TransactionRequest.class);
+					TransactionRequest transactionRequest = beanOutputConverter.convert(new ObjectMapper().writeValueAsString(intentResponse.getEntities()));							
+					transactionService.addTransaction(transactionRequest);
+					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, String.format(ADD_TRANSACTION_TEXT));
+				} else {
+					chat = adminRoleCheckFailed(message.getConversationId());
+				}
+				break;
+			case ASK_CASHFLOW :
+				if(AuthorityEnum.ROLE_ADMIN.equals(message.getUserAuth())) {
+					ByteArrayResource resource = new ByteArrayResource(excelExportService.generateExcelReport(Integer.parseInt(intentResponse.getEntities().get("year"))));
+					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, "cashflow_" + intentResponse.getEntities().get("year") + ".xlsx", resource);
+				} else {
+					chat = adminRoleCheckFailed(message.getConversationId());
+				}
 				break;
 			case GENERIC_QUESTION : chat = genericQuestion(message); break;
 		}
@@ -169,7 +200,7 @@ public class ChatService {
 			.call()
 			.content();
 		log.info("responseBody : {}",responseBody);
-		IntentResponse intentResponse = beanOutputConverter.convert(responseBody.replace("`", ""));
+		IntentResponse intentResponse = beanOutputConverter.convert(responseBody.replace("```json", "").replace("`", ""));
 
 		return intentResponse;
 	}

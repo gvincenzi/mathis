@@ -41,7 +41,10 @@
 							<a class="nav-link active" aria-current="page" th:href="@{/web/knowledge}">Knowledge</a>
 						</li>	
 						<li class="nav-item">
-						    <a class="nav-link" aria-current="page" th:href="@{/web/users}">Users</a>
+                            <a class="nav-link" th:href="@{/web/cashflow(year=${#dates.year(#dates.createNow())})}">Cashflow</a>
+						</li>
+                        <li class="nav-item">
+							<a class="nav-link" aria-current="page" th:href="@{/web/users}">Users</a>
 						</li>
                         <li class="nav-item">
                             <a class="nav-link" th:href="@{/logout}">Logout</a>

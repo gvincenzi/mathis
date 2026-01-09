@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.NEVER))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/", "/images/**", "/styles/**", "/api/**", "/v3/api-docs*/**", "/swagger-ui/**").permitAll()
-                        .requestMatchers("/api/knowledge/**").hasRole("ADMIN")
+                        .requestMatchers("/api/finance/**","/api/knowledge/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(withDefaults())
                 .logout(logout -> logout

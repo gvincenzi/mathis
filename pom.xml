@@ -10,10 +10,10 @@
 	</parent>
 
 	<groupId>com.gist</groupId>
-	<artifactId>mathis</artifactId>
+	<artifactId>mathis_club</artifactId>
 	<version>1.2.0</version>
 	<name>Mathis</name>
-	<description>Mathis Virtual Agent</description>
+	<description>Mathis Club Assistant</description>
 
 	<properties>
 		<java.version>17</java.version>

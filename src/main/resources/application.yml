@@ -32,3 +32,4 @@ owner:
 message:
  LIST_DOCUMENTS_TEXT: List of available documents
  ASK_DOCUMENTS_TEXT: Here are the documents that might interest you (if you ask me, I can give you the complete list of available documents)
+ ADD_TRANSACTION_TEXT: ✅ *Transaction added to the statement !*
