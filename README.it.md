@@ -3,6 +3,7 @@
 <img src="src/main/resources/static/images/mathis.png" width="200">
 
 [![en](https://img.shields.io/badge/lang-en-green.svg)](https://github.com/gvincenzi/mathis/blob/master/README.md)
+[![fr](https://img.shields.io/badge/lang-fr-red.svg)](https://github.com/gvincenzi/mathis/blob/master/README.fr.md)
 
 ## Descrizione
 
