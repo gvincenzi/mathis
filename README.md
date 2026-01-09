@@ -1,13 +1,13 @@
-# Mathis - Un agente virtuale per il knowledge management personale, conversazionale e open source
+# Mathis - A virtual conversational agent for Personal Knowledge Management
 <img src="src/main/resources/static/images/logo.jpg" width="200">
 <img src="src/main/resources/static/images/mathis.png" width="200">
 
 [![it](https://img.shields.io/badge/lang-it-blue.svg)](https://github.com/gvincenzi/mathis/blob/master/README.it.md)
 
-## Descrizione
+## Description
 
-Mathis è un progetto open source scritto in Java che implementa un agente software conversazionale tramite Telegram, dotato di una base di dati relazionale per la gestione degli utenti, di una base documentale di conoscenza, e di funzionalità RAG (Retrieval-Augmented Generation) per la ricerca nei documenti.  
-Il codice si basa sulle seguenti librerie e tecnologie:
+Mathis is an open source project written in Java that implements a conversational software agent via Telegram, featuring a relational user database, a document-based knowledge base, and Retrieval-Augmented Generation (RAG) capabilities for searching documents.  
+The code is based on the following libraries and technologies:
 
 - [Spring Boot](https://spring.io/projects/spring-boot)
 - [Spring Security](https://spring.io/projects/spring-security)
@@ -17,43 +17,43 @@ Il codice si basa sulle seguenti librerie e tecnologie:
 - [Supabase](https://supabase.com/)
 - [MistralAI](https://mistral.ai/) 
 
-Lo scopo è permettere agli utenti di caricare documenti (PDF, Excel, ecc.) nella base documentale, e interrogare questa base di conoscenza attraverso uno scambio di messaggi in linguaggio naturale con il bot.
+The goal is to allow users to upload documents (PDF, Excel, etc.) to the knowledge base and query it through natural language exchanges with the bot.
 
-## Tecnologie e librerie utilizzate
+## Technologies and Libraries Used
 
-Mathis è costruito con **Java 17** e si basa su [Spring Boot](https://spring.io/projects/spring-boot).  
-L'integrazione con **Telegram** è realizzata tramite le librerie [`telegrambots-springboot-longpolling-starter`](https://github.com/rubenlagus/TelegramBots) e `telegrambots-client`, che permettono la comunicazione con gli utenti tramite bot.
-L'interfaccia di gestione della base di conoscenza è realizzata con **Thymeleaf**. 
+Mathis is built with **Java 17** and based on [Spring Boot](https://spring.io/projects/spring-boot).  
+Integration with **Telegram** is handled using the [`telegrambots-springboot-longpolling-starter`](https://github.com/rubenlagus/TelegramBots) and `telegrambots-client` libraries, enabling user communication via bot.
+The knowledge base management interface is built with **Thymeleaf**.
 
-Per la componente LLM e RAG (Retrieval-Augmented Generation), Mathis utilizza [Spring AI](https://spring.io/projects/spring-ai) con il modulo `spring-ai-starter-model-mistral-ai` per accedere ai modelli di MistralAI.  
-L'archiviazione e la gestione vettoriale dei documenti è affidata a **PgVector**, tramite `spring-ai-starter-vector-store-pgvector` e `spring-ai-advisors-vector-store`, che facilitano la ricerca semantica dei contenuti.  
-L'estrazione automatica del testo dai documenti caricati è gestita da **Apache Tika** tramite la libreria `spring-ai-tika-document-reader`.
+For LLM and RAG (Retrieval-Augmented Generation), Mathis uses [Spring AI](https://spring.io/projects/spring-ai) with the `spring-ai-starter-model-mistral-ai` module to access MistralAI models.  
+Document storage and vector management are handled via **PgVector**, using `spring-ai-starter-vector-store-pgvector` and `spring-ai-advisors-vector-store`, which enable semantic search on content.  
+Automatic text extraction from uploaded documents is managed by **Apache Tika** through the `spring-ai-tika-document-reader` library.
 
-La persistenza e la sincronizzazione delle note e dei documenti con **Supabase** vengono gestite attraverso l'integrazione con Postgres e PgVector. 
+Persistence and synchronization of notes and documents with **Supabase** are managed via integration with Postgres and PgVector.
 
-La scelta di queste tecnologie mira a rendere il progetto Mathis una soluzione robusta, scalabile e facilmente estendibile per la gestione intelligente dei documenti e delle interazioni AI.
+The choice of these technologies aims to make Mathis a robust, scalable, and easily extensible solution for intelligent document and AI interaction management.
 
-## Funzionalità
+## Features
 
-- **Conversazione naturale**: Interazione tramite chat Telegram o direttamente nella homepage della webapp con l'agente Mathis.
-- **Gestione del salvataggio degli utenti e di una passwaord di default**: Mathis stocca nella base relazionale gli utenti ed una password temporanea (in questo prototipo la gestione della password non è implementata), e solo dopo interagisce con il resto del sistema.
-- **Riconoscimento dell'intento dell’utente e delle sue autorizzazioni**: Mathis interpreta l’intento dell’utente e reagisce secondo una lista predefinita di azioni possibili, verificando eventualmente se l'utente ha i diritti (Spring Security Authorities).
-- **Caricamento documenti**: Puoi caricare documenti via l'interfaccia web; Mathis li analizza tramite Tika, ne estrae il testo rilevante, e aggiorna il database di conseguenza. Vengono stoccati in una tabella a parte, non vettoriale, la lista dei documenti e gli indirizzi nel web da dove poterli eventualmente scaricare.
-- **Indicizzazione e storage**: I contenuti estratti vengono archiviati e indicizzati su Supabase.
-- **RAG (Retrieval-Augmented Generation)**: Quando si pongono domande al bot, Mathis recupera i documenti rilevanti dalla base di conoscenza e genera risposte contestualizzate usando MistralAI.
-- **Open Source**: Il progetto è completamente open, facilmente estendibile e personalizzabile ed è derivato da [Mathis](https://github.com/gvincenzi/mathis).
+- **Natural Conversation**: Interact with the Mathis agent via Telegram chat or directly on the webapp homepage.
+- **User Storage and Default Password Management**: Mathis stores users and a temporary password in the relational database (note: password management is not implemented in this prototype); only after registration does interaction with the system proceed.
+- **Intent Recognition and Authorization**: Mathis interprets user intent and responds based on a predefined list of possible actions, optionally verifying user permissions (Spring Security Authorities).
+- **Document Upload**: Upload documents through the web interface; Mathis analyzes them using Tika, extracts relevant text, and updates the database accordingly. Documents and their web download links are stored in a separate (non-vector) table.
+- **Indexing and Storage**: Extracted content is stored and indexed on Supabase.
+- **RAG (Retrieval-Augmented Generation)**: When you ask questions to the bot, Mathis retrieves relevant documents from the knowledge base and generates contextualized answers using MistralAI.
+- **Open Source**: The project is fully open, easily extensible and customizable, and is derived from [Mathis](https://github.com/gvincenzi/mathis).
 
-## Architettura
+## Architecture
 
 <img src="src/main/resources/static/images/schema.png" width="100%">
 
-## Come funziona
+## How It Works
 
-Il funzionamento di Mathis si articola in due flussi principali, entrambi avviati dall'utente tramite il **Telegram Bot** o la **Mathis WebApp**, e gestiti centralmente dalla **Mathis API**.
+Mathis operates through two main workflows, both initiated by the user via the **Telegram Bot** or the **Mathis WebApp**, and managed centrally by the **Mathis API**.
 
-Quando un utente **carica un documento** (come PDF, PowerPoint o Excel), la Mathis API riceve la richiesta. Il documento viene elaborato da **Apache Tika** per l'estrazione del testo. Questo testo viene poi sottoposto a "chunking" (suddivisione in blocchi) e "embedding" (conversione in vettori numerici) prima di essere salvato nella **base vettoriale di Supabase**. Una volta completato il salvataggio, l'utente riceve una conferma.
+When a user **uploads a document** (PDF, PowerPoint, Excel, etc.), the Mathis API receives the request. The document is processed by **Apache Tika** for text extraction. This text is then chunked and embedded (converted into numeric vectors) before being saved in the **Supabase vector store**. Once the process is complete, the user receives a confirmation.
 
-Quando un utente **invia un messaggio testuale** (una domanda o una richiesta), la Mathis API intercetta il messaggio. Il sistema procede con il riconoscimento dell'intento dell'utente e la verifica del suo ruolo tramite Spring Security.  L'intento guida il sistema a scegliere una delle azioni previste :
+When a user **sends a text message** (question or request), the Mathis API intercepts the message. The system performs intent recognition and user role verification using Spring Security. The intent guides the system to select one of the predefined actions:
 
 ```java
 package com.gist.mathis.service.entity;
@@ -65,88 +65,89 @@ public enum Intent {
 }
 ```
 
-Nel caso di *LIST_DOCUMENTS* non farà che effettuare una ricerca nel database relazionale.
-Nel caso di  *ASK_FOR_DOCUMENT* farà una ricarca direttamente nel database ma di tipo vettoriale.
-Nel caso della *GENERIC_QUESTION* dovrà effettuare una ricerca nel contenuto dei documenti, e sfrutterà tutta la catena del RAG per interpretare la domanda, arricchire il contesto, e generare una risposta. 
-Questa ricerca avviene nella **base vettoriale di Supabase**, dove vengono recuperate le informazioni più rilevanti per la query dell'utente. Le informazioni recuperate, insieme alla query originale, vengono utilizzate per costruire un prompt arricchito di contesto, che viene poi inviato a un **Large Language Model** (come MistralAI). 
-Il modello genera una "Risposta" basata sul contesto fornito, che viene infine inviata all'utente.
+- For *LIST_DOCUMENTS*, a search is performed in the relational database.
+- For *ASK_FOR_DOCUMENT*, a search is performed directly in the vector database.
+- For *GENERIC_QUESTION*, a search is performed within the content of documents, leveraging the full RAG pipeline to interpret the query, enrich the context, and generate an answer.
+
+This search takes place in the **Supabase vector store**, where the most relevant information is retrieved for the user's query. The retrieved information, together with the original query, is used to construct a context-enriched prompt, which is then sent to a **Large Language Model** (such as MistralAI).  
+The model generates a "Response" based on the provided context, which is then sent back to the user.
 
 ## REST API
 
-Mathis mette a disposizione anche una API per gestire la la base di conoscenza e interagire con la funzionalità di chat.
+Mathis also provides an API for managing the knowledge base and interacting with the chat functionality.
 
 ### `/api/knowledge` (POST)
-Carica un nuovo documento nella knowledge base.  
-**Parametri (query):**
-- `title` (string, obbligatorio): Titolo del documento.
-- `description` (string, obbligatorio): Descrizione del documento.
-- `url` (string, obbligatorio): URL di origine del documento.  
+Upload a new document to the knowledge base.  
+**Query Parameters:**
+- `title` (string, required): Document title.
+- `description` (string, required): Document description.
+- `url` (string, required): Document source URL.  
 **Request Body:**  
-- `document` (binary, obbligatorio): Il file da caricare (multipart/form-data).  
-**Risposta:**  
-- `200 OK` in caso di successo.
+- `document` (binary, required): The file to upload (multipart/form-data).  
+**Response:**  
+- `200 OK` on success.
 
 ### `/api/knowledge` (DELETE)
-Elimina un documento dalla knowledge base.  
-**Parametri (query):**
-- `knowledgeId` (integer, obbligatorio): ID del documento da eliminare.  
-**Risposta:**  
-- `200 OK` in caso di successo.
+Delete a document from the knowledge base.  
+**Query Parameters:**
+- `knowledgeId` (integer, required): ID of the document to delete.  
+**Response:**  
+- `200 OK` on success.
 
 ### `/api/chat` (POST)
-Invia un messaggio in chat e ricevi una risposta.  
+Send a chat message and receive a response.  
 **Request Body:**  
-- Oggetto JSON di tipo `ChatMessage`, che include:
-  - `conversationId` (string): ID della conversazione.
-  - `userType` (string, enum: HUMAN, AI): Tipo di utente.
-  - `userAuth` (string, enum: ROLE_USER, ROLE_ADMIN): Ruolo di autorizzazione dell'utente.
-  - `body` (string): Contenuto del messaggio.
-  - `inlineKeyboardMarkup` (oggetto, opzionale): Inline keyboard per Telegram.
-  - `resource` (binary, opzionale): Risorsa allegata.  
-**Risposta:**  
-- `200 OK` con un oggetto `ChatMessage`.
+- JSON object of type `ChatMessage`, including:
+  - `conversationId` (string): Conversation ID.
+  - `userType` (string, enum: HUMAN, AI): User type.
+  - `userAuth` (string, enum: ROLE_USER, ROLE_ADMIN): User authorization role.
+  - `body` (string): Message content.
+  - `inlineKeyboardMarkup` (object, optional): Inline keyboard for Telegram.
+  - `resource` (binary, optional): Attached resource.  
+**Response:**  
+- `200 OK` with a `ChatMessage` object.
 
 
-### Documentazione API
+### API Documentation
 
-La documentazione completa dell'API, generata automaticamente in formato OpenAPI (Swagger UI), è disponibile all'indirizzo:
+The full API documentation, automatically generated in OpenAPI (Swagger UI) format, is available at:
 [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
-*(Nota: L'indirizzo `localhost:8080` si riferisce all'esecuzione locale del servizio. In un ambiente di produzione, l'URL sarà quello del server su cui è deployato Mathis BlocNotes.)*
+*(Note: The `localhost:8080` address refers to local service execution. In a production environment, the URL will be that of the server where Mathis BlocNotes is deployed.)*
 
-## Requisiti
+## Requirements
 
 - Java 17+
-- Un account Telegram e token BotFather
-- Un'istanza Supabase configurata
-- API key MistralAI
+- Telegram account and BotFather token
+- Configured Supabase instance
+- MistralAI API key
 
-## Installazione
+## Installation
 
-1. **Clona il repository**
+1. **Clone the repository**
    ```bash
-   git clone https://github.com/tuo-username/mathis_blocnotes.git
+   git clone https://github.com/your-username/mathis_blocnotes.git
    cd Mathis
    ```
 
-2. **Configura le variabili ambiente e il file di configurazione YML**
+2. **Configure environment variables and YML configuration file**
    - `TELEGRAM_BOT_TOKEN`
-   - `SUPABASE_URL` e `SUPABASE_KEY`
+   - `SUPABASE_URL` and `SUPABASE_KEY`
    - `MISTRAL_API_KEY`
 
-3. **Compila ed esegui**
+3. **Build and run**
    ```bash
    ./mvnw spring-boot:run
    ```
 
-## Utilizzo
+## Usage
 
-- **/start**: (opzionale) Avvia la conversazione con Mathis ottenendo una presentazione dell’agente nella lingua dell’account Telegram.
+- **/start**: (optional) Starts a conversation with Mathis, receiving an introduction in the language of your Telegram account.
 
-## Contribuire
+## Contributing
 
-Contribuzioni, segnalazioni di bug e proposte di nuove funzionalità sono benvenute! Apri una issue o un pull request.
+Contributions, bug reports, and feature requests are welcome! Open an issue or pull request.
 
-## Licenza
+## License
 
-Questo progetto è distribuito sotto licenza GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 (GPLv3).
+This project is distributed under the GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 (GPLv3).
