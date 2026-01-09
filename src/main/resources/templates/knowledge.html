@@ -155,36 +155,60 @@
 </div>
 
 <script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.edit-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const row = this.closest('tr');
-                row.querySelectorAll('.view-mode-field').forEach(field => field.style.display = 'none');
-                row.querySelectorAll('.edit-mode-field').forEach(field => field.style.display = 'block');
-                this.closest('.view-mode-buttons').style.display = 'none';
-                row.querySelector('.edit-mode-buttons').style.display = 'block';
-            });
-        });
+	document.addEventListener('DOMContentLoaded', function() {
+	    document.querySelectorAll('.edit-button').forEach(button => {
+	        button.addEventListener('click', function() {
+	            // --- Ripristina tutte le righe in view mode ---
+	            document.querySelectorAll('tr').forEach(row => {
+	                row.querySelectorAll('.view-mode-field').forEach(field => field.style.display = 'block');
+	                row.querySelectorAll('.edit-mode-field').forEach(field => {
+	                    field.style.display = 'none';
+	                    // Reset input values to original if present
+	                    if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA' || field.tagName === 'SELECT') {
+	                        if (field.dataset.original !== undefined) {
+	                            field.value = field.dataset.original;
+	                        }
+	                    }
+	                });
+	                let editButtons = row.querySelector('.edit-mode-buttons');
+	                let viewButtons = row.querySelector('.view-mode-buttons');
+	                if (editButtons) editButtons.style.display = 'none';
+	                if (viewButtons) viewButtons.style.display = 'block';
+	            });
 
-        document.querySelectorAll('.cancel-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const row = this.closest('tr');
-                row.querySelectorAll('.view-mode-field').forEach(field => field.style.display = 'block');
-                row.querySelectorAll('.edit-mode-field').forEach(field => {
-                    field.style.display = 'none';
-                    // Reset input values to original (displayed) text
-                    if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA') {
-                        const viewField = row.querySelector(`.view-mode-field[th\\:text="${field.name}"]`); // This is tricky, better to store original values
-                        // For simplicity, we'll just hide and show. If you need true reset, you'd store original values in data attributes.
-                        // For now, if user cancels, the inputs just hide, and next edit will show current values.
-                        // A more robust solution would involve storing original values in data attributes on the inputs.
-                    }
-                });
-                this.closest('.edit-mode-buttons').style.display = 'none';
-                row.querySelector('.view-mode-buttons').style.display = 'block';
-            });
-        });
-    });
+	            // --- Attiva l'edit mode SOLO per la riga selezionata ---
+	            const row = this.closest('tr');
+	            row.querySelectorAll('.view-mode-field').forEach(field => field.style.display = 'none');
+	            row.querySelectorAll('.edit-mode-field').forEach(field => {
+	                field.style.display = 'block';
+	                // Salva il valore originale
+	                if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA' || field.tagName === 'SELECT') {
+	                    field.dataset.original = field.value;
+	                }
+	            });
+	            this.closest('.view-mode-buttons').style.display = 'none';
+	            row.querySelector('.edit-mode-buttons').style.display = 'block';
+	        });
+	    });
+
+	    document.querySelectorAll('.cancel-button').forEach(button => {
+	        button.addEventListener('click', function() {
+	            const row = this.closest('tr');
+	            row.querySelectorAll('.view-mode-field').forEach(field => field.style.display = 'block');
+	            row.querySelectorAll('.edit-mode-field').forEach(field => {
+	                field.style.display = 'none';
+	                // Ripristina valore originale se presente
+	                if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA' || field.tagName === 'SELECT') {
+	                    if (field.dataset.original !== undefined) {
+	                        field.value = field.dataset.original;
+	                    }
+	                }
+	            });
+	            this.closest('.edit-mode-buttons').style.display = 'none';
+	            row.querySelector('.view-mode-buttons').style.display = 'block';
+	        });
+	    });
+	});
 </script>
 
 </body>
