@@ -32,7 +32,7 @@ public class MathisUser implements UserDetails{
     @Column(nullable = false, unique = true, length = 20)
     private String username;
     
-    @Column(nullable = false, unique = true, length = 150)
+    @Column(nullable = false, length = 150)
     private String password;
 
     @Column(nullable = true, length = 100)
