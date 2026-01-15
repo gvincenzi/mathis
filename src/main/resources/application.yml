@@ -22,12 +22,13 @@ jpa:
    
 telegram:
  bot:
+  active: ${TELEGRAM_BOT_ACTIVE}
   username: ${TELEGRAM_BOT_USERNAME}
   token: ${TELEGRAM_BOT_TOKEN}
 
 owner:
- name: GIST
- website: https://github.com/gvincenzi/mathis
+ name: ${MATHIS_OWNER_NAME}
+ website: ${MATHIS_OWNER_WEBSITE}
  
 message:
  LIST_DOCUMENTS_TEXT: List of available documents
