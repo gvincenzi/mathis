@@ -10,8 +10,8 @@
 	</parent>
 
 	<groupId>com.gist</groupId>
-	<artifactId>mathis_club</artifactId>
-	<version>1.2.0</version>
+	<artifactId>mathis</artifactId>
+	<version>1.2.1</version>
 	<name>Mathis</name>
 	<description>Mathis Club Assistant</description>
 
