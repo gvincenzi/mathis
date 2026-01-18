@@ -3,6 +3,7 @@ package com.gist.mathis.controller.web;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.gist.mathis.controller.KnowledgeBaseController;
+import com.gist.mathis.controller.admin.KnowledgeBaseController;
 import com.gist.mathis.model.entity.Knowledge;
 import com.gist.mathis.service.KnowledgeService;
 
@@ -34,6 +35,7 @@ public class KnowledgeController {
         return "knowledge";
     }
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/update/{knowledgeId}")
     public String updateKnowledge(@PathVariable("knowledgeId") Long knowledgeId, @ModelAttribute Knowledge knowledge, RedirectAttributes redirectAttributes) {
 		log.info(String.format("%s -> %s", KnowledgeController.class.getSimpleName(), "updateKnowledge"));
@@ -43,6 +45,7 @@ public class KnowledgeController {
         return "redirect:/web/knowledge";
     }
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/delete/{knowledgeId}")
     public String deleteKnowledge(@PathVariable("knowledgeId") Long knowledgeId, RedirectAttributes redirectAttributes) {
 		log.info(String.format("%s -> %s", KnowledgeController.class.getSimpleName(), "deleteKnowledge"));
@@ -52,11 +55,13 @@ public class KnowledgeController {
         return "redirect:/web/knowledge";
     }
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/new")
     public String showCreateForm(Model model) {
         return "knowledge_create";
     }
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping(value="/ingest", consumes = "multipart/form-data")
     public String ingest(@RequestParam("document") MultipartFile document, @RequestParam("title") String title, @RequestParam("description") String description, @RequestParam("url") String url, RedirectAttributes redirectAttributes) {
 		log.info(String.format("%s -> %s", KnowledgeBaseController.class.getSimpleName(), "ingest"));

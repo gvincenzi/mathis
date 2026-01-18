@@ -76,7 +76,7 @@ Il modello genera una "Risposta" basata sul contesto fornito, che viene infine i
 
 Mathis mette a disposizione anche una API per gestire la la base di conoscenza e interagire con la funzionalità di chat.
 
-### `/api/knowledge` (POST)
+### `/api/admin/knowledge` (POST)
 Carica un nuovo documento nella knowledge base.  
 **Parametri (query):**
 - `title` (string, obbligatorio): Titolo del documento.
@@ -87,7 +87,7 @@ Carica un nuovo documento nella knowledge base.
 **Risposta:**  
 - `200 OK` in caso di successo.
 
-### `/api/knowledge` (DELETE)
+### `/api/admin/knowledge` (DELETE)
 Elimina un documento dalla knowledge base.  
 **Parametri (query):**
 - `knowledgeId` (integer, obbligatorio): ID del documento da eliminare.  

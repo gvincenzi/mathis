@@ -1,4 +1,4 @@
-package com.gist.mathis.controller;
+package com.gist.mathis.controller.admin;
 
 import java.io.IOException;
 
@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/finance")
+@RequestMapping("/api/admin/finance")
 public class FinanceController {
 	@Autowired
 	private ExcelExportService excelExportService;

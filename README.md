@@ -77,7 +77,7 @@ The model generates a "Response" based on the provided context, which is then se
 
 Mathis also provides an API for managing the knowledge base and interacting with the chat functionality.
 
-### `/api/knowledge` (POST)
+### `/api/admin/knowledge` (POST)
 Upload a new document to the knowledge base.  
 **Query Parameters:**
 - `title` (string, required): Document title.
@@ -88,7 +88,7 @@ Upload a new document to the knowledge base.
 **Response:**  
 - `200 OK` on success.
 
-### `/api/knowledge` (DELETE)
+### `/api/admin/knowledge` (DELETE)
 Delete a document from the knowledge base.  
 **Query Parameters:**
 - `knowledgeId` (integer, required): ID of the document to delete.  

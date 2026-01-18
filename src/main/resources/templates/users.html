@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark h-100" data-bs-theme="dark">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark h-100" data-bs-theme="dark" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -51,8 +51,7 @@
 
     <main class="px-3 flex-grow-1">
         <h1 class="mb-4">Users</h1>
-
-        <div class="d-flex justify-content-end mt-4 mb-4">
+        <div class="d-flex justify-content-end mt-4 mb-4" sec:authorize="hasAuthority('ROLE_ADMIN')">
             <div class="btn-group">
                 <a th:href="@{/web/users/new}" class="btn btn-secondary fw-bold">Add User</a>
             </div>
@@ -100,11 +99,11 @@
                         <td th:text="${#temporals.format(user.createdAt, 'dd-MMM-yy HH:mm')}"></td>
                         <td th:text="${#temporals.format(user.updatedAt, 'dd-MMM-yy HH:mm')}"></td>
                         <td>
-                            <div class="btn-group btn-group-sm view-mode-buttons">
+                            <div class="btn-group btn-group-sm view-mode-buttons" sec:authorize="hasAuthority('ROLE_ADMIN')">
                                 <button type="button" class="btn btn-secondary edit-button">Edit</button>
                                 <a th:href="@{/web/users/delete/{id}(id=${user.userId})}" class="btn btn-danger">Delete</a>
                             </div>
-                            <div class="btn-group btn-group-sm edit-mode-buttons">
+                            <div class="btn-group btn-group-sm edit-mode-buttons" sec:authorize="hasAuthority('ROLE_ADMIN')">
                                 <button type="submit" class="btn btn-primary">Confirm</button>
                                 <button type="button" class="btn btn-secondary cancel-button">Cancel</button>
                             </div>
