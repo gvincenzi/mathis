@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,12 +35,14 @@ public class MathisUserController {
 		return "users";
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/new")
 	public String showCreateForm(Model model) {
 		model.addAttribute("user", new MathisUser());
 		return "user_create";
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/create")
 	public String createUser(@RequestParam String username, @RequestParam String password,
 			@RequestParam(required = false) String firstname, @RequestParam(required = false) String lastname,
@@ -55,6 +58,7 @@ public class MathisUserController {
 		return "redirect:/web/users";
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/update/{id}")
 	public String updateUser(@PathVariable("id") Long userId, @ModelAttribute MathisUser user,
 			RedirectAttributes redirectAttributes) {
@@ -68,6 +72,7 @@ public class MathisUserController {
 		return "redirect:/web/users";
 	}
 
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/delete/{id}")
 	public String deleteUser(@PathVariable("id") Long userId, RedirectAttributes redirectAttributes) {
 		mathisUserService.deleteUser(userId);

@@ -1,4 +1,4 @@
-package com.gist.mathis.controller;
+package com.gist.mathis.controller.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/knowledge")
+@RequestMapping("/api/admin/knowledge")
 public class KnowledgeBaseController {
 	@Autowired
 	private KnowledgeService knowledgeService;
