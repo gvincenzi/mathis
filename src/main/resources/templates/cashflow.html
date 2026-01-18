@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark h-100" data-bs-theme="dark">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark h-100" data-bs-theme="dark" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -73,7 +73,7 @@
 
             <!-- Button group esistente -->
             <div class="btn-group" role="group" aria-label="Cashflow actions">
-                <a th:href="@{/web/cashflow/edit(year=${year})}" class="btn btn-secondary fw-bold">Modifica la tabella</a>
+                <a th:href="@{/web/cashflow/edit(year=${year})}" class="btn btn-secondary fw-bold" sec:authorize="hasAuthority('ROLE_ADMIN')">Modifica la tabella</a>
                 <a th:href="@{/api/admin/finance/export/{year}(year=${year})}" class="btn btn-secondary fw-bold">Genera l'excel</a>
             </div>
         </div>

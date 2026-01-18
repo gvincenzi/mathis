@@ -1,4 +1,4 @@
-package com.gist.mathis.controller;
+package com.gist.mathis.controller.admin;
 
 import java.util.NoSuchElementException;
 
@@ -21,7 +21,7 @@ import net.sf.jasperreports.engine.JRException;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/membership")
+@RequestMapping("/api/admin/membership")
 public class MembershipController {
 	@Autowired
 	private MathisMemberService mathisMemberService;

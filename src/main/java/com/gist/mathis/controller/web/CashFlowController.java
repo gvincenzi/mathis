@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +41,7 @@ public class CashFlowController {
         return "cashflow";
     }
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@GetMapping("/web/cashflow/edit")
     public String cashflowEdit(@RequestParam("year") Integer year, Model model) {
 		CashFlowDTO cashFlowReport = cashFlowService.prepareCashFlowReport(year);
@@ -84,6 +86,7 @@ public class CashFlowController {
 				);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/web/cashflow/update/{year}")
 	public String updateTransactions(@ModelAttribute("transactions") TransactionForm transactionForm, @PathVariable("year") Integer year) {
 		List<Transaction> transactionsMapped = transactionForm.getTransactions().stream()

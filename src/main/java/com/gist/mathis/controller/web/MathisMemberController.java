@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +36,7 @@ public class MathisMemberController {
         return "member";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/new")
     public String newMemberForm(Model model) {
         List<MathisUser> users = mathisUserDetailsService.findAll();
@@ -42,6 +44,7 @@ public class MathisMemberController {
         return "member_create";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public String createMember(
             @RequestParam String mathisUserId,
@@ -75,6 +78,7 @@ public class MathisMemberController {
         return "redirect:/web/members";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/update/{id}")
     public String updateMember(
             @PathVariable Long id,
@@ -111,7 +115,7 @@ public class MathisMemberController {
         return "redirect:/web/members";
     }
 
-    // DELETE
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/delete/{id}")
     public String deleteMember(@PathVariable Long id) {
     	mathisMemberService.deleteById(id);

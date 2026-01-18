@@ -41,7 +41,7 @@
     <main class="px-3 flex-grow-1">
         <h1 class="mb-4">Members</h1>
 
-        <div class="d-flex justify-content-end mt-4 mb-4">
+        <div class="d-flex justify-content-end mt-4 mb-4" sec:authorize="hasAuthority('ROLE_ADMIN')">
             <div class="btn-group">
                 <a th:href="@{/web/members/new}" class="btn btn-secondary fw-bold">Add Member</a>
             </div>
@@ -128,12 +128,12 @@
 						    </select>
 						</td>						
                         <td>
-                            <div class="btn-group btn-group-sm view-mode-buttons">
+                            <div class="btn-group btn-group-sm view-mode-buttons" sec:authorize="hasAuthority('ROLE_ADMIN')">
                                 <button type="button" class="btn btn-secondary edit-button">Edit</button>
-								<a th:href="@{/api/membership/card/{id}(id=${member.id})}" class="btn btn-secondary">Card</a>
+								<a th:href="@{/api/admin/membership/card/{id}(id=${member.id})}" class="btn btn-secondary">Card</a>
                                 <a th:href="@{/web/members/delete/{id}(id=${member.id})}" class="btn btn-danger">Delete</a>
                             </div>
-                            <div class="btn-group btn-group-sm edit-mode-buttons">
+                            <div class="btn-group btn-group-sm edit-mode-buttons" sec:authorize="hasAuthority('ROLE_ADMIN')">
                                 <button type="submit" class="btn btn-primary">Confirm</button>
                                 <button type="button" class="btn btn-secondary cancel-button">Cancel</button>
                             </div>
