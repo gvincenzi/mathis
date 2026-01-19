@@ -30,6 +30,12 @@ owner:
  name: ${MATHIS_OWNER_NAME}
  website: ${MATHIS_OWNER_WEBSITE}
  
+prompts:
+ adminRoleCheckFailed: classpath:/prompts/adminRoleCheckFailed.st
+ analysisIntent: classpath:/prompts/analysisIntent.st
+ base: classpath:/prompts/base.st
+ welcome: classpath:/prompts/welcome.st
+
 message:
  LIST_DOCUMENTS_TEXT: List of available documents
  ASK_DOCUMENTS_TEXT: Here are the documents that might interest you (if you ask me, I can give you the complete list of available documents)

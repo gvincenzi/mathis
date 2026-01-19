@@ -47,16 +47,16 @@ public class ChatService {
 	@Value("${message.ASK_DOCUMENTS_TEXT}")
 	private String ASK_DOCUMENTS_TEXT;
 	
-	@Value("classpath:/prompts/adminRoleCheckFailed.st")
+	@Value("${prompts.adminRoleCheckFailed}")
 	private Resource adminRoleCheckFailedTemplateResource;
-	
-	@Value("classpath:/prompts/analysisIntent.st")
+
+	@Value("${prompts.analysisIntent}")
 	private Resource analysisIntentTemplateResource;
-	
-	@Value("classpath:/prompts/base.st")
+
+	@Value("${prompts.base}")
 	private Resource baseTemplateResource;
-	
-	@Value("classpath:/prompts/welcome.st")
+
+	@Value("${prompts.welcome}")
 	private Resource welcomeResource;
 	
 	@Value("${owner.name}")
