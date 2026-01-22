@@ -48,7 +48,7 @@ public class MathisMemberService {
 	public byte[] getMemberCard(Long memberId) throws NoSuchElementException, JRException {
 		MathisMember member = mathisMemberRepository.findById(memberId).orElseThrow(() -> new NoSuchElementException(String.format("User with id %d does not exists",memberId)));
 		
-	    InputStream reportStream = getClass().getResourceAsStream("/templates/tessera.jrxml");
+	    InputStream reportStream = getClass().getResourceAsStream("/templates/jasper/card.jrxml");
 	    JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
 
 	    Map<String, Object> params = new HashMap<>();

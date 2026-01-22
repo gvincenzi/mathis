@@ -3,6 +3,7 @@ package com.gist.mathis.service;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,12 +29,15 @@ import com.gist.mathis.controller.entity.TransactionRequest;
 import com.gist.mathis.controller.entity.UserTypeEnum;
 import com.gist.mathis.model.entity.AuthorityEnum;
 import com.gist.mathis.model.entity.Knowledge;
+import com.gist.mathis.model.entity.finance.Transaction;
+import com.gist.mathis.model.entity.finance.TransactionDetailType;
 import com.gist.mathis.service.entity.IntentResponse;
 import com.gist.mathis.service.finance.ExcelExportService;
 import com.gist.mathis.service.finance.TransactionService;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.JRException;
 
 @Slf4j
 @Service
@@ -111,7 +115,7 @@ public class ChatService {
 			    .build();
 	}
 	
-	public ChatMessage chat(ChatMessage message) throws NumberFormatException, IOException {
+	public ChatMessage chat(ChatMessage message) throws NumberFormatException, IOException, NoSuchElementException, JRException {
 		IntentResponse intentResponse = analyzeUserMessage(message);
 		ChatMessage chat = null;
 
@@ -128,8 +132,13 @@ public class ChatService {
 				if(AuthorityEnum.ROLE_ADMIN.equals(message.getUserAuth())) {
 					BeanOutputConverter<TransactionRequest> beanOutputConverter = new BeanOutputConverter<>(TransactionRequest.class);
 					TransactionRequest transactionRequest = beanOutputConverter.convert(new ObjectMapper().writeValueAsString(intentResponse.getEntities()));							
-					transactionService.addTransaction(transactionRequest);
-					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, String.format(ADD_TRANSACTION_TEXT));
+					Transaction transaction = transactionService.addTransaction(transactionRequest);
+					if(TransactionDetailType.INCOME.equals(transaction.getTransactionDetail().getType())) {
+						ByteArrayResource resource = new ByteArrayResource(transactionService.getTransactionReceipt(transaction.getId()));
+						chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, "Receipt#" + transaction.getDocumentItemNumber() + ".pdf", resource);
+					} else {
+						chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, String.format(ADD_TRANSACTION_TEXT));
+					}
 				} else {
 					chat = adminRoleCheckFailed(message.getConversationId());
 				}
@@ -205,7 +214,6 @@ public class ChatService {
 		return intentResponse;
 	}
 
-	@SuppressWarnings("unused")
 	private ChatMessage adminRoleCheckFailed(String conversationId) {
 		log.info("{} -> adminRoleCheckFailed", ChatService.class.getSimpleName());
 		

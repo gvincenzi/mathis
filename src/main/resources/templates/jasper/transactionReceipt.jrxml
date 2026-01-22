@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+    name="DonationReceipt" pageWidth="595" pageHeight="842" columnWidth="555"
+    leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="ae1b2c34-1234-5678-9abc-def012345678">
+
+    <!-- STYLES: devono venire subito dopo l'apertura di jasperReport -->
+    <style name="Title" fontName="SansSerif" fontSize="16" isBold="true"/>
+    <style name="Label" fontName="SansSerif" fontSize="10" isBold="true"/>
+    <style name="Normal" fontName="SansSerif" fontSize="10"/>
+
+    <!-- PARAMETERS: testi e immagini -->
+    <parameter name="Logo" class="java.io.InputStream"/>
+    <parameter name="StampAndSign" class="java.io.InputStream"/>
+    <parameter name="title" class="java.lang.String"/>
+    <parameter name="cause" class="java.lang.String"/>
+    <parameter name="declaration" class="java.lang.String"/>
+    <parameter name="label_amount" class="java.lang.String"/>
+    <parameter name="label_description" class="java.lang.String"/>
+    <parameter name="label_payment_method" class="java.lang.String"/>
+    <parameter name="label_signature" class="java.lang.String"/>
+    <parameter name="stamp" class="java.lang.String"/>
+
+    <!-- FIELDS: dal bean Transaction -->
+    <field name="date" class="java.time.LocalDate"/>
+    <field name="description" class="java.lang.String"/>
+    <field name="documentItemNumber" class="java.lang.Integer"/>
+    <field name="amount" class="java.math.BigDecimal"/>
+    <field name="type" class="com.gist.mathis.model.entity.finance.TransactionType"/>
+    <field name="transactionDetail.code" class="java.lang.String"/>
+    <field name="transactionDetail.description" class="java.lang.String"/>
+    <field name="transactionDetail.category" class="java.lang.String"/>
+    <field name="transactionDetail.type" class="com.gist.mathis.model.entity.finance.TransactionDetailType"/>
+
+    <!-- TITLE BAND -->
+    <title>
+        <band height="90">
+            <!-- Logo -->
+            <image>
+                <reportElement x="0" y="0" width="70" height="70"/>
+                <imageExpression><![CDATA[$P{Logo}]]></imageExpression>
+            </image>
+            <!-- Title -->
+            <textField>
+                <reportElement x="80" y="0" width="400" height="30" style="Title"/>
+                <textFieldExpression><![CDATA[$P{title}]]></textFieldExpression>
+            </textField>
+            <!-- Document number and date -->
+            <textField>
+                <reportElement x="80" y="35" width="400" height="15" style="Label"/>
+                <textFieldExpression><![CDATA["No. " + ($F{documentItemNumber} != null ? $F{documentItemNumber} : "") + " / " + ($F{date} != null ? $F{date}.getYear() : "")]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="80" y="55" width="400" height="15" style="Label"/>
+                <textFieldExpression><![CDATA["Date: " + ($F{date} != null ? $F{date}.toString() : "")]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <!-- DETAIL BAND -->
+    <detail>
+        <band height="420">
+
+            <!-- Amount -->
+            <textField>
+                <reportElement x="0" y="0" width="150" height="20" style="Label"/>
+                <textFieldExpression><![CDATA[$P{label_amount}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="160" y="0" width="100" height="20" style="Normal"/>
+                <textFieldExpression><![CDATA[$F{amount} != null ? $F{amount}.toPlainString() : ""]]> </textFieldExpression>
+            </textField>
+
+            <!-- Description -->
+            <textField>
+                <reportElement x="0" y="30" width="150" height="20" style="Label"/>
+                <textFieldExpression><![CDATA[$P{label_description}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="160" y="30" width="355" height="20" style="Normal"/>
+                <textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
+            </textField>
+
+            <!-- Payment method label -->
+            <textField>
+                <reportElement x="0" y="60" width="150" height="20" style="Label"/>
+                <textFieldExpression><![CDATA[$P{label_payment_method}]]></textFieldExpression>
+            </textField>
+            <!-- Bonifico Bancario -->
+            <textField>
+                <reportElement x="160" y="60" width="120" height="20" style="Normal"/>
+                <textFieldExpression><![CDATA[
+                    ($F{type} != null && $F{type}.toString().equals("BANK")) ? "[X] Bonifico" : "[ ] Bonifico"
+                ]]></textFieldExpression>
+            </textField>
+            <!-- Assegno -->
+            <textField>
+                <reportElement x="290" y="60" width="80" height="20" style="Normal"/>
+                <textFieldExpression><![CDATA[
+                    ($F{type} != null && $F{type}.toString().equals("CASH")) ? "[X] Contanti" : "[ ] Contanti"
+                ]]></textFieldExpression>
+            </textField>
+
+            <!-- Cause (parametrized) -->
+            <textField>
+                <reportElement x="0" y="90" width="555" height="25" style="Normal"/>
+                <textFieldExpression><![CDATA[$P{cause}]]></textFieldExpression>
+            </textField>
+
+            <!-- Declaration (parametrized, stretches if too long) -->
+            <textField isStretchWithOverflow="true">
+                <reportElement x="0" y="120" width="555" height="60" style="Normal"/>
+                <textFieldExpression><![CDATA[$P{declaration}]]></textFieldExpression>
+            </textField>
+
+            <!-- Signature label (parametrized) -->
+            <textField>
+                <reportElement x="0" y="200" width="555" height="20" style="Label"/>
+                <textFieldExpression><![CDATA[$P{label_signature}]]></textFieldExpression>
+            </textField>
+
+            <!-- Stamp and sign image -->
+            <image>
+                <reportElement x="0" y="230" width="140" height="80"/>
+                <imageExpression><![CDATA[$P{StampAndSign}]]></imageExpression>
+            </image>
+
+        </band>
+    </detail>
+</jasperReport>

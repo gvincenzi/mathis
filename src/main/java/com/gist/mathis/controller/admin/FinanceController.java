@@ -1,6 +1,7 @@
 package com.gist.mathis.controller.admin;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -23,6 +24,7 @@ import com.gist.mathis.service.finance.ExcelExportService;
 import com.gist.mathis.service.finance.TransactionService;
 
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.JRException;
 
 @Slf4j
 @RestController
@@ -53,6 +55,22 @@ public class FinanceController {
 			return new ResponseEntity<Transaction>(transactionService.addTransaction(transaction), HttpStatus.ACCEPTED);
 		} catch (JsonProcessingException e) {
 			return new ResponseEntity<Transaction>(HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	@GetMapping("/transaction/receipt/{transactionId}")
+    public ResponseEntity<Resource> getMemberCard(@PathVariable("transactionId") Long transactionId) {
+    	ByteArrayResource resource;
+		try {
+			resource = new ByteArrayResource(transactionService.getTransactionReceipt(transactionId));
+	        String fileName = "receipt#transaction#" + transactionId + ".pdf";
+	        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"").contentLength(resource.contentLength()).contentType(MediaType.APPLICATION_JSON).body(resource);
+		} catch (NoSuchElementException e) {
+			log.error(e.getMessage(), e);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		} catch (JRException e) {
+			log.error(e.getMessage(), e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
 }

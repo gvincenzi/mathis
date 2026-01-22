@@ -1,6 +1,7 @@
 package com.gist.mathis.controller;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import com.gist.mathis.model.entity.AuthorityEnum;
 import com.gist.mathis.service.ChatService;
 
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.JRException;
 
 @Slf4j
 @RestController
@@ -37,7 +39,7 @@ public class ChatController {
 		
 		try {
 			return new ResponseEntity<ChatMessage>(chatService.chat(message), HttpStatus.ACCEPTED);
-		} catch (NumberFormatException | IOException e) {
+		} catch (NumberFormatException | IOException | NoSuchElementException | JRException e) {
 			log.error(e.getMessage(), e);
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}

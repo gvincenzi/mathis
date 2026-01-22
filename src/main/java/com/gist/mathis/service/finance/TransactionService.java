@@ -1,8 +1,12 @@
 package com.gist.mathis.service.finance;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -26,10 +30,38 @@ import com.gist.mathis.model.repository.finance.TransactionDetailRepository;
 import com.gist.mathis.model.repository.finance.TransactionRepository;
 
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 @Slf4j
 @Service
 public class TransactionService {
+	@Value("${receipt.title}") 
+	private String title;
+	
+	@Value("${receipt.cause}") 
+	String cause;
+	
+	@Value("${receipt.declaration}") 
+	String declaration;
+	
+	@Value("${receipt.label_amount}") 
+	String labelAmount;
+	
+	@Value("${receipt.label_description}") 
+	String labelDescription;
+	
+	@Value("${receipt.label_payment_method}") 
+	String labelPaymentMethod;
+	
+	@Value("${receipt.label_signature}") 
+	String labelSignature;
+	
 	@Value("classpath:/prompts/finance/computeTransactionDetail.st")
 	private Resource computeTransactionDetailTemplateResource;
 	
@@ -58,7 +90,7 @@ public class TransactionService {
 		transaction.setType(transactionRequest.getType());
 		Integer lastDocumentItemNumber = transactionRepository.findLastDocumentItemNumber(transactionRequest.getDate().getYear());
 		lastDocumentItemNumber = lastDocumentItemNumber == null ? 0 : lastDocumentItemNumber;
-		if(transactionRequest.getAmount().compareTo(BigDecimal.ZERO)>0) transaction.setDocumentItemNumber(+1);
+		if(transactionRequest.getAmount().compareTo(BigDecimal.ZERO)>0) transaction.setDocumentItemNumber(lastDocumentItemNumber+1);
 		
 		transaction.setTransactionDetail(transactionDetail);
 		
@@ -92,5 +124,34 @@ public class TransactionService {
 	
 	public List<Transaction> saveAll(List<Transaction> transactions){
 		return transactionRepository.saveAll(transactions);
+	}
+	
+	public byte[] getTransactionReceipt(Long transactionId) throws NoSuchElementException, JRException {
+		Transaction transaction = transactionRepository.findById(transactionId).orElseThrow(() -> new NoSuchElementException(String.format("Transaction with id %d does not exists",transactionId)));
+		
+	    InputStream reportStream = getClass().getResourceAsStream("/templates/jasper/transactionReceipt.jrxml");
+	    InputStream logoStream = getClass().getResourceAsStream("/static/images/logo_responsabitaly.jpg");
+	    InputStream stampStream = getClass().getResourceAsStream("/static/images/stamp_and_sign.jpg");
+	    JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
+
+	    Map<String, Object> params = new HashMap<>();
+	    params.put("title", String.format(title));
+	    params.put("cause", String.format(cause, transaction.getTransactionDetail().getCategory(), transaction.getTransactionDetail().getDescription()));
+	    params.put("declaration", declaration);
+	    params.put("label_amount", labelAmount);
+	    params.put("label_description", labelDescription);
+	    params.put("label_payment_method", labelPaymentMethod);
+	    params.put("label_signature", labelSignature);
+	    params.put("Logo", logoStream);
+	    params.put("StampAndSign", stampStream);
+
+
+	    JRBeanCollectionDataSource datasource = new JRBeanCollectionDataSource(List.of(transaction));
+	    JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params, datasource);
+
+	    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	    JasperExportManager.exportReportToPdfStream(jasperPrint, baos);
+
+	    return baos.toByteArray();
 	}
 }

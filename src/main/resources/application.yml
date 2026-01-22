@@ -40,3 +40,15 @@ message:
  LIST_DOCUMENTS_TEXT: List of available documents
  ASK_DOCUMENTS_TEXT: Here are the documents that might interest you (if you ask me, I can give you the complete list of available documents)
  ADD_TRANSACTION_TEXT: ✅ *Transaction added to the statement !*
+
+receipt:
+ title: "Receipt"
+ cause: "%s - %s to support the institutional activities of Responsabitaly APS."
+ declaration: |
+   Entity declaration:
+   The association Responsabitaly APS declares to have received the amount indicated above as a liberal donation.
+   It is also declared, pursuant to Art. 83 of Legislative Decree 117/2017, that the entity is registered in RUNTS and that the donation was made through traceable payment systems, a necessary condition for the donor's tax deductibility or deductibility.
+ label_amount: "Received amount (€):"
+ label_description: "Description:"
+ label_payment_method: "Payment method:"
+ label_signature: "Signature of the Legal Representative (or delegate)"

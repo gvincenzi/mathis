@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import com.gist.mathis.service.security.MathisUserDetailsService;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.JRException;
 
 @Data
 @Slf4j
@@ -103,7 +105,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 						telegramClient.execute(message);
 					}
 					log.info("Chat response sent to chatId: {}", chat.getConversationId());
-				} catch (TelegramApiException | IOException | NumberFormatException e) {
+				} catch (TelegramApiException | IOException | NumberFormatException | NoSuchElementException | JRException e) {
 					log.error("Error processing chat message from chatId {}: {}", update.getMessage().getChatId(), e.getMessage(), e);
 				}
 			} else if (update.hasCallbackQuery()) {
