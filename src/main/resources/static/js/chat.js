@@ -87,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
+				credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json'
                 },

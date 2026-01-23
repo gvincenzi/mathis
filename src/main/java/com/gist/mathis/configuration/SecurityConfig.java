@@ -48,10 +48,8 @@ public class SecurityConfig {
        .csrf(csrf -> csrf.disable())
        .securityMatcher("/api/**")
        .authorizeHttpRequests(request -> {
-    	   
-        request.requestMatchers("/api/chat/**").permitAll();
         request.requestMatchers("/api/admin/**").hasRole("ADMIN");
-        request.requestMatchers("/api/web/**").authenticated();
+        request.requestMatchers("/api/chat/**","/api/web/**").authenticated();
        })
        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
        .httpBasic(Customizer.withDefaults())
