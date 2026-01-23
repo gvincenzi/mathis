@@ -54,7 +54,7 @@ public class MathisUserDetailsService implements UserDetailsService{
 			newUser.setUsername(Long.toString(chatId));
 			newUser.setFirstname(update.getMessage().getFrom().getFirstName());
 			newUser.setLastname(update.getMessage().getFrom().getLastName());
-			newUser.setPassword(bCryptPasswordEncoder.encode(Long.toString(chatId)));
+			newUser.setPassword(Long.toString(chatId));
 			return saveUser(newUser);
 		});
     	
@@ -75,5 +75,9 @@ public class MathisUserDetailsService implements UserDetailsService{
 
 	public Optional<MathisUser> findById(Long userId) {
 		return userRepository.findById(userId);
+	}
+
+	public boolean existsByUsername(String username) {
+		return userRepository.findByUsername(username).isPresent();
 	}
 }

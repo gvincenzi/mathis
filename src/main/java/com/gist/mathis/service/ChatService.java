@@ -69,6 +69,8 @@ public class ChatService {
 	@Value("${owner.website}")
 	private String ownerWebsite;
 	
+	private final static String USER_ROLE = "user_role";
+	
 	private final KnowledgeService knowledgeService;
 	private final TransactionService transactionService;
 	private final ExcelExportService excelExportService;
@@ -181,6 +183,7 @@ public class ChatService {
 		
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(ChatMemory.CONVERSATION_ID, conversationId);
+		parameters.put(USER_ROLE, message.getUserAuth());
 		String responseBody = this.chatClient.prompt()
 			.advisors(advisor -> advisor.params(parameters))
 			.user(message.getBody())

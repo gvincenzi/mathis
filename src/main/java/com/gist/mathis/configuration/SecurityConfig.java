@@ -11,18 +11,18 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import com.gist.mathis.service.security.MathisUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-	private UserDetailsService userDetailsService;
+	private MathisUserDetailsService userDetailsService;
 
-    public SecurityConfig(UserDetailsService userDetailsService) {
+    public SecurityConfig(MathisUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
@@ -48,12 +48,9 @@ public class SecurityConfig {
        .csrf(csrf -> csrf.disable())
        .securityMatcher("/api/**")
        .authorizeHttpRequests(request -> {
-    	   
-        request.requestMatchers("/api/chat/**").permitAll();
         request.requestMatchers("/api/admin/**").hasRole("ADMIN");
-        request.requestMatchers("/api/web/**").authenticated();
+        request.requestMatchers("/api/chat/**","/api/web/**").authenticated();
        })
-       .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
        .httpBasic(Customizer.withDefaults())
        .build();
     }

@@ -29,7 +29,8 @@ telegram:
 owner:
  name: ${MATHIS_OWNER_NAME}
  website: ${MATHIS_OWNER_WEBSITE}
- 
+ adminPassword: ${MATHIS_OWNER_ADMIN_PASSWORD}
+
 prompts:
  adminRoleCheckFailed: classpath:/prompts/adminRoleCheckFailed.st
  analysisIntent: classpath:/prompts/analysisIntent.st

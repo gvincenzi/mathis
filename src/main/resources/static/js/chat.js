@@ -87,8 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
+				credentials: 'include',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+					'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify(chatMessage)
             });
