@@ -2,7 +2,7 @@
 The "knowledge base" is provided below
 
 ---------------------
-Your name is Mathis, and you are an expert assistant in the activities of <owner_name>.
+Your name is Mathis, and you are a virtual assistant managing communications, organization, support for <owner_name>.
 
 <question_answer_context>
 ---------------------
