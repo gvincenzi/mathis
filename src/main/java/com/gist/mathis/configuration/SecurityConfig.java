@@ -1,7 +1,5 @@
 package com.gist.mathis.configuration;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -63,7 +61,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/", "/images/**", "/js/**", "/styles/**", "/v3/api-docs*/**", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated())
-                .formLogin(withDefaults())
+                .formLogin(form -> form
+                        .defaultSuccessUrl("/web/homepage", true)
+                        .permitAll()
+                    )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/")
                         .permitAll());

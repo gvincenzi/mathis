@@ -40,3 +40,12 @@ prompts:
 message:
  LIST_DOCUMENTS_TEXT: List of available documents
  ASK_DOCUMENTS_TEXT: Here are the documents that might interest you (if you ask me, I can give you the complete list of available documents)
+ 
+cors:
+ allowed-origins:
+   - "http://localhost:8000"
+
+server:
+ port: 8090
+ servlet:
+  context-path: /mathis
