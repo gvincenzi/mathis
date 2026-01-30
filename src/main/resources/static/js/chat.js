@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch('/mathis/api/chat', {
+            const response = await fetch(contextPath + '/api/chat', {
                 method: 'POST',
 				credentials: 'include',
                 headers: {

@@ -27,7 +27,7 @@
 		<div th:replace="~{fragments/chat_content :: chat_main_content(showFullChatButton=${false})}"></div>
     </main>
 
-    <!-- INCLUSIONE DEL JAVASCRIPT ESTERNO -->
+	<script th:inline="javascript">var contextPath = [[${contextPath}]];</script>
     <script th:src="@{/js/chat.js}"></script>
 
 </body>
