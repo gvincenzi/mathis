@@ -112,7 +112,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 								try {
 									telegramClient.execute(messageToAdmin);
 								} catch (TelegramApiException e) {
-									log.error("Error processing chat message from chatId {}: {}", update.getMessage().getChatId(), e.getMessage(), e);
+									log.error("Error processing chat message from chatId {}: {}", admin.getUsername(), e.getMessage(), e);
 								}
 							});
 						}
