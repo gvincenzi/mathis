@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
+import com.gist.mathis.configuration.MathisMessageWindowChatMemory;
+import com.gist.mathis.configuration.chatmemory.MathisChatMemoryObjectKeyEnum;
 import com.gist.mathis.controller.entity.ChatMessage;
 import com.gist.mathis.controller.entity.UserTypeEnum;
 import com.gist.mathis.model.entity.Knowledge;
@@ -37,6 +39,9 @@ public class ChatService {
 	
 	@Value("${message.ASK_DOCUMENTS_TEXT}")
 	private String ASK_DOCUMENTS_TEXT;
+	
+	@Value("${message.USER_MAIL_SENT_TEXT}")
+	private String USER_MAIL_SENT_TEXT;
 	
 	@Value("${prompts.adminRoleCheckFailed}")
 	private Resource adminRoleCheckFailedTemplateResource;
@@ -56,20 +61,18 @@ public class ChatService {
 	@Value("${owner.website}")
 	private String ownerWebsite;
 	
-	private final static String USER_ROLE = "user_role";
-	
 	private final KnowledgeService knowledgeService;
 	private final MistralAiChatModel chatModel;
 	private final VectorStore vectorStore;
-	private final ChatMemory chatMemory;
+	private final MathisMessageWindowChatMemory mathisMessageWindowChatMemory;
 	
 	private ChatClient chatClient, simpleChatClient;
 	
 	@Autowired
-    public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, ChatMemory chatMemory, KnowledgeService knowledgeService) {
+    public ChatService(MistralAiChatModel chatModel, VectorStore vectorStore, MathisMessageWindowChatMemory mathisMessageWindowChatMemory, KnowledgeService knowledgeService) {
         this.chatModel = chatModel;
         this.vectorStore = vectorStore;
-        this.chatMemory = chatMemory;
+        this.mathisMessageWindowChatMemory = mathisMessageWindowChatMemory;
         this.knowledgeService = knowledgeService;
     }
 	
@@ -79,7 +82,7 @@ public class ChatService {
 		
 		this.simpleChatClient = ChatClient.builder(chatModel)
 				.defaultAdvisors(
-				    	PromptChatMemoryAdvisor.builder(chatMemory).build()
+				    	PromptChatMemoryAdvisor.builder(mathisMessageWindowChatMemory).build()
 				)
 				.build();
 		
@@ -92,7 +95,7 @@ public class ChatService {
 		
 		this.chatClient = ChatClient.builder(chatModel)
 			    .defaultAdvisors(
-			    	PromptChatMemoryAdvisor.builder(chatMemory).build(),
+			    	PromptChatMemoryAdvisor.builder(mathisMessageWindowChatMemory).build(),
 			        QuestionAnswerAdvisor.builder(vectorStore)
 			        //.searchRequest(SearchRequest.builder().topK(10).build())
 			        .promptTemplate(basePromptTemplate).build()
@@ -112,6 +115,12 @@ public class ChatService {
 			case ASK_FOR_DOCUMENT : 
 				Set<Knowledge> knowledgesByIntentQuery = knowledgeService.findByVectorialSearch(intentResponse);
 				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, ASK_DOCUMENTS_TEXT, knowledgesByIntentQuery);
+				break;
+			case USER_MAIL_SENT :
+				String userMail = intentResponse.getEntities().get("email");
+				mathisMessageWindowChatMemory.add(message.getConversationId(), MathisChatMemoryObjectKeyEnum.USER_MAIL, userMail);
+				log.info("eMail [{}] saved in conversationId [{}]",userMail,message.getConversationId());
+				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, USER_MAIL_SENT_TEXT);
 				break;
 			case GENERIC_QUESTION : chat = genericQuestion(message); break;
 		}
@@ -140,10 +149,10 @@ public class ChatService {
 		
 		log.info(String.format("Calling MistralAI"));
 		
+		mathisMessageWindowChatMemory.add(message.getConversationId(), MathisChatMemoryObjectKeyEnum.USER_ROLE, message.getUserAuth());
 		
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(ChatMemory.CONVERSATION_ID, conversationId);
-		parameters.put(USER_ROLE, message.getUserAuth());
 		String responseBody = this.chatClient.prompt()
 			.advisors(advisor -> advisor.params(parameters))
 			.user(message.getBody())
