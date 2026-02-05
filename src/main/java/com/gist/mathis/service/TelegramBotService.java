@@ -101,6 +101,21 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 							message.setReplyMarkup(getInlineKeyboard(chat.getKnowledges()));
 						}
 						telegramClient.execute(message);
+						
+						//Send notification to admin
+						if(chat.getNotificationMessageForAdmin() != null) {
+							List<MathisUser> admins = userService.findAdmins();
+							admins.stream().forEach(admin -> 
+							{
+								SendMessage messageToAdmin = new SendMessage(admin.getUsername(), chat.getNotificationMessageForAdmin());
+								messageToAdmin.setParseMode("Markdown");
+								try {
+									telegramClient.execute(messageToAdmin);
+								} catch (TelegramApiException e) {
+									log.error("Error processing chat message from chatId {}: {}", update.getMessage().getChatId(), e.getMessage(), e);
+								}
+							});
+						}
 					}
 					log.info("Chat response sent to chatId: {}", chat.getConversationId());
 				} catch (TelegramApiException | IOException | NumberFormatException e) {

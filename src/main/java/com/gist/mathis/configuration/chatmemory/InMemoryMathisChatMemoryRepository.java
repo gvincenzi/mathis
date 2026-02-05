@@ -51,4 +51,12 @@ public class InMemoryMathisChatMemoryRepository implements MathisChatMemoryRepos
 		chatMemoryObjectStore.get(conversationId).put(objectKey,value);
 	}
 
+	@Override
+	public Object findByConversationIdAndKey(String conversationId, MathisChatMemoryObjectKeyEnum key) {
+		Assert.hasText(conversationId, "conversationId cannot be null or empty");
+		Map<MathisChatMemoryObjectKeyEnum,Object> objects = this.chatMemoryObjectStore.get(conversationId);
+		Assert.notNull(key, "key cannot be null");
+		return objects.get(key);
+	}
+
 }

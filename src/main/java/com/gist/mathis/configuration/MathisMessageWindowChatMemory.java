@@ -53,6 +53,12 @@ public class MathisMessageWindowChatMemory implements ChatMemory {
 		Assert.hasText(conversationId, "conversationId cannot be null or empty");
 		return this.chatMemoryRepository.findByConversationId(conversationId);
 	}
+	
+	public Object get(String conversationId, MathisChatMemoryObjectKeyEnum key) {
+		Assert.hasText(conversationId, "conversationId cannot be null or empty");
+		Assert.notNull(key, "key cannot be null");
+		return this.chatMemoryRepository.findByConversationIdAndKey(conversationId, key);
+	}
 
 	@Override
 	public void clear(String conversationId) {

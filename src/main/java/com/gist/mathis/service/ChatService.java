@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.PromptChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.converter.BeanOutputConverter;
@@ -42,6 +44,12 @@ public class ChatService {
 	
 	@Value("${message.USER_MAIL_SENT_TEXT}")
 	private String USER_MAIL_SENT_TEXT;
+	
+	@Value("${message.ASK_USER_MAIL_TEXT}")
+	private String ASK_USER_MAIL_TEXT;
+	
+	@Value("${prompts.adminNotification}")
+	private Resource adminNotificationTemplateResource;
 	
 	@Value("${prompts.adminRoleCheckFailed}")
 	private Resource adminRoleCheckFailedTemplateResource;
@@ -122,6 +130,33 @@ public class ChatService {
 				log.info("eMail [{}] saved in conversationId [{}]",userMail,message.getConversationId());
 				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, USER_MAIL_SENT_TEXT);
 				break;
+			case NOTIFY_ADMIN :
+				if(intentResponse.getEntities().containsKey("email") && intentResponse.getEntities().get("email") != null && intentResponse.getEntities().get("email") !="") {
+					String email = intentResponse.getEntities().get("email");
+					mathisMessageWindowChatMemory.add(message.getConversationId(), MathisChatMemoryObjectKeyEnum.USER_MAIL, email);
+					log.info("eMail [{}] saved in conversationId [{}]",email,message.getConversationId());
+				}
+				
+				if(mathisMessageWindowChatMemory.get(message.getConversationId(),MathisChatMemoryObjectKeyEnum.USER_MAIL) == null) {
+					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, ASK_USER_MAIL_TEXT);
+					break;
+				} else {
+					String userMessageForAdmin = intentResponse.getEntities().get("message");
+					log.info("Sending message to admins [{}]",userMessageForAdmin);
+					String conversationForSummary = mathisMessageWindowChatMemory.get(message.getConversationId()).stream()
+					        .map(m -> (m.getMessageType() == MessageType.USER ? UserTypeEnum.HUMAN : UserTypeEnum.AI) + ": " + m.getText())
+					        .collect(Collectors.joining("\n"));
+
+					log.info("Create adminNotificationPromptTemplate [resource: {}]", adminNotificationTemplateResource.getFilename());
+					PromptTemplate adminNotificationTemplate = new PromptTemplate(this.adminNotificationTemplateResource);
+					Prompt prompt = adminNotificationTemplate.create(Map.of("owner_name", ownerName, "conversationForSummary", conversationForSummary, "userMessageForAdmin", userMessageForAdmin));
+					String messageToAdmin = this.simpleChatClient.prompt(prompt)
+							.call()
+							.content();
+					
+					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, "\uD83D\uDC4D", messageToAdmin);
+					break;
+				}
 			case GENERIC_QUESTION : chat = genericQuestion(message); break;
 		}
 		return chat;

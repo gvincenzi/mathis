@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import com.gist.mathis.model.entity.AuthorityEnum;
 import com.gist.mathis.model.entity.MathisUser;
 import com.gist.mathis.model.repository.MathisUserRepository;
 
@@ -79,5 +80,9 @@ public class MathisUserDetailsService implements UserDetailsService{
 
 	public boolean existsByUsername(String username) {
 		return userRepository.findByUsername(username).isPresent();
+	}
+
+	public List<MathisUser> findAdmins() {
+		return userRepository.findByAuth(AuthorityEnum.ROLE_ADMIN);
 	}
 }

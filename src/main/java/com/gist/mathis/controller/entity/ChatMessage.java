@@ -19,11 +19,19 @@ public class ChatMessage {
 	String body;
 	Set<Knowledge> knowledges;
 	ByteArrayResource resource;
+	String notificationMessageForAdmin;
 	
 	public ChatMessage(String conversationId, UserTypeEnum userType, String body) {
 		this.conversationId = conversationId;
 		this.userType = userType;
 		this.body = body;
+	}
+	
+	public ChatMessage(String conversationId, UserTypeEnum userType, String body, String notificationMessageForAdmin) {
+		this.conversationId = conversationId;
+		this.userType = userType;
+		this.body = body;
+		this.notificationMessageForAdmin = notificationMessageForAdmin;
 	}
 
 	public ChatMessage(String conversationId, UserTypeEnum userType, String body, Set<Knowledge> knowledges) {
