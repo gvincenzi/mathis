@@ -63,6 +63,9 @@ public class ChatService {
 	@Value("${prompts.welcome}")
 	private Resource welcomeResource;
 	
+	@Value("${prompts.translation}")
+	private Resource translationResource;
+	
 	@Value("${owner.name}")
 	private String ownerName;
 
@@ -118,17 +121,17 @@ public class ChatService {
 		switch (intentResponse.getIntentValue()) {
 			case LIST_DOCUMENTS :
 				Set<Knowledge> knowledges = knowledgeService.findAll();
-				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, LIST_DOCUMENTS_TEXT, knowledges);
+				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, translation(LIST_DOCUMENTS_TEXT,message.getConversationId()), knowledges);
 				break;
 			case ASK_FOR_DOCUMENT : 
 				Set<Knowledge> knowledgesByIntentQuery = knowledgeService.findByVectorialSearch(intentResponse);
-				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, ASK_DOCUMENTS_TEXT, knowledgesByIntentQuery);
+				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, translation(ASK_DOCUMENTS_TEXT,message.getConversationId()), knowledgesByIntentQuery);
 				break;
 			case USER_MAIL_SENT :
 				String userMail = intentResponse.getEntities().get("email");
 				mathisMessageWindowChatMemory.add(message.getConversationId(), MathisChatMemoryObjectKeyEnum.USER_MAIL, userMail);
 				log.info("eMail [{}] saved in conversationId [{}]",userMail,message.getConversationId());
-				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, USER_MAIL_SENT_TEXT);
+				chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, translation(USER_MAIL_SENT_TEXT,message.getConversationId()));
 				break;
 			case NOTIFY_ADMIN :
 				if(intentResponse.getEntities().containsKey("email") && intentResponse.getEntities().get("email") != null && intentResponse.getEntities().get("email") !="") {
@@ -138,14 +141,12 @@ public class ChatService {
 				}
 				
 				if(mathisMessageWindowChatMemory.get(message.getConversationId(),MathisChatMemoryObjectKeyEnum.USER_MAIL) == null) {
-					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, ASK_USER_MAIL_TEXT);
+					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, translation(ASK_USER_MAIL_TEXT,message.getConversationId()));
 					break;
 				} else {
 					String userMessageForAdmin = intentResponse.getEntities().get("message");
 					log.info("Sending message to admins [{}]",userMessageForAdmin);
-					String conversationForSummary = mathisMessageWindowChatMemory.get(message.getConversationId()).stream()
-					        .map(m -> (m.getMessageType() == MessageType.USER ? UserTypeEnum.HUMAN : UserTypeEnum.AI) + ": " + m.getText())
-					        .collect(Collectors.joining("\n"));
+					String conversationForSummary = conversationHistory(message.getConversationId());
 
 					log.info("Create adminNotificationPromptTemplate [resource: {}]", adminNotificationTemplateResource.getFilename());
 					PromptTemplate adminNotificationTemplate = new PromptTemplate(this.adminNotificationTemplateResource);
@@ -154,19 +155,26 @@ public class ChatService {
 							.call()
 							.content();
 					
-					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, "\uD83D\uDC4D", messageToAdmin);
+					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, translation("Message correctly sent \uD83D\uDC4D",message.getConversationId()), messageToAdmin);
 					break;
 				}
 			case GENERIC_QUESTION : chat = genericQuestion(message); break;
 		}
 		return chat;
 	}
+
+	private String conversationHistory(String conversationId) {
+		String conversationForSummary = mathisMessageWindowChatMemory.get(conversationId).stream()
+		        .map(m -> (m.getMessageType() == MessageType.USER ? UserTypeEnum.HUMAN : UserTypeEnum.AI) + ": " + m.getText())
+		        .collect(Collectors.joining("\n"));
+		return conversationForSummary;
+	}
 	
-	public ChatMessage welcome(String conversationId, String firstname) {	
+	public ChatMessage welcome(String conversationId, String firstname, String language) {	
 		log.info("{} -> welcome", ChatService.class.getSimpleName());
 		
 		PromptTemplate welcomePromptTemplate = new PromptTemplate(this.welcomeResource);
-		Prompt prompt = welcomePromptTemplate.create(Map.of("firstname", firstname, "owner_name", ownerName, "owner_website", ownerWebsite));
+		Prompt prompt = welcomePromptTemplate.create(Map.of("firstname", firstname, "owner_name", ownerName, "owner_website", ownerWebsite, "language", language));
 		
 		log.info(String.format("Calling MistralAI"));
 		
@@ -175,6 +183,19 @@ public class ChatService {
 			.content();
 
 		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
+	}
+	
+	public String translation(String toTranslate, String conversationId) {	
+		log.info("{} -> translation", ChatService.class.getSimpleName());
+		
+		PromptTemplate translationTemplate = new PromptTemplate(this.translationResource);
+		Prompt prompt = translationTemplate.create(Map.of("conversationForSummary", conversationHistory(conversationId)));
+		
+		log.info(String.format("Calling MistralAI"));
+		
+		return this.simpleChatClient.prompt(prompt).user(toTranslate)
+			.call()
+			.content();
 	}
 	
 	private ChatMessage genericQuestion(ChatMessage message) {

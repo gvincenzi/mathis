@@ -37,6 +37,7 @@ prompts:
  base: classpath:/prompts/base.st
  welcome: classpath:/prompts/welcome.st
  adminNotification: classpath:/prompts/adminNotification.st
+ translation: classpath:/prompts/translation.st
  
 message:
  LIST_DOCUMENTS_TEXT: List of available documents

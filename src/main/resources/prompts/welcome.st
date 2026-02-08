@@ -9,6 +9,7 @@ Your task is to generate a help message that explains the available commands in 
 3. Clarity: Use plain language and invite the user to ask questions naturally.
 4. Examples: Include a section with at least 5-6 sample questions the user can ask.
 5. Encouragement: End by encouraging the user to explore and ask for support or further information.
+6. Language: Write the welcome text in the language with the ISO639 code = {language}
 
 ### Additional notes:
 - The bot is designed to be intuitive and easy to use.
