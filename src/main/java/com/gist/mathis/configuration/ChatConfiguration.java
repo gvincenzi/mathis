@@ -7,14 +7,16 @@ import com.gist.mathis.configuration.chatmemory.InMemoryMathisChatMemoryReposito
 
 @Configuration
 public class ChatConfiguration {
-	InMemoryMathisChatMemoryRepository mathisChatMemoryRepository;
+	@Bean
+    public InMemoryMathisChatMemoryRepository mathisChatMemoryRepository() {
+        return new InMemoryMathisChatMemoryRepository();
+    }
 
 	@Bean
-	public MathisMessageWindowChatMemory mathisMessageWindowChatMemory() {
+	public MathisMessageWindowChatMemory mathisMessageWindowChatMemory(InMemoryMathisChatMemoryRepository mathisChatMemoryRepository) {
 		return MathisMessageWindowChatMemory.builder()
 				.chatMemoryRepository(mathisChatMemoryRepository)
 				.maxMessages(10)
 				.build();
 	}
-
 }

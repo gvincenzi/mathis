@@ -44,7 +44,13 @@ message:
  ASK_DOCUMENTS_TEXT: Here are the documents that might interest you (if you ask me, I can give you the complete list of available documents)
  USER_MAIL_SENT_TEXT: Thank you for providing your email. I will keep it in mind for any future communications. If you would like me to have the administrators contact you, just let me know and feel free to write a message you’d like them to receive, in addition to the summary of the conversation that I will send.
  ASK_USER_MAIL_TEXT: To notify my administrator, I need your email address
-  
+
+mathis:
+  chat:
+    memory:
+      expiration-millis: 3600000
+      cleanup-cron: "0 0/10 * * * ?"
+
 cors:
  allowed-origins:
    - "http://localhost:8000"

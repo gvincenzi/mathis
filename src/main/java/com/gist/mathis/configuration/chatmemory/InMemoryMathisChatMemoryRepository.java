@@ -8,9 +8,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.util.Assert;
 
+import lombok.Data;
+
+@Data
 public class InMemoryMathisChatMemoryRepository implements MathisChatMemoryRepository{
 
-	Map<String, List<Message>> chatMemoryStore = new ConcurrentHashMap<>();
+	Map<String, ChatMemoryEntry> chatMemoryStore = new ConcurrentHashMap<>();
 	Map<String, Map<MathisChatMemoryObjectKeyEnum,Object>> chatMemoryObjectStore = new ConcurrentHashMap<>();
 
 	@Override
@@ -20,17 +23,17 @@ public class InMemoryMathisChatMemoryRepository implements MathisChatMemoryRepos
 
 	@Override
 	public List<Message> findByConversationId(String conversationId) {
-		Assert.hasText(conversationId, "conversationId cannot be null or empty");
-		List<Message> messages = this.chatMemoryStore.get(conversationId);
-		return messages != null ? new ArrayList<>(messages) : List.of();
+	    Assert.hasText(conversationId, "conversationId cannot be null or empty");
+	    ChatMemoryEntry entry = this.chatMemoryStore.get(conversationId);
+	    return entry != null ? entry.getMessages() : List.of();
 	}
 
 	@Override
 	public void saveAll(String conversationId, List<Message> messages) {
-		Assert.hasText(conversationId, "conversationId cannot be null or empty");
-		Assert.notNull(messages, "messages cannot be null");
-		Assert.noNullElements(messages, "messages cannot contain null elements");
-		this.chatMemoryStore.put(conversationId, messages);
+	    Assert.hasText(conversationId, "conversationId cannot be null or empty");
+	    Assert.notNull(messages, "messages cannot be null");
+	    Assert.noNullElements(messages, "messages cannot contain null elements");
+	    this.chatMemoryStore.put(conversationId, new ChatMemoryEntry(messages));
 	}
 
 	@Override
@@ -41,22 +44,21 @@ public class InMemoryMathisChatMemoryRepository implements MathisChatMemoryRepos
 	}
 	
 	public Object get(String conversationId, MathisChatMemoryObjectKeyEnum objectKey) {
-		return chatMemoryObjectStore.get(conversationId).get(objectKey);
+	    Map<MathisChatMemoryObjectKeyEnum, Object> map = chatMemoryObjectStore.get(conversationId);
+	    return map != null ? map.get(objectKey) : null;
 	}
 	
 	public void save(String conversationId, MathisChatMemoryObjectKeyEnum objectKey, Object value) {
-		if(chatMemoryObjectStore.get(conversationId) == null) {
-			chatMemoryObjectStore.put(conversationId,new ConcurrentHashMap<>());
-		}
-		chatMemoryObjectStore.get(conversationId).put(objectKey,value);
+	    chatMemoryObjectStore
+	        .computeIfAbsent(conversationId, k -> new ConcurrentHashMap<>())
+	        .put(objectKey, value);
 	}
 
 	@Override
 	public Object findByConversationIdAndKey(String conversationId, MathisChatMemoryObjectKeyEnum key) {
 		Assert.hasText(conversationId, "conversationId cannot be null or empty");
-		Map<MathisChatMemoryObjectKeyEnum,Object> objects = this.chatMemoryObjectStore.get(conversationId);
 		Assert.notNull(key, "key cannot be null");
-		return objects.get(key);
+		Map<MathisChatMemoryObjectKeyEnum,Object> objects = this.chatMemoryObjectStore.get(conversationId);
+		return objects != null ? objects.get(key) : null;
 	}
-
 }
