@@ -35,7 +35,6 @@ prompts:
  adminRoleCheckFailed: classpath:/prompts/adminRoleCheckFailed.st
  analysisIntent: classpath:/prompts/analysisIntent.st
  base: classpath:/prompts/base.st
- welcome: classpath:/prompts/welcome.st
  adminNotification: classpath:/prompts/adminNotification.st
  translation: classpath:/prompts/translation.st
  
@@ -44,6 +43,24 @@ message:
  ASK_DOCUMENTS_TEXT: Here are the documents that might interest you (if you ask me, I can give you the complete list of available documents)
  USER_MAIL_SENT_TEXT: Thank you for providing your email. I will keep it in mind for any future communications. If you would like me to have the administrators contact you, just let me know and feel free to write a message you’d like them to receive, in addition to the summary of the conversation that I will send.
  ASK_USER_MAIL_TEXT: To notify my administrator, I need your email address
+ WELCOME_TEXT: |
+   Hello and welcome! 👋  
+   I'm Mathis, the virtual assistant for {owner_name}, here to help you discover everything about our activities.  
+   You can ask me any question in a natural way: I will respond clearly and friendly, providing you with information, documents, and useful guidance.
+
+   📚 Here are some examples of questions you can ask me:
+   - What is {owner_name} and what are its activities?
+   - Where can I find official documents?
+   - What are the upcoming events or initiatives?
+   - How can I contact you?
+   - What are the values and principles we follow?
+
+   🤗 Explore all the possibilities!  
+   Feel free to ask me anything you want to know about our activities.  
+   I am here to guide you and help you find the information you need: just type your question!
+
+   If you need support or want to learn more about a topic, just ask me.  
+   Visit the official website of [{owner_name}]({owner_website})!
 
 mathis:
   chat:

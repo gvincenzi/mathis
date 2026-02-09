@@ -36,6 +36,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ChatService {
+	@Value("${message.WELCOME_TEXT}")
+	private String WELCOME_TEXT;
+	
 	@Value("${message.LIST_DOCUMENTS_TEXT}")
 	private String LIST_DOCUMENTS_TEXT;
 	
@@ -60,9 +63,6 @@ public class ChatService {
 	@Value("${prompts.base}")
 	private Resource baseTemplateResource;
 
-	@Value("${prompts.welcome}")
-	private Resource welcomeResource;
-	
 	@Value("${prompts.translation}")
 	private Resource translationResource;
 	
@@ -170,19 +170,9 @@ public class ChatService {
 		return conversationForSummary;
 	}
 	
-	public ChatMessage welcome(String conversationId, String firstname, String language) {	
+	public ChatMessage welcome(String conversationId, String firstname) {	
 		log.info("{} -> welcome", ChatService.class.getSimpleName());
-		
-		PromptTemplate welcomePromptTemplate = new PromptTemplate(this.welcomeResource);
-		Prompt prompt = welcomePromptTemplate.create(Map.of("firstname", firstname, "owner_name", ownerName, "owner_website", ownerWebsite, "language", language));
-		
-		log.info(String.format("Calling MistralAI"));
-		
-		String responseBody = this.simpleChatClient.prompt(prompt)
-			.call()
-			.content();
-
-		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
+		return new ChatMessage(conversationId, UserTypeEnum.AI, translation(WELCOME_TEXT.replace("{firstname}", firstname).replace("{owner_website}", ownerWebsite).replace("{owner_name}", ownerName), conversationId));
 	}
 	
 	public String translation(String toTranslate, String conversationId) {	

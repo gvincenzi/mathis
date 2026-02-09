@@ -72,14 +72,13 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 		
 		if (update.hasMessage() || update.hasCallbackQuery()) {
 			Long chatId = update.hasMessage() ? update.getMessage().getChatId() : update.getCallbackQuery().getMessage().getChatId();
-			String lang = update.getMessage().getCaption() != null ? update.getMessage().getCaption() : update.getMessage().getFrom().getLanguageCode();
 			MathisUser user = userService.findOrCreateByTelegram(update,chatId);
 
 			if (update.hasMessage() && update.getMessage().getText() != null && update.getMessage().getText().startsWith(START)) {
 				log.info("Start command detected from chatId: {}", update.getMessage().getChatId());
 
 				try {
-					chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), user.getFirstname(), lang);
+					chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), user.getFirstname());
 					SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
 					message.setParseMode("Markdown");
 					telegramClient.execute(message);
@@ -124,7 +123,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 				}
 			} else if (update.hasCallbackQuery()) {
 				CallbackQuery callbackQuery = update.getCallbackQuery();
-				SendMessage message = handleCallbackQuery(callbackQuery.getData(), callbackQuery.getMessage().getChatId(), user, lang);
+				SendMessage message = handleCallbackQuery(callbackQuery.getData(), callbackQuery.getMessage().getChatId(), user);
 				try {
 					telegramClient.execute(message);
 				} catch (TelegramApiException e) {
@@ -141,7 +140,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 		return this;
 	}
 	
-	private SendMessage handleCallbackQuery(String callbackData, Long chatId, MathisUser user, String language) {
+	private SendMessage handleCallbackQuery(String callbackData, Long chatId, MathisUser user) {
 		SendMessage message = null;
 		String callBackAction = callbackData.substring(0,callbackData.indexOf("#"));
 		switch (callBackAction) {
@@ -156,7 +155,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 		}
 		
 		if(message == null) {
-			ChatMessage chat = chatService.welcome(Long.toString(chatId), user.getFirstname(), language);
+			ChatMessage chat = chatService.welcome(Long.toString(chatId), user.getFirstname());
 			message = new SendMessage(chat.getConversationId(), chat.getBody());
 		}
 		
