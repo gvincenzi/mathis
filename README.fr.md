@@ -62,12 +62,15 @@ package com.gist.mathis.service.entity;
 public enum Intent {
 	LIST_DOCUMENTS,
 	ASK_FOR_DOCUMENT,
-    GENERIC_QUESTION
+   NOTIFY_ADMIN,
+   GENERIC_QUESTION
 }
 ```
 
 - Pour *LIST_DOCUMENTS*, il effectue une recherche dans la base relationnelle.
 - Pour *ASK_FOR_DOCUMENT*, il effectue une recherche dans la base vectorielle.
+- Pour *USER_MAIL_SENT*, l’adresse e-mail sera enregistrée dans la mémoire du chat (cf. MathisChatMemoryRepository).
+- Pour *NOTIFY_ADMIN*, un message est envoyé à tous les comptes Telegram des utilisateurs ADMIN avec un résumé de la conversation sauvegardée dans la mémoire du chat (cf. MathisChatMemoryRepository) et l’e-mail reçu (dans le même message ou dans un USER_MAIL_SENT précédent).
 - Pour *GENERIC_QUESTION*, il recherche dans le contenu des documents, utilise toute la chaîne RAG pour interpréter la question, enrichir le contexte et générer une réponse.
 
 Cette recherche se fait dans la **base vectorielle Supabase**, où sont récupérées les informations les plus pertinentes pour la requête de l’utilisateur. Ces informations, avec la requête originale, servent à construire un prompt enrichi de contexte, qui est ensuite envoyé à un **Large Language Model** (comme MistralAI).  

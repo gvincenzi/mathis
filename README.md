@@ -62,12 +62,17 @@ package com.gist.mathis.service.entity;
 public enum Intent {
 	LIST_DOCUMENTS,
 	ASK_FOR_DOCUMENT,
-    GENERIC_QUESTION
+	USER_MAIL_SENT,
+	NOTIFY_ADMIN,
+   GENERIC_QUESTION
 }
 ```
 
 - For *LIST_DOCUMENTS*, a search is performed in the relational database.
 - For *ASK_FOR_DOCUMENT*, a search is performed directly in the vector database.
+- For *ASK_FOR_DOCUMENT*, a search is performed directly in the vector database.
+- For *USER_MAIL_SENT*, the email address will be saved in chat memory (cf. MathisChatMemoryRepository).
+- For *NOTIFY_ADMIN*, a message is sent to all ADMIN user's Telegram accounts with a summary of the conversation saved in chat memory (cf. MathisChatMemoryRepository) and the email received (in the same message or in an USER_MAIL_SENT before).
 - For *GENERIC_QUESTION*, a search is performed within the content of documents, leveraging the full RAG pipeline to interpret the query, enrich the context, and generate an answer.
 
 This search takes place in the **Supabase vector store**, where the most relevant information is retrieved for the user's query. The retrieved information, together with the original query, is used to construct a context-enriched prompt, which is then sent to a **Large Language Model** (such as MistralAI).  
