@@ -78,6 +78,30 @@ public enum Intent {
 This search takes place in the **Supabase vector store**, where the most relevant information is retrieved for the user's query. The retrieved information, together with the original query, is used to construct a context-enriched prompt, which is then sent to a **Large Language Model** (such as MistralAI).  
 The model generates a "Response" based on the provided context, which is then sent back to the user.
 
+## Chat Memory Implementation
+
+Mathis features a modular chat memory architecture that allows the system to manage both the conversational history and additional contextual data for each conversation.
+
+The chat memory is implemented via the following classes:
+
+- **InMemoryMathisChatMemoryRepository**: Stores conversation messages and arbitrary objects (such as email addresses, user roles) in memory, indexed by conversation ID.  
+  - Offers methods for saving, retrieving, and deleting message lists, as well as storing and retrieving objects with custom keys.
+  - Periodically purges expired conversations using the `ChatMemoryCleaner` class, based on configurable expiration times and cleanup intervals.
+
+- **MathisMessageWindowChatMemory**: Provides a windowed memory mechanism that stores up to a configurable number of messages per conversation (default: 20).
+  - When new messages are added, it merges them with existing memory, ensures only the most recent messages are retained, and handles system messages specially to avoid duplications.
+  - Also allows storing and retrieving arbitrary objects (e.g., user email, role) via typed keys.
+
+- **MathisChatMemoryObjectKeyEnum**: Enumerates keys for storing additional contextual objects in memory, such as `USER_MAIL` and `USER_ROLE`.
+
+- **MathisChatMemoryProperties**: Provides configurable parameters for chat memory expiration and cleanup scheduling.
+
+This architecture ensures that Mathis can efficiently manage conversational context, user attributes, and system metadata, supporting advanced features like RAG and intent recognition.
+
+**Example:**
+- When a user sends an email (*USER_MAIL_SENT*), the email address is saved in chat memory.
+- When admins are notified (*NOTIFY_ADMIN*), a summary of the conversation and relevant data (email, etc.) are retrieved from chat memory and sent.
+
 ## REST API
 
 Mathis also provides an API for managing the knowledge base and interacting with the chat functionality.

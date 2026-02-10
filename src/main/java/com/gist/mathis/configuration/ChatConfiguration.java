@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.gist.mathis.configuration.chatmemory.InMemoryMathisChatMemoryRepository;
+import com.gist.mathis.configuration.chatmemory.MathisMessageWindowChatMemory;
 
 @Configuration
 public class ChatConfiguration {

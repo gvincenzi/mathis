@@ -1,4 +1,4 @@
-package com.gist.mathis.configuration;
+package com.gist.mathis.configuration.chatmemory;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

@@ -5,8 +5,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.gist.mathis.configuration.MathisChatMemoryProperties;
-
 @Component
 @EnableScheduling
 @EnableConfigurationProperties(MathisChatMemoryProperties.class)

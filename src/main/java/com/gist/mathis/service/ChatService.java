@@ -23,8 +23,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import com.gist.mathis.configuration.MathisMessageWindowChatMemory;
 import com.gist.mathis.configuration.chatmemory.MathisChatMemoryObjectKeyEnum;
+import com.gist.mathis.configuration.chatmemory.MathisMessageWindowChatMemory;
 import com.gist.mathis.controller.entity.ChatMessage;
 import com.gist.mathis.controller.entity.UserTypeEnum;
 import com.gist.mathis.model.entity.Knowledge;

@@ -76,6 +76,30 @@ public enum Intent {
 Cette recherche se fait dans la **base vectorielle Supabase**, où sont récupérées les informations les plus pertinentes pour la requête de l’utilisateur. Ces informations, avec la requête originale, servent à construire un prompt enrichi de contexte, qui est ensuite envoyé à un **Large Language Model** (comme MistralAI).  
 Le modèle génère une "Réponse" basée sur le contexte fourni, qui est ensuite envoyée à l’utilisateur.
 
+## Implémentation de la mémoire de chat
+
+Mathis dispose d’une architecture modulaire pour la gestion de la mémoire conversationnelle, permettant de stocker l’historique des messages et des données contextuelles pour chaque conversation.
+
+La mémoire de chat est implémentée via les classes suivantes :
+
+- **InMemoryMathisChatMemoryRepository** : Stocke les messages de conversation et des objets arbitraires (adresse e-mail, rôle utilisateur) en mémoire, indexés par ID de conversation.
+  - Offre des méthodes pour sauvegarder, récupérer et supprimer des listes de messages, ainsi que pour stocker et récupérer des objets via des clés personnalisées.
+  - Nettoie périodiquement les conversations expirées grâce à la classe `ChatMemoryCleaner`, selon des paramètres de durée et de planification configurables.
+
+- **MathisMessageWindowChatMemory** : Gère une fenêtre de mémoire, conservant jusqu'à un nombre configurable de messages par conversation (par défaut : 20).
+  - Lors de l’ajout de nouveaux messages, ceux-ci sont fusionnés avec ceux déjà stockés, seuls les plus récents sont conservés, et les messages système sont traités spécialement pour éviter les doublons.
+  - Permet également de stocker et récupérer des objets arbitraires (ex. e-mail utilisateur, rôle) via des clés typées.
+
+- **MathisChatMemoryObjectKeyEnum** : Enumère les clés pour stocker des objets contextuels supplémentaires, comme `USER_MAIL` et `USER_ROLE`.
+
+- **MathisChatMemoryProperties** : Gère les paramètres configurables pour l’expiration et le nettoyage de la mémoire de chat.
+
+Cette architecture permet à Mathis de gérer efficacement le contexte conversationnel, les attributs utilisateur et les métadonnées système, tout en supportant des fonctionnalités avancées telles que RAG et la reconnaissance d’intention.
+
+**Exemple :**
+- Lorsqu’un utilisateur envoie un e-mail (*USER_MAIL_SENT*), l’adresse est enregistrée dans la mémoire de chat.
+- Lorsqu’un admin est notifié (*NOTIFY_ADMIN*), le résumé de la conversation et les données pertinentes (e-mail, etc.) sont récupérés depuis la mémoire et transmis.
+
 ## API REST
 
 Mathis propose aussi une API pour gérer la base de connaissances et interagir avec la fonctionnalité de chat.

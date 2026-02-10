@@ -1,4 +1,4 @@
-package com.gist.mathis.configuration;
+package com.gist.mathis.configuration.chatmemory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,10 +9,6 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.util.Assert;
-
-import com.gist.mathis.configuration.chatmemory.InMemoryMathisChatMemoryRepository;
-import com.gist.mathis.configuration.chatmemory.MathisChatMemoryObjectKeyEnum;
-import com.gist.mathis.configuration.chatmemory.MathisChatMemoryRepository;
 
 public class MathisMessageWindowChatMemory implements ChatMemory {
 
