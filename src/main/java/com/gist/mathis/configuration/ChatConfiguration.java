@@ -1,21 +1,23 @@
 package com.gist.mathis.configuration;
 
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.ChatMemoryRepository;
-import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.gist.mathis.configuration.chatmemory.InMemoryMathisChatMemoryRepository;
+import com.gist.mathis.configuration.chatmemory.MathisMessageWindowChatMemory;
+
 @Configuration
 public class ChatConfiguration {
-	ChatMemoryRepository chatMemoryRepository;
+	@Bean
+    public InMemoryMathisChatMemoryRepository mathisChatMemoryRepository() {
+        return new InMemoryMathisChatMemoryRepository();
+    }
 
 	@Bean
-	public ChatMemory chatMemory() {
-		return MessageWindowChatMemory.builder()
-				.chatMemoryRepository(chatMemoryRepository)
+	public MathisMessageWindowChatMemory mathisMessageWindowChatMemory(InMemoryMathisChatMemoryRepository mathisChatMemoryRepository) {
+		return MathisMessageWindowChatMemory.builder()
+				.chatMemoryRepository(mathisChatMemoryRepository)
 				.maxMessages(10)
 				.build();
 	}
-
 }

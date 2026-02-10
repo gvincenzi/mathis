@@ -62,15 +62,43 @@ package com.gist.mathis.service.entity;
 public enum Intent {
 	LIST_DOCUMENTS,
 	ASK_FOR_DOCUMENT,
-    GENERIC_QUESTION
+   NOTIFY_ADMIN,
+   GENERIC_QUESTION
 }
 ```
 
-Nel caso di *LIST_DOCUMENTS* non farà che effettuare una ricerca nel database relazionale.
-Nel caso di  *ASK_FOR_DOCUMENT* farà una ricarca direttamente nel database ma di tipo vettoriale.
-Nel caso della *GENERIC_QUESTION* dovrà effettuare una ricerca nel contenuto dei documenti, e sfrutterà tutta la catena del RAG per interpretare la domanda, arricchire il contesto, e generare una risposta. 
+- Nel caso di *LIST_DOCUMENTS* non farà che effettuare una ricerca nel database relazionale.
+- Nel caso di *ASK_FOR_DOCUMENT* farà una ricarca direttamente nel database ma di tipo vettoriale.
+- Nel caso di *USER_MAIL_SENT*, l’indirizzo email sarà salvato nella memoria della chat (cfr. MathisChatMemoryRepository).
+- Nel caso di *NOTIFY_ADMIN*, viene inviato un messaggio a tutti gli account Telegram degli utenti ADMIN con un riepilogo della conversazione salvata nella memoria della chat (cfr. MathisChatMemoryRepository) e l’email ricevuta (nello stesso messaggio oppure in un USER_MAIL_SENT precedente).
+- Nel caso della *GENERIC_QUESTION* dovrà effettuare una ricerca nel contenuto dei documenti, e sfrutterà tutta la catena del RAG per interpretare la domanda, arricchire il contesto, e generare una risposta. 
+
 Questa ricerca avviene nella **base vettoriale di Supabase**, dove vengono recuperate le informazioni più rilevanti per la query dell'utente. Le informazioni recuperate, insieme alla query originale, vengono utilizzate per costruire un prompt arricchito di contesto, che viene poi inviato a un **Large Language Model** (come MistralAI). 
 Il modello genera una "Risposta" basata sul contesto fornito, che viene infine inviata all'utente.
+
+## Implementazione della memoria conversazionale
+
+Mathis dispone di un'architettura modulare per la gestione della memoria della chat, che permette di memorizzare sia la cronologia delle conversazioni sia dati contestuali aggiuntivi per ogni conversazione.
+
+La memoria della chat è implementata tramite queste classi:
+
+- **InMemoryMathisChatMemoryRepository**: Memorizza i messaggi delle conversazioni e oggetti arbitrari (come indirizzi email, ruoli utente) in memoria, indicizzati per ID di conversazione.
+  - Offre metodi per salvare, recuperare e cancellare liste di messaggi, oltre a memorizzare e recuperare oggetti tramite chiavi personalizzate.
+  - Esegue periodicamente la pulizia delle conversazioni scadute tramite la classe `ChatMemoryCleaner`, in base ai tempi di scadenza e intervalli configurabili.
+
+- **MathisMessageWindowChatMemory**: Gestisce una finestra di memoria che conserva fino a un numero configurabile di messaggi per conversazione (default: 20).
+  - Quando vengono aggiunti nuovi messaggi, li unisce a quelli già in memoria, mantiene solo i messaggi più recenti e gestisce i messaggi di sistema in modo dedicato per evitare duplicati.
+  - Permette anche di memorizzare e recuperare oggetti arbitrari (es. email utente, ruolo) tramite chiavi tipizzate.
+
+- **MathisChatMemoryObjectKeyEnum**: Enumera le chiavi per la memorizzazione di oggetti contestuali aggiuntivi, come `USER_MAIL` e `USER_ROLE`.
+
+- **MathisChatMemoryProperties**: Gestisce parametri configurabili per la scadenza della memoria chat e la pianificazione della pulizia.
+
+Questa architettura consente a Mathis di gestire in modo efficiente il contesto conversazionale, gli attributi utente e i metadati di sistema, abilitando funzionalità avanzate come RAG e riconoscimento delle intenzioni.
+
+**Esempio:**
+- Quando un utente invia una mail (*USER_MAIL_SENT*), l’indirizzo viene salvato nella memoria della chat.
+- Quando gli admin sono notificati (*NOTIFY_ADMIN*), il riepilogo della conversazione e i dati rilevanti (email, ecc.) vengono recuperati dalla memoria e inviati.
 
 ## REST API
 
