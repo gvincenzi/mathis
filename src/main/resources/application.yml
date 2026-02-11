@@ -67,7 +67,11 @@ mathis:
     memory:
       expiration-millis: 3600000
       cleanup-cron: "0 0/10 * * * ?"
-
+  ingesters:
+    festival:
+      enabled: false
+      ingestion-cron: "0 0 8 * * *"
+ 
 cors:
  allowed-origins:
    - "http://localhost:8000"
