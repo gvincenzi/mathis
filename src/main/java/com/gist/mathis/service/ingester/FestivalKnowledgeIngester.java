@@ -57,9 +57,19 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 				String website = null;
 				String email = null;
 				String country = null;
+				StringBuilder description = new StringBuilder();
 				try {
 					Document detailDoc = Jsoup.connect(detailUrl).userAgent("Mozilla/5.0").timeout(10000).get();
 
+					// Descrizione del festival
+					Element div = detailDoc.selectFirst("div.text--lead");
+			        if (div != null) {
+			            // Seleziona tutti i <p> dentro il div
+			            Elements paragraphs = div.select("p");
+			            for (Element p : paragraphs) {
+			            	description.append(p.text()).append("\n");
+			            }
+			        }
 					// Website: cerca il link con testo "Website"
 					Elements links = detailDoc.select("a");
 					for (Element link : links) {
@@ -92,26 +102,29 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 				}
 				
 				RawKnowledge festival;
-				String externalId = String.format("%s_%s", name,email);
-				Optional<RawKnowledge> byExternalId = repo.findByExternalId(externalId);
-				if(byExternalId.isEmpty()) {
+				String uniqueName = String.format("%s (%s)",name,country);
+				Optional<RawKnowledge> byName = repo.findByNameAndSource(uniqueName, getSourceName());
+				if(byName.isEmpty()) {
 					festival = new RawKnowledge();
 					festival.setSource(getSourceName());
-					festival.setExternalId(externalId);
+					festival.setName(String.format("%s (%s)",name,country));
 				} else {
-					festival = byExternalId.get();
+					festival = byName.get();
 					festival.getMetadata().clear();
 					festival.setUpdatedAt(null);
 				}
 
+				festival.setDescription(description.toString());
+				
 				festival.getMetadata().put("name", name);
 				festival.getMetadata().put("website", website);
 				festival.getMetadata().put("country", country);
 				festival.getMetadata().put("detailUrl", detailUrl);
 				festival.getMetadata().put("email", email);
+				
 				repo.save(festival);
 				count++;
-				log.info(String.format("Festival saved: %d > %s", festival.getId(), festival.getExternalId()));
+				log.info(String.format("Festival saved: %d > %s", festival.getId(), festival.getName()));
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {

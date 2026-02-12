@@ -27,8 +27,11 @@ public class RawKnowledge {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(nullable = false)
+    private String name;
+    
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String externalId;
+    private String description;
     
     @Column(nullable = false, name = "source")
     @Enumerated(EnumType.STRING)
