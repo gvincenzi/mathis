@@ -74,9 +74,9 @@
                 <thead>
                     <tr>
                         <th>ID</th>
+						<th>Source</th>
                         <th>Name</th>
                         <th>Description</th>
-                        <th>Source</th>
                         <th>Metadata</th>
                         <th>Ingested At</th>
                         <th>Updated At</th>
@@ -94,25 +94,40 @@
                                 <span class="view-mode-field" th:text="${item.name}"></span>
                                 <input type="text" name="name" th:value="${item.name}" class="form-control form-control-sm text-start edit-mode-field" required />
                             </td>
-                            <td>
-                                <span class="view-mode-field" th:text="${item.description}"></span>
-                                <textarea name="description" th:text="${item.description}" class="form-control form-control-sm text-start edit-mode-field" required></textarea>
-                            </td>
-                            <td>
-                                <span class="view-mode-field" th:text="${item.source}"></span>
-                                <select name="source" class="form-select form-select-sm edit-mode-field" required>
-                                    <option th:each="src : ${rawKnowledgeSources}" th:value="${src}" th:text="${src}" th:selected="${src == item.source}"></option>
-                                </select>
-                            </td>
-                            <td>
-                                <!-- Metadata visualizzato come JSON -->
-                                <span class="view-mode-field">
-                                    <pre class="metadata-json" th:text="${item.metadata}"></pre>
-                                </span>
-								<span class="edit-mode-field">
-									<pre class="metadata-json" th:text="${item.metadata}"></pre>
+							<td>
+								<span class="view-mode-field" th:text="${item.source}"></span>
+							    <select name="source" class="form-select form-select-sm edit-mode-field" required>
+							    	<option th:each="src : ${rawKnowledgeSources}" th:value="${src}" th:text="${src}" th:selected="${src == item.source}"></option>
+							    </select>
+							</td>							
+							<td>
+							    <span class="view-mode-field">
+							        <button type="button"
+							                class="btn btn-outline-info btn-sm"
+							                data-bs-toggle="modal"
+							                th:data-bs-target="'#descModal-' + ${item.id}">
+							            View
+							        </button>
+							    </span>
+								<span class="edit-mode-field w-100">
+								    <textarea name="description"
+								 		th:text="${item.description}"
+								        class="form-control form-control-lg text-start"
+								        style="min-width:300px; min-height:120px;"
+								        required></textarea>
 								</span>
-                            </td>
+							</td>
+							<td>
+							    <span class="view-mode-field">
+							        <button type="button"
+							                class="btn btn-outline-info btn-sm"
+							                data-bs-toggle="modal"
+							                th:data-bs-target="'#metadataModal-' + ${item.id}">
+							            View
+							        </button>
+							    </span>
+							    <span class="edit-mode-field"></span>
+							</td>
                             <td th:text="${#temporals.format(item.ingestedAt, 'dd-MMM-yy HH:mm')}"></td>
                             <td th:text="${#temporals.format(item.updatedAt, 'dd-MMM-yy HH:mm')}"></td>
                             <td>
@@ -135,6 +150,57 @@
         <p>Mathis is open source on <a href="https://github.com/gvincenzi/mathis">GitHub</a>, developed by <a href="https://www.linkedin.com/in/giuseppevincenzi/">Giuseppe Vincenzi</a></p>
     </footer>
 </div>
+
+<div th:each="item : ${rawKnowledges}">
+    <!-- Modal for Description -->
+    <div class="modal fade"
+         th:id="'descModal-' + ${item.id}"
+         tabindex="-1"
+         aria-labelledby="descModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:id="'descModalLabel-' + ${item.id}">
+                        Description: <span th:text="${item.name}"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <pre style="white-space: pre-wrap;" th:text="${item.description}"></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Metadata -->
+    <div class="modal fade"
+         th:id="'metadataModal-' + ${item.id}"
+         tabindex="-1"
+         aria-labelledby="metadataModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:id="'metadataModalLabel-' + ${item.id}">
+                        Metadata: <span th:text="${item.name}"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <pre class="metadata-json" style="white-space: pre-wrap;" th:text="${item.metadata}"></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
