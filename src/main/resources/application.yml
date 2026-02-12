@@ -71,7 +71,10 @@ mathis:
     festival:
       enabled: false
       ingestion-cron: "0 0 8 * * *"
- 
+      maxPages: 2
+      artDisciplines:
+       - "electronic-music"
+
 cors:
  allowed-origins:
    - "http://localhost:8000"

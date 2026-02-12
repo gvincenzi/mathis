@@ -23,6 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class FestivalKnowledgeIngester implements KnowledgeIngester {
 	@Autowired
+	private FestivalKnowledgeIngesterProperties properties;
+	
+	@Autowired
 	private RawKnowledgeRepository repo;
 	
 	@Override
@@ -33,9 +36,14 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 	@Override
 	public void ingest(){
 		log.info("[{}][{}] Start ingestion",getSourceName(),getClass().getSimpleName());
-		int pages = 2, count = 0;
-		String baseUrl = "https://www.festivalfinder.eu/find-festival-organisations/p{page}?query=&country=&daterange=&artDisciplines%5B%5D=electronic-music";
-		for (int page = 1; page <= pages; page++) {
+		int count = 0;
+		StringBuilder baseUrlBuilder = new StringBuilder("https://www.festivalfinder.eu/find-festival-organisations/p{page}?query=&country=&daterange=");
+		for (String artDiscipline : properties.getArtDisciplines()) {
+			baseUrlBuilder.append("&artDisciplines%5B%5D=").append(artDiscipline);
+		}
+		
+		String baseUrl = baseUrlBuilder.toString();
+		for (int page = 1; page <= properties.getMaxPages(); page++) {
 			String url = baseUrl.replace("{page}", page+"");
 			Document doc;
 			try {
@@ -57,6 +65,7 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 				String website = null;
 				String email = null;
 				String country = null;
+				String artDisciplines = null;
 				StringBuilder description = new StringBuilder();
 				try {
 					Document detailDoc = Jsoup.connect(detailUrl).userAgent("Mozilla/5.0").timeout(10000).get();
@@ -90,6 +99,21 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 					if (!countryElements.isEmpty()) {
 						country = countryElements.text();
 					}
+					
+					// Art Disciplines
+					// Trova tutte le card-info
+			        Elements detailsCards = detailDoc.select("div.card.card--light.card--info");
+			        for (Element detailsCard : detailsCards) {
+			            Element h3 = detailsCard.selectFirst("h3.spacer");
+			            if (h3 != null && h3.text().equalsIgnoreCase("Art disciplines")) {
+			                Element meta = detailsCard.selectFirst("div.card__meta");
+			                if (meta != null) {
+			                    artDisciplines = meta.text() != null ? meta.text().trim() : null;
+			                    break;
+			                }
+			            }
+			        }
+					
 				} catch (Exception e) {
 					log.error("Errore parsing pagina festival: {}",detailUrl);
 				}
@@ -121,6 +145,7 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 				festival.getMetadata().put("country", country);
 				festival.getMetadata().put("detailUrl", detailUrl);
 				festival.getMetadata().put("email", email);
+				festival.getMetadata().put("artDisciplines", artDisciplines);
 				
 				repo.save(festival);
 				count++;
