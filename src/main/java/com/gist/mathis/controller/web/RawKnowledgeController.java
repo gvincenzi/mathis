@@ -3,6 +3,7 @@ package com.gist.mathis.controller.web;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gist.mathis.model.entity.RawKnowledge;
+import com.gist.mathis.model.entity.RawKnowledgeProcessorEnum;
 import com.gist.mathis.model.entity.RawKnowledgeSourceEnum;
 import com.gist.mathis.service.RawKnowledgeService;
 
@@ -47,6 +49,7 @@ public class RawKnowledgeController {
         model.addAttribute("rawKnowledges", rawKnowledges);
         model.addAttribute("metadataJsonMap", metadataJsonMap);
         model.addAttribute("rawKnowledgeSources", RawKnowledgeSourceEnum.values());
+        model.addAttribute("rawKnowledgeProcessors", RawKnowledgeProcessorEnum.values());
         return "rawknowledge";
     }
     
@@ -69,4 +72,21 @@ public class RawKnowledgeController {
 		redirectAttributes.addFlashAttribute("message", "Knowledge item deleted successfully!");
         return "redirect:/web/rawknowledge";
     }
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/reprocess/{id}")
+    public String reprocessRawKnowledge(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Optional<RawKnowledge> rawKnowledge = rawKnowledgeService.findById(id);
+        if (rawKnowledge.isPresent()) {
+            RawKnowledge rawKnowledgeToReprocess = rawKnowledge.get();
+			rawKnowledgeToReprocess.setProcessedBy(null);
+            rawKnowledgeToReprocess.setProcessedAt(null);
+            rawKnowledgeService.updateRawKnowledge(rawKnowledgeToReprocess);
+            redirectAttributes.addFlashAttribute("message", "RawKnowledge set to reprocess successfully!");
+        } else {
+            redirectAttributes.addFlashAttribute("message", "RawKnowledge not found!");
+        }
+        return "redirect:/web/rawknowledge";
+    }
+
 }

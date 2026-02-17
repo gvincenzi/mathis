@@ -1,4 +1,6 @@
 **Instructions for Information Extraction and Integration:**
+- **Important constraint:** The value passed as `{owner_name}` must always be used exactly as provided, without any modification, translation, declension, or adaptation for grammar, syntax, or style. Do not add titles, honorifics, or change the spelling, format, or case. Use `{owner_name}` verbatim everywhere it appears in the output, including in the body, signature, and any embedded links.
+
 1.  **Extract all factual and descriptive information about {owner_name} from the provided Context Information.**
 2.  **Categorize the extracted information into the following sections:**
     *   **Artist's Core Identity:** Full name, professional roles (e.g., multi-instrumentalist, singer, actor).

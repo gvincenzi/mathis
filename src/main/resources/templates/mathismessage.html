@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mathis - Raw Knowledge Base</title>
+    <title>Mathis - Messages</title>
     <!-- Bootstrap & Main CSS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -11,7 +11,7 @@
     <style>
         .edit-mode-field { display: none; }
         .edit-mode-buttons { display: none; }
-        .table .form-control, .table .form-select, .table .form-control-sm {
+        .table .form-control, .table .form-select {
             font-size: 0.875rem;
             padding: 0.25rem 0.5rem;
             height: calc(1.8125rem + 2px);
@@ -28,6 +28,7 @@
 <div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
     <header class="mb-auto">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <!-- ... navbar as before ... -->
             <div class="container-fluid">
                 <a class="navbar-brand" th:href="@{/}">
                     <img th:src="@{/images/mathis.png}" alt="Mathis Logo" class="logo-navbar">
@@ -45,11 +46,11 @@
                             <a class="nav-link" th:href="@{/web/knowledge}">Knowledge</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" th:href="@{/web/rawknowledge}">RawKnowledge</a>
+                            <a class="nav-link" th:href="@{/web/rawknowledge}">RawKnowledge</a>
                         </li>
-						<li class="nav-item">
-							<a class="nav-link" aria-current="page" th:href="@{/web/mathismessage}">Messages</a>
-						</li>						
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" th:href="@{/web/mathismessage}">Messages</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" th:href="@{/web/users}">Users</a>
                         </li>
@@ -63,7 +64,7 @@
     </header>
 
     <main class="px-3 flex-grow-1">
-        <h1 class="mb-4">Raw Knowledge Base</h1>
+        <h1 class="mb-4">Mathis Messages</h1>
 
         <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
 
@@ -72,42 +73,47 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Name</th>
-                        <th>Description</th>
+                        <th>Recipients</th>
+                        <th>Title</th>
+                        <th>Body</th>
                         <th>Source</th>
-                        <th>Processed By</th>
+                        <th>Processor</th>
                         <th>Metadata</th>
-                        <th>Ingested At</th>
+                        <th>Created At</th>
                         <th>Updated At</th>
-                        <th>Processed At</th>
+                        <th>Sent</th>
+                        <th>Sent At</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="item : ${rawKnowledges}" th:id="'rawknowledge-row-' + ${item.id}">
-                        <form th:action="@{/web/rawknowledge/update/{id}(id=${item.id})}" method="post">
+                    <tr th:each="item : ${mathisMessages}" th:id="'mathismessage-row-' + ${item.id}">
+                        <form th:action="@{/web/mathismessage/update/{id}(id=${item.id})}" method="post">
                             <input type="hidden" name="id" th:value="${item.id}" />
 
                             <td th:text="${item.id}"></td>
                             <td>
-                                <span class="view-mode-field" th:text="${item.name}"></span>
-                                <input type="text" name="name" th:value="${item.name}" class="form-control form-control-sm text-start edit-mode-field" required />
+                                <span class="view-mode-field" th:text="${item.recipients}"></span>
+                                <input type="text" name="recipients" th:value="${item.recipients}" class="form-control form-control-sm text-start edit-mode-field" />
+                            </td>
+                            <td>
+                                <span class="view-mode-field" th:text="${item.title}"></span>
+                                <input type="text" name="title" th:value="${item.title}" class="form-control form-control-sm text-start edit-mode-field" required />
                             </td>
                             <td>
                                 <span class="view-mode-field">
                                     <button type="button"
                                             class="btn btn-outline-info btn-sm"
                                             data-bs-toggle="modal"
-                                            th:data-bs-target="'#descModal-' + ${item.id}">
+                                            th:data-bs-target="'#bodyModal-' + ${item.id}">
                                         View
                                     </button>
                                 </span>
                                 <span class="edit-mode-field w-100">
-                                    <textarea name="description"
-                                              th:text="${item.description}"
+                                    <textarea name="body"
+                                              th:text="${item.body}"
                                               class="form-control form-control-lg text-start"
-                                              style="min-width:300px; min-height:120px;"
-                                              required></textarea>
+                                              style="min-width:300px; min-height:120px;"></textarea>
                                 </span>
                             </td>
                             <td>
@@ -117,10 +123,9 @@
                                 </select>
                             </td>
                             <td>
-                                <span class="view-mode-field" th:text="${item.processedBy}"></span>
-                                <select name="processedBy" class="form-select form-select-sm edit-mode-field">
-                                    <option th:each="proc : ${rawKnowledgeProcessors}" th:value="${proc}" th:text="${proc}" th:selected="${proc == item.processedBy}"></option>
-                                    <option th:if="${item.processedBy == null}" value="" selected>None</option>
+                                <span class="view-mode-field" th:text="${item.processor}"></span>
+                                <select name="processor" class="form-select form-select-sm edit-mode-field" required>
+                                    <option th:each="proc : ${rawKnowledgeProcessors}" th:value="${proc}" th:text="${proc}" th:selected="${proc == item.processor}"></option>
                                 </select>
                             </td>
                             <td>
@@ -134,25 +139,20 @@
                                 </span>
                                 <span class="edit-mode-field"></span>
                             </td>
-                            <td th:text="${#temporals.format(item.ingestedAt, 'dd-MMM-yy HH:mm')}"></td>
+                            <td th:text="${#temporals.format(item.createdAt, 'dd-MMM-yy HH:mm')}"></td>
                             <td th:text="${#temporals.format(item.updatedAt, 'dd-MMM-yy HH:mm')}"></td>
-                            <td th:text="${item.processedAt != null ? #temporals.format(item.processedAt, 'dd-MMM-yy HH:mm') : ''}"></td>
-							<td>
-							    <div class="btn-group btn-group-sm view-mode-buttons" role="group" sec:authorize="hasAuthority('ROLE_ADMIN')">
-							        <button type="button" class="btn btn-secondary edit-button">Edit</button>
-							        <a th:href="@{/web/rawknowledge/reprocess/{id}(id=${item.id})}"
-							           class="btn btn-warning"
-							           th:if="${item.processedBy != null}">
-							            Reprocess
-							        </a>
-							        <a th:href="@{/web/rawknowledge/delete/{id}(id=${item.id})}" class="btn btn-danger">Delete</a>
-							    </div>
-							    <div class="btn-group btn-group-sm edit-mode-buttons" role="group" sec:authorize="hasAuthority('ROLE_ADMIN')">
-							        <button type="submit" class="btn btn-primary">Confirm</button>
-							        <button type="button" class="btn btn-secondary cancel-button">Cancel</button>
-							    </div>
-							</td>
-
+                            <td th:text="${item.sent ? 'Yes' : 'No'}"></td>
+                            <td th:text="${item.sentAt != null ? #temporals.format(item.sentAt, 'dd-MMM-yy HH:mm') : ''}"></td>
+                            <td>
+                                <div class="btn-group btn-group-sm view-mode-buttons" role="group" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                                    <button type="button" class="btn btn-secondary edit-button">Edit</button>
+                                    <a th:href="@{/web/mathismessage/delete/{id}(id=${item.id})}" class="btn btn-danger">Delete</a>
+                                </div>
+                                <div class="btn-group btn-group-sm edit-mode-buttons" role="group" sec:authorize="hasAuthority('ROLE_ADMIN')">
+                                    <button type="submit" class="btn btn-primary">Confirm</button>
+                                    <button type="button" class="btn btn-secondary cancel-button">Cancel</button>
+                                </div>
+                            </td>
                         </form>
                     </tr>
                 </tbody>
@@ -164,31 +164,30 @@
     </footer>
 </div>
 
-<!-- Modals -->
-<div th:each="item : ${rawKnowledges}">
-    <!-- Modal for Description -->
-    <div class="modal fade"
-         th:id="'descModal-' + ${item.id}"
-         tabindex="-1"
-         aria-labelledby="descModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content bg-dark text-light">
-                <div class="modal-header">
-                    <h5 class="modal-title" th:id="'descModalLabel-' + ${item.id}">
-                        Description: <span th:text="${item.name}"></span>
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-start">
-                    <div th:utext="${item.description}"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<div th:each="item : ${mathisMessages}">
+	<!-- Modal for Body -->
+	<div class="modal fade"
+	     th:id="'bodyModal-' + ${item.id}"
+	     tabindex="-1"
+	     aria-labelledby="bodyModalLabel"
+	     aria-hidden="true">
+	    <div class="modal-dialog modal-dialog-centered modal-lg">
+	        <div class="modal-content bg-dark text-light">
+	            <div class="modal-header">
+	                <h5 class="modal-title" th:id="'bodyModalLabel-' + ${item.id}">
+	                    Body: <span th:text="${item.title}"></span>
+	                </h5>
+	                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body text-start">
+	                <div th:utext="${item.body}"></div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
 
     <!-- Modal for Metadata -->
     <div class="modal fade"
@@ -200,7 +199,7 @@
             <div class="modal-content bg-dark text-light">
                 <div class="modal-header">
                     <h5 class="modal-title" th:id="'metadataModalLabel-' + ${item.id}">
-                        Metadata: <span th:text="${item.name}"></span>
+                        Metadata: <span th:text="${item.title}"></span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
