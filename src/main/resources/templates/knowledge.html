@@ -13,6 +13,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <link rel="stylesheet" th:href="@{/styles/main.css}"/>
+	
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
     <!-- Non è necessario un knowledge.css separato, useremo main.css e classi Bootstrap -->
     <style>
         /* Stili per nascondere/mostrare elementi in modalità edit */
@@ -91,7 +97,7 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-dark table-striped table-bordered table-hover">
+            <table id="knowledge-table" class="table table-dark table-striped table-bordered table-hover">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -161,6 +167,13 @@
 </div>
 
 <script th:inline="javascript">
+	$(document).ready(function() {
+	    $('#knowledge-table').DataTable({
+	        paging: true,
+	        searching: true
+	    });
+	});
+	
 	document.addEventListener('DOMContentLoaded', function() {
 	    document.querySelectorAll('.edit-button').forEach(button => {
 	        button.addEventListener('click', function() {
