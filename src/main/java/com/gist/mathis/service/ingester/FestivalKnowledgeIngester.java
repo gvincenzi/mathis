@@ -26,7 +26,7 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 	private FestivalKnowledgeIngesterProperties properties;
 	
 	@Autowired
-	private RawKnowledgeRepository repo;
+	private RawKnowledgeRepository rawKnowledgeRepository;
 	
 	@Override
     public RawKnowledgeSourceEnum getSourceName() { 
@@ -34,7 +34,7 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 	}
 	
 	@Override
-	public void ingest(){
+	public void ingest() throws InterruptedException{
 		log.info("[{}][{}] Start ingestion",getSourceName(),getClass().getSimpleName());
 		int count = 0;
 		StringBuilder baseUrlBuilder = new StringBuilder("https://www.festivalfinder.eu/find-festival-organisations/p{page}?query=&country=&daterange=");
@@ -127,13 +127,19 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 				
 				RawKnowledge festival;
 				String uniqueName = String.format("%s (%s)",name,country);
-				Optional<RawKnowledge> byName = repo.findByNameAndSource(uniqueName, getSourceName());
+				Optional<RawKnowledge> byName = rawKnowledgeRepository.findByNameAndSource(uniqueName, getSourceName());
 				if(byName.isEmpty()) {
 					festival = new RawKnowledge();
 					festival.setSource(getSourceName());
 					festival.setName(String.format("%s (%s)",name,country));
 				} else {
 					festival = byName.get();
+					
+					if(festival.getProcessedBy() != null) {
+						log.info("Festival already processed by [%s]", festival.getProcessedBy().name());
+						continue;
+					}
+					
 					festival.getMetadata().clear();
 					festival.setUpdatedAt(null);
 				}
@@ -147,14 +153,11 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 				festival.getMetadata().put("email", email);
 				festival.getMetadata().put("artDisciplines", artDisciplines);
 				
-				repo.save(festival);
+				rawKnowledgeRepository.save(festival);
 				count++;
 				log.info(String.format("Festival saved: %d > %s", festival.getId(), festival.getName()));
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					log.error("{} -> {}", FestivalKnowledgeIngester.class.getCanonicalName(), e.getMessage());
-				}
+				
+				Thread.sleep(1000);
 			}
 		}
 		log.info("[{}][{}] End ingestion - {} RawKnowledge(s) ingested",getSourceName(),getClass().getSimpleName(),count);

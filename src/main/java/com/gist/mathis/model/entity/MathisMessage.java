@@ -3,7 +3,9 @@ package com.gist.mathis.model.entity;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -22,37 +24,43 @@ import lombok.Data;
 
 @Data
 @Entity
-public class RawKnowledge {
-    @Id
+public class MathisMessage {
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
-    private String name;
+    @Column(nullable = true)
+    private Set<String> recipients = new HashSet<String>();
     
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String description;
+    @Column(nullable = false)
+    private String title;
+    
+    @Column(nullable = true, columnDefinition = "TEXT")
+    private String body;
     
     @Column(nullable = false, name = "source")
     @Enumerated(EnumType.STRING)
     private RawKnowledgeSourceEnum source;
     
+    @Column(nullable = false, name = "processor")
+    @Enumerated(EnumType.STRING)
+    private RawKnowledgeProcessorEnum processor;
+    
     @Column(name = "metadata", columnDefinition = "TEXT")
     @Convert(converter = MetadataMapToJsonConverter.class)
     private Map<String, Object> metadata = new HashMap<>();
     
-    @Column(nullable = true, name = "processedBy")
-    @Enumerated(EnumType.STRING)
-    private RawKnowledgeProcessorEnum processedBy;
-    
     @CreationTimestamp
-    @Column(name = "ingested_at", nullable = false, updatable = false)
-    private Instant ingestedAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
     
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
     
-    @Column(name = "processed_at", nullable = true)
-    private LocalDateTime processedAt;
+    @Column(name = "sent", nullable = false)
+    private Boolean sent = Boolean.FALSE;
+    
+    @Column(name = "sent_at", nullable = true)
+    private LocalDateTime sentAt;
 }

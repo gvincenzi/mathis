@@ -4,5 +4,5 @@ import com.gist.mathis.model.entity.RawKnowledgeSourceEnum;
 
 public interface KnowledgeIngester {
 	RawKnowledgeSourceEnum getSourceName();
-	void ingest();
+	void ingest() throws InterruptedException;
 }

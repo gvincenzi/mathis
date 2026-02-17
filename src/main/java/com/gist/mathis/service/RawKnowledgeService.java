@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.gist.mathis.model.entity.RawKnowledge;
+import com.gist.mathis.model.entity.RawKnowledgeSourceEnum;
 import com.gist.mathis.model.repository.RawKnowledgeRepository;
 
 @Service
@@ -15,6 +16,10 @@ public class RawKnowledgeService {
 	
 	public List<RawKnowledge> findAll() {
 		return rawKnowledgeRepository.findAll();
+	}
+	
+	public List<RawKnowledge> findBySourceAndProcessedByIsNull(RawKnowledgeSourceEnum sourceEnum) {
+		return rawKnowledgeRepository.findBySourceAndProcessedByIsNull(sourceEnum);
 	}
 
 	public RawKnowledge updateRawKnowledge(RawKnowledge rawKnowledge) {

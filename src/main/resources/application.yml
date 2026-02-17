@@ -37,7 +37,7 @@ prompts:
  base: classpath:/prompts/base.st
  adminNotification: classpath:/prompts/adminNotification.st
  translation: classpath:/prompts/translation.st
- 
+ festivalContact: classpath:/prompts/processors/festivalContact.st
 message:
  LIST_DOCUMENTS_TEXT: List of available documents
  ASK_DOCUMENTS_TEXT: Here are the documents that might interest you (if you ask me, I can give you the complete list of available documents)
@@ -74,6 +74,10 @@ mathis:
       maxPages: 2
       artDisciplines:
        - "electronic-music"
+  processors:
+    festival-contact:
+      enabled: false
+      processor-cron: "0 0/1 * * * ?"
 
 cors:
  allowed-origins:

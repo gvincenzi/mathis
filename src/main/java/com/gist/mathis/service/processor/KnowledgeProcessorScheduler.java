@@ -1,4 +1,4 @@
-package com.gist.mathis.service.ingester;
+package com.gist.mathis.service.processor;
 
 import java.util.List;
 
@@ -14,35 +14,35 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class KnowledgeIngesterScheduler implements InitializingBean {
+public class KnowledgeProcessorScheduler implements InitializingBean {
 
     @Autowired
-    private List<KnowledgeIngester> ingesters;
+    private List<KnowledgeProcessor> processors;
 
     @Autowired
     private Environment env;
 
     @Override
     public void afterPropertiesSet() {
-        ingesters.forEach(this::scheduleIfEnabled);
+    	processors.forEach(this::scheduleIfEnabled);
     }
 
-    private void scheduleIfEnabled(KnowledgeIngester ingester) {
-        IngesterScheduler annotation = ingester.getClass().getAnnotation(IngesterScheduler.class);
+    private void scheduleIfEnabled(KnowledgeProcessor processor) {
+        ProcessorScheduler annotation = processor.getClass().getAnnotation(ProcessorScheduler.class);
         if (annotation == null) return;
 
         String configKey = annotation.configKey();
         boolean enabled = Boolean.parseBoolean(env.getProperty(configKey + ".enabled", "false"));
-        String cron = env.getProperty(configKey + ".ingestion-cron", "0 0 * * * *");
+        String cron = env.getProperty(configKey + ".processor-cron", "0 0 * * * *");
 
         if (enabled) {
-        	log.info("KnowledgeIngester enabling [{}][{}]",ingester.getSourceName(), ingester.getClass().getSimpleName());
+        	log.info("KnowledgeProcessor enabling [{}]",processor.getClass().getSimpleName());
             CronTrigger trigger = new CronTrigger(cron);
             Runnable task = () -> {
             	try {
-					ingester.ingest();
+					processor.process();
 				} catch (InterruptedException e) {
-					log.error("{} -> {}", KnowledgeIngesterScheduler.class.getCanonicalName(), e.getMessage());
+					log.error("{} -> {}", KnowledgeProcessorScheduler.class.getCanonicalName(), e.getMessage());
 				}
             };
             TaskScheduler springScheduler = new ThreadPoolTaskScheduler();
