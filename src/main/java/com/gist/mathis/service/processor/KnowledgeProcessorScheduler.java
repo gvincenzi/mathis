@@ -6,7 +6,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +20,9 @@ public class KnowledgeProcessorScheduler implements InitializingBean {
 
     @Autowired
     private Environment env;
+    
+    @Autowired
+    private TaskScheduler taskScheduler;
 
     @Override
     public void afterPropertiesSet() {
@@ -43,11 +45,10 @@ public class KnowledgeProcessorScheduler implements InitializingBean {
 					processor.process();
 				} catch (InterruptedException e) {
 					log.error("{} -> {}", KnowledgeProcessorScheduler.class.getCanonicalName(), e.getMessage());
+					Thread.currentThread().interrupt();
 				}
             };
-            TaskScheduler springScheduler = new ThreadPoolTaskScheduler();
-            ((ThreadPoolTaskScheduler) springScheduler).initialize();
-            springScheduler.schedule(task, trigger);
+            taskScheduler.schedule(task, trigger);;
         }
     }
 }

@@ -6,7 +6,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +21,9 @@ public class KnowledgeIngesterScheduler implements InitializingBean {
     @Autowired
     private Environment env;
 
+    @Autowired
+    private TaskScheduler taskScheduler;
+
     @Override
     public void afterPropertiesSet() {
         ingesters.forEach(this::scheduleIfEnabled);
@@ -36,18 +38,17 @@ public class KnowledgeIngesterScheduler implements InitializingBean {
         String cron = env.getProperty(configKey + ".ingestion-cron", "0 0 * * * *");
 
         if (enabled) {
-        	log.info("KnowledgeIngester enabling [{}][{}]",ingester.getSourceName(), ingester.getClass().getSimpleName());
+            log.info("KnowledgeIngester enabling [{}][{}]", ingester.getSourceName(), ingester.getClass().getSimpleName());
             CronTrigger trigger = new CronTrigger(cron);
             Runnable task = () -> {
-            	try {
-					ingester.ingest();
-				} catch (InterruptedException e) {
-					log.error("{} -> {}", KnowledgeIngesterScheduler.class.getCanonicalName(), e.getMessage());
-				}
+                try {
+                    ingester.ingest();
+                } catch (InterruptedException e) {
+                    log.error("{} -> {}", KnowledgeIngesterScheduler.class.getCanonicalName(), e.getMessage());
+                    Thread.currentThread().interrupt();
+                }
             };
-            TaskScheduler springScheduler = new ThreadPoolTaskScheduler();
-            ((ThreadPoolTaskScheduler) springScheduler).initialize();
-            springScheduler.schedule(task, trigger);
+            taskScheduler.schedule(task, trigger);
         }
     }
 }
