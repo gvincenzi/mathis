@@ -1,4 +1,4 @@
-package com.gist.mathis;
+package com.gist.mathis.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
