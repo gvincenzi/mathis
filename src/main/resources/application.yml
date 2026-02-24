@@ -11,15 +11,31 @@ spring:
      initialize-schema: true	
  datasource:
   url: ${DATASOURCE}
-jpa:
- hibernate:
-  ddl-auto: update
-  show-sql: true
+ jpa:
+  hibernate:
+   ddl-auto: update
+   show-sql: true
  servlet:
   multipart:
    max-file-size: 50MB
    max-request-size: 50MB
-   
+
+ mail:
+  from: ${MAIL_FROM}
+  host: ${MAIL_HOST}
+  port: ${MAIL_PORT}
+  username: ${MAIL_USERNAME}
+  password: ${MAIL_PASSWORD}
+  properties:
+   mail:
+    transport:
+     protocol: ${MAIL_PROTOCOL}
+    smtp:
+     auth: true
+     starttls:
+      enable: true
+    debug: false
+
 telegram:
  bot:
   active: ${TELEGRAM_BOT_ACTIVE}

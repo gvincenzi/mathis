@@ -56,7 +56,6 @@ public class MathisMessageController {
     public String updateMathisMessage(@PathVariable("id") Long id, @ModelAttribute MathisMessage mathisMessage,
                                       RedirectAttributes redirectAttributes) {
         mathisMessageService.updateMathisMessage(mathisMessage);
-        redirectAttributes.addFlashAttribute("message", "MathisMessage updated successfully!");
         return "redirect:/web/mathismessage";
     }
 
@@ -64,7 +63,13 @@ public class MathisMessageController {
     @GetMapping("/delete/{id}")
     public String deleteMathisMessage(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         mathisMessageService.deleteById(id);
-        redirectAttributes.addFlashAttribute("message", "MathisMessage deleted successfully!");
+        return "redirect:/web/mathismessage";
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/send/mail/{id}")
+    public String sendByMailMathisMessage(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        mathisMessageService.sendByMail(id);
         return "redirect:/web/mathismessage";
     }
 }
