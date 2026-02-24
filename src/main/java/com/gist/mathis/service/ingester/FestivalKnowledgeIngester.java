@@ -42,6 +42,10 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 			baseUrlBuilder.append("&artDisciplines%5B%5D=").append(artDiscipline);
 		}
 		
+		if(properties.getCountry() != null) {
+			baseUrlBuilder.append("&country=").append(properties.getCountry());
+		}
+		
 		String baseUrl = baseUrlBuilder.toString();
 		for (int page = 1; page <= properties.getMaxPages(); page++) {
 			String url = baseUrl.replace("{page}", page+"");

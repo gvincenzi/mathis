@@ -58,8 +58,6 @@ public class RawKnowledgeController {
     public String updateRawKnowledge(@PathVariable("knowledgeId") Long rawKnowledgeId, @ModelAttribute RawKnowledge rawKnowledge, RedirectAttributes redirectAttributes) {
 		log.info(String.format("%s -> %s", RawKnowledgeController.class.getSimpleName(), "updateRawKnowledge"));
 		rawKnowledgeService.updateRawKnowledge(rawKnowledge);
-		
-		redirectAttributes.addFlashAttribute("message", "RawKnowledge updated successfully!");
 		return "redirect:/web/rawknowledge";
     }
     
@@ -68,8 +66,6 @@ public class RawKnowledgeController {
     public String deleteRawKnowledge(@PathVariable("rawKnowledgeId") Long rawKnowledgeId, RedirectAttributes redirectAttributes) {
 		log.info(String.format("%s -> %s", KnowledgeController.class.getSimpleName(), "deleteKnowledge"));
 		rawKnowledgeService.deleteById(rawKnowledgeId);
-		
-		redirectAttributes.addFlashAttribute("message", "Knowledge item deleted successfully!");
         return "redirect:/web/rawknowledge";
     }
     

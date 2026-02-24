@@ -13,4 +13,5 @@ import lombok.Data;
 public class FestivalKnowledgeIngesterProperties {
 	private List<String> artDisciplines;
     private Integer maxPages;
+    private String country;
 }
