@@ -11,15 +11,31 @@ spring:
      initialize-schema: true	
  datasource:
   url: ${DATASOURCE}
-jpa:
- hibernate:
-  ddl-auto: update
-  show-sql: true
+ jpa:
+  hibernate:
+   ddl-auto: update
+   show-sql: true
  servlet:
   multipart:
    max-file-size: 50MB
    max-request-size: 50MB
-   
+
+ mail:
+  from: ${MAIL_FROM}
+  host: ${MAIL_HOST}
+  port: ${MAIL_PORT}
+  username: ${MAIL_USERNAME}
+  password: ${MAIL_PASSWORD}
+  properties:
+   mail:
+    transport:
+     protocol: ${MAIL_PROTOCOL}
+    smtp:
+     auth: true
+     starttls:
+      enable: true
+    debug: false
+
 telegram:
  bot:
   active: ${TELEGRAM_BOT_ACTIVE}
@@ -37,7 +53,7 @@ prompts:
  base: classpath:/prompts/base.st
  adminNotification: classpath:/prompts/adminNotification.st
  translation: classpath:/prompts/translation.st
- 
+ festivalContact: classpath:/prompts/processors/festivalContact.st
 message:
  LIST_DOCUMENTS_TEXT: List of available documents
  ASK_DOCUMENTS_TEXT: Here are the documents that might interest you (if you ask me, I can give you the complete list of available documents)
@@ -67,6 +83,17 @@ mathis:
     memory:
       expiration-millis: 3600000
       cleanup-cron: "0 0/10 * * * ?"
+  ingesters:
+    festival:
+      enabled: false
+      ingestion-cron: "0 0 8 * * *"
+      maxPages: 2
+      artDisciplines:
+       - "electronic-music"
+  processors:
+    festival-contact:
+      enabled: false
+      processor-cron: "0 0/1 * * * ?"
 
 cors:
  allowed-origins:

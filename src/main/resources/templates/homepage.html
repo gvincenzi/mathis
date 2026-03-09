@@ -43,11 +43,64 @@
 						<li class="nav-item">
 							<a class="nav-link" th:href="@{/web/knowledge}">Knowledge</a>
 						</li>
+						
+						<!-- Séparateur pour écrans larges (vertical) -->
+						<!-- d-none: caché par défaut (petits écrans) -->
+						<!-- d-lg-flex: affiché en flex à partir de la taille "large" (écrans larges) -->
+						<li class="nav-item d-none d-lg-flex align-items-center px-2">
+							<div class="vr"></div>
+						</li>
+
+						<!-- Séparateur pour écrans petits (horizontal) -->
+						<!-- d-lg-none: caché à partir de la taille "large" (écrans larges) -->
+						<!-- Visible par défaut sur les petits écrans -->
+						<li class="nav-item d-lg-none">
+							<hr class="my-2 text-white-50"> <!-- my-2 pour un peu de marge verticale, text-white-50 pour une couleur subtile -->
+						</li>
+						
 						<li class="nav-item">
-						    <a class="nav-link" aria-current="page" th:href="@{/web/users}">Users</a>
+							<a class="nav-link" aria-current="page" th:href="@{/web/rawknowledge}">RawKnowledge</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" aria-current="page" th:href="@{/web/mathismessage}">Messages</a>
+						</li>
+						
+						<!-- Séparateur pour écrans larges (vertical) -->
+						<!-- d-none: caché par défaut (petits écrans) -->
+						<!-- d-lg-flex: affiché en flex à partir de la taille "large" (écrans larges) -->
+						<li class="nav-item d-none d-lg-flex align-items-center px-2">
+							<div class="vr"></div>
+						</li>
+
+						<!-- Séparateur pour écrans petits (horizontal) -->
+						<!-- d-lg-none: caché à partir de la taille "large" (écrans larges) -->
+						<!-- Visible par défaut sur les petits écrans -->
+						<li class="nav-item d-lg-none">
+							<hr class="my-2 text-white-50"> <!-- my-2 pour un peu de marge verticale, text-white-50 pour une couleur subtile -->
+						</li>	
+
+						<li class="nav-item">
+						    <a class="nav-link" aria-current="page" th:href="@{/web/users}">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+								  <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+								</svg>
+							</a>
+						</li>
+						<li class="nav-item">
+						    <a class="nav-link" th:href="@{/web/configurations}" title="Paramétrage">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16">
+								  <path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/>
+								  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/>
+								</svg>
+						    </a>
 						</li>
                         <li class="nav-item">
-                            <a class="nav-link" th:href="@{/logout}">Logout</a>
+                            <a class="nav-link" th:href="@{/logout}">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+								  <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+								  <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+								</svg>
+							</a>
                         </li>
                     </ul>
                 </div>

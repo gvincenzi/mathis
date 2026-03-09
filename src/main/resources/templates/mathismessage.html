@@ -1,0 +1,339 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark h-100" data-bs-theme="dark" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mathis - Messages</title>
+    <!-- Bootstrap & Main CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/styles/main.css}"/>
+	
+	<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+	<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+		
+    <style>
+        .edit-mode-field { display: none; }
+        .edit-mode-buttons { display: none; }
+        .table .form-control, .table .form-select {
+            font-size: 0.875rem;
+            padding: 0.25rem 0.5rem;
+            height: calc(1.8125rem + 2px);
+        }
+        .table textarea.form-control {
+            height: auto;
+            min-height: calc(1.8125rem + 2px);
+        }
+        pre.metadata-json { white-space: pre-wrap; word-break: break-all; background: #222; color: #8be; border-radius: 4px; padding: 4px;}
+    </style>
+</head>
+<body class="d-flex h-100 text-center text-bg-dark">
+
+<div class="d-flex w-100 h-100 p-3 mx-auto flex-column">
+    <header class="mb-auto">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <!-- ... navbar as before ... -->
+            <div class="container-fluid">
+                <a class="navbar-brand" th:href="@{/}">
+                    <img th:src="@{/images/mathis.png}" alt="Mathis Logo" class="logo-navbar">
+                    Mathis
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/web/homepage}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/web/knowledge}">Knowledge</a>
+                        </li>
+						<!-- Séparateur pour écrans larges (vertical) -->
+						<!-- d-none: caché par défaut (petits écrans) -->
+						<!-- d-lg-flex: affiché en flex à partir de la taille "large" (écrans larges) -->
+						<li class="nav-item d-none d-lg-flex align-items-center px-2">
+							<div class="vr"></div>
+						</li>
+
+						<!-- Séparateur pour écrans petits (horizontal) -->
+						<!-- d-lg-none: caché à partir de la taille "large" (écrans larges) -->
+						<!-- Visible par défaut sur les petits écrans -->
+						<li class="nav-item d-lg-none">
+							<hr class="my-2 text-white-50"> <!-- my-2 pour un peu de marge verticale, text-white-50 pour une couleur subtile -->
+						</li>
+
+						<li class="nav-item">
+							<a class="nav-link" aria-current="page" th:href="@{/web/rawknowledge}">RawKnowledge</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link active" aria-current="page" th:href="@{/web/mathismessage}">Messages</a>
+						</li>
+
+						<!-- Séparateur pour écrans larges (vertical) -->
+						<!-- d-none: caché par défaut (petits écrans) -->
+						<!-- d-lg-flex: affiché en flex à partir de la taille "large" (écrans larges) -->
+						<li class="nav-item d-none d-lg-flex align-items-center px-2">
+							<div class="vr"></div>
+						</li>
+
+						<!-- Séparateur pour écrans petits (horizontal) -->
+						<!-- d-lg-none: caché à partir de la taille "large" (écrans larges) -->
+						<!-- Visible par défaut sur les petits écrans -->
+						<li class="nav-item d-lg-none">
+							<hr class="my-2 text-white-50"> <!-- my-2 pour un peu de marge verticale, text-white-50 pour une couleur subtile -->
+						</li>	
+
+						<li class="nav-item">
+						    <a class="nav-link" aria-current="page" th:href="@{/web/users}">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+								  <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+								</svg>
+							</a>
+						</li>
+						<li class="nav-item">
+						    <a class="nav-link" th:href="@{/web/configurations}" title="Paramétrage">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16">
+								  <path d="M12.496 8a4.5 4.5 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11q.04.3.04.61"/>
+								  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.5 4.5 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8m-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27z"/>
+								</svg>
+						    </a>
+						</li>
+						<li class="nav-item">
+						    <a class="nav-link" th:href="@{/logout}">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+								  <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+								  <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+								</svg>
+							</a>
+						</li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="px-3 flex-grow-1">
+        <h1 class="mb-4">Mathis Messages</h1>
+
+        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+        <div class="table-responsive">
+            <table id="mathismessage-table" class="table table-dark table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Recipients</th>
+                        <th>Title</th>
+                        <th>Body</th>
+                        <th>Source</th>
+                        <th>Processor</th>
+                        <th>Metadata</th>
+                        <th>Created At</th>
+                        <th>Updated At</th>
+                        <th>Sent</th>
+                        <th>Sent At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${mathisMessages}" th:id="'mathismessage-row-' + ${item.id}">
+                        <form th:action="@{/web/mathismessage/update/{id}(id=${item.id})}" method="post">
+                            <input type="hidden" name="id" th:value="${item.id}" />
+
+                            <td th:text="${item.id}"></td>
+                            <td>
+                                <span class="view-mode-field" th:text="${item.recipients}"></span>
+                                <input type="text" name="recipients" th:value="${item.recipients}" class="form-control form-control-sm text-start edit-mode-field" />
+                            </td>
+                            <td>
+                                <span class="view-mode-field" th:text="${item.title}"></span>
+                                <input type="text" name="title" th:value="${item.title}" class="form-control form-control-sm text-start edit-mode-field" required />
+                            </td>
+                            <td>
+                                <span class="view-mode-field">
+                                    <button type="button"
+                                            class="btn btn-outline-info btn-sm"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="'#bodyModal-' + ${item.id}">
+                                        View
+                                    </button>
+                                </span>
+                                <span class="edit-mode-field w-100">
+                                    <textarea name="body"
+                                              th:text="${item.body}"
+                                              class="form-control form-control-lg text-start"
+                                              style="min-width:300px; min-height:120px;"></textarea>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="view-mode-field" th:text="${item.source}"></span>
+                                <select name="source" class="form-select form-select-sm edit-mode-field" required>
+                                    <option th:each="src : ${rawKnowledgeSources}" th:value="${src}" th:text="${src}" th:selected="${src == item.source}"></option>
+                                </select>
+                            </td>
+                            <td>
+                                <span class="view-mode-field" th:text="${item.processor}"></span>
+                                <select name="processor" class="form-select form-select-sm edit-mode-field" required>
+                                    <option th:each="proc : ${rawKnowledgeProcessors}" th:value="${proc}" th:text="${proc}" th:selected="${proc == item.processor}"></option>
+                                </select>
+                            </td>
+                            <td>
+                                <span class="view-mode-field">
+                                    <button type="button"
+                                            class="btn btn-outline-info btn-sm"
+                                            data-bs-toggle="modal"
+                                            th:data-bs-target="'#metadataModal-' + ${item.id}">
+                                        View
+                                    </button>
+                                </span>
+                                <span class="edit-mode-field"></span>
+                            </td>
+                            <td th:text="${#temporals.format(item.createdAt, 'dd-MMM-yy HH:mm')}"></td>
+                            <td th:text="${#temporals.format(item.updatedAt, 'dd-MMM-yy HH:mm')}"></td>
+                            <td th:text="${item.sent ? 'Yes' : 'No'}"></td>
+                            <td th:text="${item.sentAt != null ? #temporals.format(item.sentAt, 'dd-MMM-yy HH:mm') : ''}"></td>
+							<td>
+							    <div class="btn-group btn-group-sm view-mode-buttons" role="group" sec:authorize="hasAuthority('ROLE_ADMIN')">
+							        <button type="button" class="btn btn-secondary edit-button">Edit</button>
+							        <a th:href="@{/web/mathismessage/delete/{id}(id=${item.id})}" class="btn btn-danger">Delete</a>
+							        
+							        <!-- SEND BY MAIL Button, only if sent == false -->
+									<a th:if="${!item.sent}"
+									   th:href="@{/web/mathismessage/send/mail/{id}(id=${item.id})}"
+									   class="btn btn-success"
+									   title="Send by Mail">
+									   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-envelope-at" viewBox="0 0 16 16">
+									     <path d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-.966-.741l5.64-3.471L8 9.583l7-4.2V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2zm3.708 6.208L1 11.105V5.383zM1 4.217V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v.217l-7 4.2z"/>
+									     <path d="M14.247 14.269c1.01 0 1.587-.857 1.587-2.025v-.21C15.834 10.43 14.64 9 12.52 9h-.035C10.42 9 9 10.36 9 12.432v.214C9 14.82 10.438 16 12.358 16h.044c.594 0 1.018-.074 1.237-.175v-.73c-.245.11-.673.18-1.18.18h-.044c-1.334 0-2.571-.788-2.571-2.655v-.157c0-1.657 1.058-2.724 2.64-2.724h.04c1.535 0 2.484 1.05 2.484 2.326v.118c0 .975-.324 1.39-.639 1.39-.232 0-.41-.148-.41-.42v-2.19h-.906v.569h-.03c-.084-.298-.368-.63-.954-.63-.778 0-1.259.555-1.259 1.4v.528c0 .892.49 1.434 1.26 1.434.471 0 .896-.227 1.014-.643h.043c.118.42.617.648 1.12.648m-2.453-1.588v-.227c0-.546.227-.791.573-.791.297 0 .572.192.572.708v.367c0 .573-.253.744-.564.744-.354 0-.581-.215-.581-.8Z"/>
+									   </svg>
+									</a>
+							    </div>
+							    <div class="btn-group btn-group-sm edit-mode-buttons" role="group" sec:authorize="hasAuthority('ROLE_ADMIN')">
+							        <button type="submit" class="btn btn-primary">Confirm</button>
+							        <button type="button" class="btn btn-secondary cancel-button">Cancel</button>
+							    </div>
+							</td>
+                        </form>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <footer class="mt-auto text-white-50">
+        <p>Mathis is open source on <a href="https://github.com/gvincenzi/mathis">GitHub</a>, developed by <a href="https://www.linkedin.com/in/giuseppevincenzi/">Giuseppe Vincenzi</a></p>
+    </footer>
+</div>
+
+<div th:each="item : ${mathisMessages}">
+	<!-- Modal for Body -->
+	<div class="modal fade"
+	     th:id="'bodyModal-' + ${item.id}"
+	     tabindex="-1"
+	     aria-labelledby="bodyModalLabel"
+	     aria-hidden="true">
+	    <div class="modal-dialog modal-dialog-centered modal-lg">
+	        <div class="modal-content bg-dark text-light">
+	            <div class="modal-header">
+	                <h5 class="modal-title" th:id="'bodyModalLabel-' + ${item.id}">
+	                    Body: <span th:text="${item.title}"></span>
+	                </h5>
+	                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body text-start">
+	                <div th:utext="${item.body}"></div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+
+    <!-- Modal for Metadata -->
+    <div class="modal fade"
+         th:id="'metadataModal-' + ${item.id}"
+         tabindex="-1"
+         aria-labelledby="metadataModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:id="'metadataModalLabel-' + ${item.id}">
+                        Metadata: <span th:text="${item.title}"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <pre class="metadata-json" th:text="${metadataJsonMap[item.id]}"></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+	$(document).ready(function() {
+	    $('#mathismessage-table').DataTable({
+	        paging: true,
+	        searching: true
+	    });
+	});
+		
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.edit-button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('tr').forEach(row => {
+                    row.querySelectorAll('.view-mode-field').forEach(field => field.style.display = 'block');
+                    row.querySelectorAll('.edit-mode-field').forEach(field => {
+                        field.style.display = 'none';
+                        if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA' || field.tagName === 'SELECT') {
+                            if (field.dataset.original !== undefined) {
+                                field.value = field.dataset.original;
+                            }
+                        }
+                    });
+                    let editButtons = row.querySelector('.edit-mode-buttons');
+                    let viewButtons = row.querySelector('.view-mode-buttons');
+                    if (editButtons) editButtons.style.display = 'none';
+                    if (viewButtons) viewButtons.style.display = 'block';
+                });
+
+                const row = this.closest('tr');
+                row.querySelectorAll('.view-mode-field').forEach(field => field.style.display = 'none');
+                row.querySelectorAll('.edit-mode-field').forEach(field => {
+                    field.style.display = 'block';
+                    if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA' || field.tagName === 'SELECT') {
+                        field.dataset.original = field.value;
+                    }
+                });
+                this.closest('.view-mode-buttons').style.display = 'none';
+                row.querySelector('.edit-mode-buttons').style.display = 'block';
+            });
+        });
+
+        document.querySelectorAll('.cancel-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('tr');
+                row.querySelectorAll('.view-mode-field').forEach(field => field.style.display = 'block');
+                row.querySelectorAll('.edit-mode-field').forEach(field => {
+                    field.style.display = 'none';
+                    if (field.tagName === 'INPUT' || field.tagName === 'TEXTAREA' || field.tagName === 'SELECT') {
+                        if (field.dataset.original !== undefined) {
+                            field.value = field.dataset.original;
+                        }
+                    }
+                });
+                this.closest('.edit-mode-buttons').style.display = 'none';
+                row.querySelector('.view-mode-buttons').style.display = 'block';
+            });
+        });
+    });
+</script>
+</body>
+</html>
