@@ -46,7 +46,7 @@ public class KnowledgeProcessorScheduler extends MathisJob {
 		CronTrigger trigger = new CronTrigger(cron);
 		this.setTrigger(trigger);
 
-		log.info("Init MathisJob [%s][%s]", this.getType(), this.getClass().getCanonicalName());
+		log.info("Init MathisJob [{}][{}]", this.getType(), this.getClass().getCanonicalName());
 		
 		Runnable task = () -> {
 			try {
