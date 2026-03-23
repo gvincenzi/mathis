@@ -46,6 +46,12 @@ public class MathisMessageService {
 
     public void sendByMail(Long id) {
     	log.info("Sending message ID {} by mail",id);
+    	
+    	if("EMPTY".equals(from)) {
+    		log.info("No email account set");
+    		return;
+    	}
+    	
     	try {
 	    	Optional<MathisMessage> mathisMessage = mathisMessageRepository.findById(id);
 	    	if(mathisMessage.isPresent()) {

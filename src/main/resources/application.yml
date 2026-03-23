@@ -21,15 +21,15 @@ spring:
    max-request-size: 50MB
 
  mail:
-  from: ${MAIL_FROM}
-  host: ${MAIL_HOST}
-  port: ${MAIL_PORT}
-  username: ${MAIL_USERNAME}
-  password: ${MAIL_PASSWORD}
+  from: ${MAIL_FROM:EMPTY}
+  host: ${MAIL_HOST:EMPTY}
+  port: ${MAIL_PORT:0000}
+  username: ${MAIL_USERNAME:EMPTY}
+  password: ${MAIL_PASSWORD:EMPTY}
   properties:
    mail:
     transport:
-     protocol: ${MAIL_PROTOCOL}
+     protocol: ${MAIL_PROTOCOL:EMPTY}
     smtp:
      auth: true
      starttls:

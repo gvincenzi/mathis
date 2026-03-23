@@ -39,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @ConditionalOnBooleanProperty(name = "telegram.bot.active", havingValue = true, matchIfMissing = false)
 public class TelegramBotService implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
+	private static final int MESSAGE_MAX_LENGTH = 3500;
+
 	private static final String START = "/start";
 
 	@Value("${telegram.bot.username}")
@@ -81,7 +83,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 					chat = chatService.welcome(Long.toString(update.getMessage().getChatId()), user.getFirstname());
 					SendMessage message = new SendMessage(chat.getConversationId(), chat.getBody());
 					message.setParseMode("Markdown");
-					telegramClient.execute(message);
+					sendMessageToBotConversation(message);
 					log.info("Welcome message sent to chatId: {}", chat.getConversationId());
 				} catch (TelegramApiException e) {
 					log.error("Error sending welcome message to chatId {}: {}", update.getMessage().getChatId(), e.getMessage(), e);
@@ -100,7 +102,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 						if(chat.getKnowledges() != null && !chat.getKnowledges().isEmpty()) {
 							message.setReplyMarkup(getInlineKeyboard(chat.getKnowledges()));
 						}
-						telegramClient.execute(message);
+						sendMessageToBotConversation(message);
 						
 						//Send notification to admin
 						if(chat.getNotificationMessageForAdmin() != null) {
@@ -110,7 +112,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 								SendMessage messageToAdmin = new SendMessage(admin.getUsername(), chat.getNotificationMessageForAdmin());
 								messageToAdmin.setParseMode("Markdown");
 								try {
-									telegramClient.execute(messageToAdmin);
+									sendMessageToBotConversation(messageToAdmin);
 								} catch (TelegramApiException e) {
 									log.error("Error processing chat message from chatId {}: {}", admin.getUsername(), e.getMessage(), e);
 								}
@@ -125,7 +127,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 				CallbackQuery callbackQuery = update.getCallbackQuery();
 				SendMessage message = handleCallbackQuery(callbackQuery.getData(), callbackQuery.getMessage().getChatId(), user);
 				try {
-					telegramClient.execute(message);
+					sendMessageToBotConversation(message);
 				} catch (TelegramApiException e) {
 					log.error(e.getMessage());
 				}
@@ -133,6 +135,44 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 				log.warn("Received unsupported update type from chatId: {}", update.hasMessage() ? update.getMessage().getChatId() : null);
 			}
 		}
+	}
+
+	private void sendMessageToBotConversation(SendMessage message) throws TelegramApiException {
+	    String text = message.getText();
+
+	    if (text == null || text.isBlank() || text.isEmpty() || text.length() <= MESSAGE_MAX_LENGTH) {
+	        telegramClient.execute(message);
+	        return;
+	    }
+
+	    List<String> chunks = splitTextIntoChunks(text, MESSAGE_MAX_LENGTH);
+
+	    for (String chunk : chunks) {
+	        SendMessage chunkMessage = new SendMessage(message.getChatId(), chunk);
+	        chunkMessage.setParseMode(message.getParseMode());
+	        telegramClient.execute(chunkMessage);
+	    }
+	}
+	
+	private List<String> splitTextIntoChunks(String text, int maxLength) {
+	    List<String> chunks = new ArrayList<>();
+
+	    int start = 0;
+	    while (start < text.length()) {
+	        int end = Math.min(start + maxLength, text.length());
+
+	        if (end < text.length()) {
+	            int lastSpace = text.lastIndexOf(' ', end);
+	            if (lastSpace > start) {
+	                end = lastSpace;
+	            }
+	        }
+
+	        chunks.add(text.substring(start, end));
+	        start = end + 1;
+	    }
+
+	    return chunks;
 	}
 
 	@Override
