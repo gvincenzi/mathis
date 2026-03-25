@@ -30,6 +30,12 @@ public class MathisMessageService {
 	@Value("${spring.mail.from}")
     private String from;
 	
+	@Value("${spring.mail.cc}")
+    private String cc;
+	
+	@Value("${spring.mail.bcc}")
+    private String bcc;
+	
 	public List<MathisMessage> findAll() {
 		return mathisMessageRepository.findAll();
 	}
@@ -60,6 +66,8 @@ public class MathisMessageService {
 		        message.setFrom(from);
 		        String recipientString = String.join(",", mathisMessageToSend.getRecipients());
 		        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipientString));
+		        message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(cc));
+		        message.setRecipients(Message.RecipientType.BCC, InternetAddress.parse(bcc));
 		        message.setSubject(mathisMessageToSend.getTitle()); 
 		        message.setText(mathisMessageToSend.getBody(), "UTF-8", "html");
 		        mailSender.send(message);

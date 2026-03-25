@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
@@ -25,6 +26,7 @@ import com.gist.mathis.service.RawKnowledgeService;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 @Slf4j
 @ProcessorScheduler(configKey = "mathis.processors.festival-contact")
@@ -67,7 +69,11 @@ public class FestivalContactKnowledgeProcessor implements KnowledgeProcessor {
 		log.info("Create festivalContactPromptTemplate [resource: {}]",
 				festivalContactPromptTemplateResource.getFilename());
 		festivalContactPromptTemplate = new PromptTemplate(this.festivalContactPromptTemplateResource);
-		this.chatClient = ChatClient.builder(chatModel).build();
+		this.chatClient = ChatClient.builder(chatModel)
+				.defaultAdvisors(
+				        QuestionAnswerAdvisor.builder(vectorStore).build()
+				    )
+				.build();
 	}
 
 	@Override
@@ -114,15 +120,12 @@ public class FestivalContactKnowledgeProcessor implements KnowledgeProcessor {
 					+ "**Important Note on Information Usage:** While the core content about the artist's career, awards, collaborations, musical style, and recent projects must *exclusively* come from the provided Context Information, the following specific media links must *always* be included in a dedicated 'Media' section, regardless of their presence in the Context Information.\r\n"
 					.replace("{owner_name}", ownerName).replace("{festival_name}", festival_name).replace("{country}", country).replace("{festival_mail}", festival_mail).replace("{festival_description}", festival_description);
 			
-			String mailBody = this.chatClient.prompt(prompt)
-					.advisors(
-							QuestionAnswerAdvisor.builder(vectorStore)
-							.build())
+			Flux<String> responseBody = this.chatClient.prompt(prompt)
 					.user(userQuery)
-					.call()
-					.content().replace("```html", "").replace("```", "");
+					.stream().content();
 			
-			mathisMessage.setBody(mailBody);
+			String mailBody = responseBody.collectList().block().stream().collect(Collectors.joining());
+			mathisMessage.setBody(mailBody.replace("```html", "").replace("```", ""));
 			mathisMessage = mathisMessageRepository.save(mathisMessage);
 			
 			festival.setProcessedBy(getProcessorName());
