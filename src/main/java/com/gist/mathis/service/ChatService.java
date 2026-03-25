@@ -32,6 +32,7 @@ import com.gist.mathis.service.entity.IntentResponse;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 
 @Slf4j
 @Service
@@ -151,11 +152,11 @@ public class ChatService {
 					log.info("Create adminNotificationPromptTemplate [resource: {}]", adminNotificationTemplateResource.getFilename());
 					PromptTemplate adminNotificationTemplate = new PromptTemplate(this.adminNotificationTemplateResource);
 					Prompt prompt = adminNotificationTemplate.create(Map.of("owner_name", ownerName, "conversationForSummary", conversationForSummary, "userMessageForAdmin", userMessageForAdmin));
-					String messageToAdmin = this.simpleChatClient.prompt(prompt)
-							.call()
+					Flux<String> messageToAdmin = this.simpleChatClient.prompt(prompt)
+							.stream()
 							.content();
-					
-					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, translation("Message correctly sent \uD83D\uDC4D",message.getConversationId()), messageToAdmin);
+					String messageToAdminBody = messageToAdmin.collectList().block().stream().collect(Collectors.joining());
+					chat = new ChatMessage(message.getConversationId(), UserTypeEnum.AI, translation("Message correctly sent \uD83D\uDC4D",message.getConversationId()), messageToAdminBody);
 					break;
 				}
 			case GENERIC_QUESTION : chat = genericQuestion(message); break;
@@ -183,9 +184,10 @@ public class ChatService {
 		
 		log.info(String.format("Calling MistralAI"));
 		
-		return this.simpleChatClient.prompt(prompt).user(toTranslate)
-			.call()
-			.content();
+		Flux<String> content = this.simpleChatClient.prompt(prompt).user(toTranslate)
+			.stream().content();
+		
+		return content.collectList().block().stream().collect(Collectors.joining());
 	}
 	
 	private ChatMessage genericQuestion(ChatMessage message) {
@@ -199,13 +201,15 @@ public class ChatService {
 		
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		parameters.put(ChatMemory.CONVERSATION_ID, conversationId);
-		String responseBody = this.chatClient.prompt()
+		Flux<String> responseBody = this.chatClient.prompt()
 			.advisors(advisor -> advisor.params(parameters))
 			.user(message.getBody())
-			.call()
-			.content();
-		log.info("MistralAI answer [{}]", responseBody.length() > 15 ? responseBody.substring(0, 10) + "..." : responseBody);
-		return new ChatMessage(conversationId, UserTypeEnum.HUMAN.equals(message.getUserType()) ? UserTypeEnum.AI : UserTypeEnum.HUMAN, responseBody);
+			.stream().content();
+		
+		String body = responseBody.collectList().block().stream().collect(Collectors.joining());
+		
+		log.info("MistralAI answer [{}]", body.length() > 15 ? body.substring(0, 10) + "..." : body);
+		return new ChatMessage(conversationId, UserTypeEnum.HUMAN.equals(message.getUserType()) ? UserTypeEnum.AI : UserTypeEnum.HUMAN, body);
 	}
 	
 	private IntentResponse analyzeUserMessage(ChatMessage chatMessage) {
@@ -222,12 +226,13 @@ public class ChatService {
 
 		log.info(String.format("Calling MistralAI"));
 		
-		String responseBody = this.simpleChatClient.prompt(prompt)
+		Flux<String> responseBody = this.simpleChatClient.prompt(prompt)
 			.user(chatMessage.getBody())
-			.call()
-			.content();
-		log.info("responseBody : {}",responseBody);
-		IntentResponse intentResponse = beanOutputConverter.convert(responseBody.replace("`", ""));
+			.stream().content();
+		
+		String body = responseBody.collectList().block().stream().collect(Collectors.joining());
+		log.info("responseBody : {}",body);
+		IntentResponse intentResponse = beanOutputConverter.convert(body.replace("`", ""));
 
 		return intentResponse;
 	}
@@ -241,10 +246,10 @@ public class ChatService {
 		
 		log.info(String.format("Calling MistralAI"));
 		
-		String responseBody = this.simpleChatClient.prompt(prompt)
-			.call()
-			.content();
+		Flux<String> responseBody = this.simpleChatClient.prompt(prompt)
+				.stream().content();
 
-		return new ChatMessage(conversationId, UserTypeEnum.AI, responseBody);
+		String body = responseBody.collectList().block().stream().collect(Collectors.joining());
+		return new ChatMessage(conversationId, UserTypeEnum.AI, body);
 	}
 }
