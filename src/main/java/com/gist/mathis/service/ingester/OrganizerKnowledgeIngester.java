@@ -32,6 +32,7 @@ public class OrganizerKnowledgeIngester implements KnowledgeIngester {
 	public void ingest() throws InterruptedException {
 		internalAssomusicaIngestion();
 		internalAssoconcertiIngestion();
+		internalAiamIngestion();
 	}
 
 	private void internalAssomusicaIngestion() throws InterruptedException {
@@ -261,4 +262,146 @@ public class OrganizerKnowledgeIngester implements KnowledgeIngester {
 		log.info("[{}][{}][{}] End ingestion - {} RawKnowledge(s) ingested", getSourceName(),
 				getClass().getSimpleName(), "ASSOCONCERTI", count);
 	}
+	
+	private void internalAiamIngestion() throws InterruptedException {
+	    log.info("[{}][{}][{}] Start ingestion", getSourceName(), getClass().getSimpleName(), "AIAM");
+	    String url = "https://www.aiam-musica.it/soci-elenco";
+	    Document doc;
+	    try {
+	        doc = Jsoup.connect(url).userAgent("Mozilla/5.0").timeout(15000).get();
+	    } catch (IOException e) {
+	        log.error("{} -> {}", OrganizerKnowledgeIngester.class.getCanonicalName(), e.getMessage());
+	        return;
+	    }
+
+	    Elements organizerCards = doc.select("article.qodef-e.qodef-grid-item");
+	    int count = 0;
+	    String country = "Italy";
+
+	    for (Element card : organizerCards) {
+	        Element titleLink = card.selectFirst("h6.qodef-e-title > a.qodef-e-title-link");
+	        if (titleLink == null) continue;
+
+	        String name = titleLink.text().trim();
+	        String detailUrl = titleLink.absUrl("href");
+	        Element regionEl = card.selectFirst(".qodef-e-info-category .qodef-e-category");
+	        String region = (regionEl != null) ? regionEl.text().trim() : null;
+
+	        log.info("AIAM Organizer: {} - URL: {} - Region: {}", name, detailUrl, region);
+
+	        // --- Scarica pagina dettaglio ---
+	        String description = null, address = null, city = null, email = null, website = null, tel = null, president = null, director = null;
+	        String facebook = null, youtube = null, instagram = null, linkedin = null;
+
+	        try {
+	            Document detailDoc = Jsoup.connect(detailUrl).userAgent("Mozilla/5.0").timeout(10000).get();
+
+	            // Descrizione
+	            Element descrEl = detailDoc.selectFirst("div.qodef-portfolio-content > p");
+	            if (descrEl != null) description = descrEl.text();
+
+	            // Info blocchi
+	            Elements infoBlocks = detailDoc.select("div.qodef-portfolio-info > div.qodef-e.qodef-info--info-items");
+	            for (Element block : infoBlocks) {
+	                String label = block.selectFirst(".qodef-e-title") != null
+	                        ? block.selectFirst(".qodef-e-title").text().toLowerCase() : "";
+
+	                Element valueEl = block.selectFirst(".qodef-e-info-item");
+	                if (label.contains("sede") && valueEl != null) {
+	                    address = valueEl.html().replaceAll("<br>", " ").trim();
+	                    // Prova a separare città
+	                    String[] arr = valueEl.text().split("\\d{5}");
+	                    if (arr.length > 1) {
+	                        city = arr[1].replaceAll("[^\\w ]", "").trim();
+	                    }
+	                } else if (label.contains("contatti") && valueEl != null) {
+	                    // Email (può essere più di una, prendiamo la prima valida)
+	                    Element emailLink = valueEl.selectFirst("a[href^=mailto:]");
+	                    if (emailLink != null) {
+	                        email = emailLink.text().trim();
+	                    }
+	                    // Tel
+	                    Element telLink = valueEl.selectFirst("a[href^=tel:]");
+	                    if (telLink != null) {
+	                        tel = telLink.text().trim();
+	                    }
+	                } else if (label.contains("presidente") && valueEl != null) {
+	                    president = valueEl.text().trim();
+	                } else if (label.contains("direttore") && valueEl != null) {
+	                    director = valueEl.text().trim();
+	                } else if (label.contains("web e social") && valueEl != null) {
+	                    Elements links = valueEl.select("a");
+	                    for (Element l : links) {
+	                        String href = l.attr("href");
+	                        if (href.contains("academiamontisregalis.it") && website == null) {
+	                            website = href;
+	                        } else if (href.contains("facebook.com")) {
+	                            facebook = href;
+	                        } else if (href.contains("youtube.com") || href.contains("youtu.be")) {
+	                            youtube = href;
+	                        } else if (href.contains("instagram.com")) {
+	                            instagram = href;
+	                        } else if (href.contains("linkedin.com")) {
+	                            linkedin = href;
+	                        }
+	                    }
+	                }
+	            }
+	        } catch (IOException e) {
+	            log.warn("Error loading detail for {}: {}", name, e.getMessage());
+	        }
+
+	        log.info("Organizer found: {} - Email: {} - Website: {} - Region: {}", name, email, website, region);
+
+	        if (email == null || email.isEmpty()) {
+	            log.info("E-mail is not present - skip raw knowledge");
+	            continue;
+	        }
+
+	        RawKnowledge organizer;
+	        String uniqueName = String.format("%s (%s)", name, country);
+	        Optional<RawKnowledge> byName = rawKnowledgeRepository.findByNameAndSource(uniqueName, getSourceName());
+	        if (byName.isEmpty()) {
+	            organizer = new RawKnowledge();
+	            organizer.setSource(getSourceName());
+	            organizer.setName(uniqueName);
+	        } else {
+	            organizer = byName.get();
+	            if (organizer.getProcessedBy() != null) {
+	                log.info("Organizer already processed by [{}]", organizer.getProcessedBy().name());
+	                continue;
+	            }
+	            organizer.getMetadata().clear();
+	            organizer.setUpdatedAt(null);
+	        }
+
+	        organizer.setDescription("AIAM - Associato [" + name + "] " + (description != null ? description : ""));
+
+	        organizer.getMetadata().put("name", name);
+	        organizer.getMetadata().put("website", website);
+	        organizer.getMetadata().put("country", country);
+	        organizer.getMetadata().put("region", region);
+	        organizer.getMetadata().put("city", city);
+	        organizer.getMetadata().put("address", address);
+	        organizer.getMetadata().put("email", email);
+	        organizer.getMetadata().put("president", president);
+	        organizer.getMetadata().put("director", director);
+	        organizer.getMetadata().put("tel", tel);
+	        organizer.getMetadata().put("facebook", facebook);
+	        organizer.getMetadata().put("youtube", youtube);
+	        organizer.getMetadata().put("instagram", instagram);
+	        organizer.getMetadata().put("linkedin", linkedin);
+	        organizer.getMetadata().put("detailUrl", detailUrl);
+
+	        rawKnowledgeRepository.save(organizer);
+	        count++;
+	        log.info(String.format("Organizer saved: %d > %s", organizer.getId(), organizer.getName()));
+
+	        Thread.sleep(1000);
+	    }
+
+	    log.info("[{}][{}][{}] End ingestion - {} RawKnowledge(s) ingested", getSourceName(),
+	            getClass().getSimpleName(), "AIAM", count);
+	}
+
 }
