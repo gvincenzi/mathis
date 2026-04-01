@@ -149,7 +149,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 
 	    for (String chunk : chunks) {
 	        SendMessage chunkMessage = new SendMessage(message.getChatId(), chunk);
-	        chunkMessage.setParseMode(message.getParseMode());
+	        chunkMessage.setParseMode("Markdown");
 	        telegramClient.execute(chunkMessage);
 	    }
 	}
