@@ -29,17 +29,17 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
 @Slf4j
-@ProcessorScheduler(configKey = "mathis.processors.festival-contact")
+@ProcessorScheduler(configKey = "mathis.processors.organizer-contact")
 @Component
-public class FestivalContactKnowledgeProcessor implements KnowledgeProcessor {
+public class OrganizerContactKnowledgeProcessor implements KnowledgeProcessor {
 	@Autowired
 	private RawKnowledgeService rawKnowledgeService;
 	
 	@Autowired
 	private MathisMessageRepository mathisMessageRepository;
 
-	@Value("${prompts.festivalContact}")
-	private Resource festivalContactPromptTemplateResource;
+	@Value("${prompts.organizerContact}")
+	private Resource organizerContactPromptTemplateResource;
 
 	@Value("${owner.name}")
 	private String ownerName;
@@ -49,26 +49,26 @@ public class FestivalContactKnowledgeProcessor implements KnowledgeProcessor {
 	
 	private final MistralAiChatModel chatModel;
 	private final VectorStore vectorStore;
-	private PromptTemplate festivalContactPromptTemplate;
+	private PromptTemplate organizerContactPromptTemplate;
 	private ChatClient chatClient;
 
 	@Autowired
-	public FestivalContactKnowledgeProcessor(MistralAiChatModel chatModel, VectorStore vectorStore) {
+	public OrganizerContactKnowledgeProcessor(MistralAiChatModel chatModel, VectorStore vectorStore) {
 		this.chatModel = chatModel;
 		this.vectorStore = vectorStore;
 	}
 	
 	@Override
 	public RawKnowledgeProcessorEnum getProcessorName() {
-		return RawKnowledgeProcessorEnum.FESTIVAL_FIRST_CONTACT;
+		return RawKnowledgeProcessorEnum.ORGANIZER_FIRST_CONTACT;
 	}
 
 	@PostConstruct
 	private void init() {
 		log.info("Init chatClient [vectorStore: {}] via @PostConstruct", vectorStore.getName());
-		log.info("Create festivalContactPromptTemplate [resource: {}]",
-				festivalContactPromptTemplateResource.getFilename());
-		festivalContactPromptTemplate = new PromptTemplate(this.festivalContactPromptTemplateResource);
+		log.info("Create organizerContactPromptTemplate [resource: {}]",
+				organizerContactPromptTemplateResource.getFilename());
+		organizerContactPromptTemplate = new PromptTemplate(this.organizerContactPromptTemplateResource);
 		this.chatClient = ChatClient.builder(chatModel)
 				.defaultAdvisors(
 				        QuestionAnswerAdvisor.builder(vectorStore).build()
@@ -79,31 +79,21 @@ public class FestivalContactKnowledgeProcessor implements KnowledgeProcessor {
 	@Override
 	public void process() throws InterruptedException {
 		log.info("[{}][{}] Start processing",getProcessorName(),getClass().getSimpleName());
-		List<RawKnowledge> list = rawKnowledgeService.findBySourceAndProcessedByIsNull(RawKnowledgeSourceEnum.FESTIVAL);
-		for (RawKnowledge festival : list) {
-			String festival_name = (String) festival.getMetadata().get("name");
-			String country = (String) festival.getMetadata().get("country");
-			String festival_mail = (String) festival.getMetadata().get("email");
-			String festival_description = festival.getDescription();
-			
-			if(
-					festival_name == null || festival_name.isBlank() || festival_name.isEmpty() ||
-					festival_mail == null || festival_mail.isBlank() || festival_mail.isEmpty() ||
-					country == null || country.isBlank() || country.isEmpty() ||
-					festival_description == null || festival_description.isBlank() || festival_description.isEmpty()
-			) {
-				log.warn("Missing mandatory field in RawKnoledge ID [{}]", festival.getId());
-				continue;
-			}
+		List<RawKnowledge> list = rawKnowledgeService.findBySourceAndProcessedByIsNull(RawKnowledgeSourceEnum.ORGANIZER);
+		for (RawKnowledge organizer : list) {
+			String organizer_name = (String) organizer.getMetadata().get("name");
+			String country = (String) organizer.getMetadata().get("country");
+			String organizer_mail = (String) organizer.getMetadata().get("email");
+			String organizer_description = organizer.getDescription();
 			
 			MathisMessage mathisMessage;
-			String title = String.format("[%s] – Proposal for %s", ownerName, festival_name);
+			String title = String.format("[%s] – Proposal for %s", ownerName, organizer_name);
 			Optional<MathisMessage> byName = mathisMessageRepository.findByTitleAndProcessor(title, getProcessorName());
 			if(byName.isEmpty()) {
 				mathisMessage = new MathisMessage();
 				mathisMessage.setProcessor(getProcessorName());
 				mathisMessage.setTitle(title);
-				mathisMessage.setSource(RawKnowledgeSourceEnum.FESTIVAL);
+				mathisMessage.setSource(RawKnowledgeSourceEnum.ORGANIZER);
 			} else {
 				mathisMessage = byName.get();
 				
@@ -114,21 +104,21 @@ public class FestivalContactKnowledgeProcessor implements KnowledgeProcessor {
 				
 				mathisMessage.getRecipients().clear();
 				mathisMessage.getMetadata().clear();
-				festival.setUpdatedAt(null);
+				organizer.setUpdatedAt(null);
 			}
 			
 			mathisMessage.getMetadata().put("country", country);
-			mathisMessage.getRecipients().add(festival_mail);
+			mathisMessage.getRecipients().add(organizer_mail);
 			
 			Map<String, Object> templateVars = Map.of("owner_name", ownerName, "owner_website", ownerWebsite,
-					"festival_name", festival_name, "festival_mail", festival_mail, "festival_description", festival_description, "country", country);
-			Prompt prompt = festivalContactPromptTemplate.create(templateVars);
+					"organizer_name", organizer_name, "organizer_mail", organizer_mail, "organizer_description", organizer_description, "country", country);
+			Prompt prompt = organizerContactPromptTemplate.create(templateVars);
 			
 			String userQuery = "You are an assistant who writes introduction emails for the musical artist {owner_name}.\r\n"
-					+ "Given the name of a festival ({festival_name}), the country where it is held ({country}), the festival's contact email ({festival_mail}), and a description of the festival ({festival_description}), you must write a formal email to the festival organizers to propose the artist for one of the upcoming editions.\r\n"
+					+ "Given the name of an organizer ({organizer_name}), the country where it is held ({country}), the organizer's contact email ({organizer_mail}), you must write a formal email to the organizer to propose the artist for a futur collaboration.\r\n"
 					+ "\r\n"
 					+ "**Important Note on Information Usage:** While the core content about the artist's career, awards, collaborations, musical style, and recent projects must *exclusively* come from the provided Context Information, the following specific media links must *always* be included in a dedicated 'Media' section, regardless of their presence in the Context Information.\r\n"
-					.replace("{owner_name}", ownerName).replace("{festival_name}", festival_name).replace("{country}", country).replace("{festival_mail}", festival_mail).replace("{festival_description}", festival_description);
+					.replace("{owner_name}", ownerName).replace("{organizer_name}", organizer_name).replace("{country}", country).replace("{organizer_mail}", organizer_mail);
 			
 			Flux<String> responseBody = this.chatClient.prompt(prompt)
 					.user(userQuery)
@@ -138,11 +128,11 @@ public class FestivalContactKnowledgeProcessor implements KnowledgeProcessor {
 			mathisMessage.setBody(mailBody.replace("```html", "").replace("```", ""));
 			mathisMessage = mathisMessageRepository.save(mathisMessage);
 			
-			festival.setProcessedBy(getProcessorName());
-			festival.setProcessedAt(LocalDateTime.now());
-			rawKnowledgeService.updateRawKnowledge(festival);
+			organizer.setProcessedBy(getProcessorName());
+			organizer.setProcessedAt(LocalDateTime.now());
+			rawKnowledgeService.updateRawKnowledge(organizer);
 			
-			log.info(String.format("Festival Contact Mail generated: %d > %s", mathisMessage.getId(), mathisMessage.getTitle()));
+			log.info(String.format("Organizer Contact Mail generated: %d > %s", mathisMessage.getId(), mathisMessage.getTitle()));
 			
 			Thread.sleep(1000);
 		}

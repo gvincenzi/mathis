@@ -2,8 +2,6 @@ package com.gist.mathis.service.ingester;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -93,11 +91,8 @@ public class FestivalKnowledgeIngester implements KnowledgeIngester {
 					}
 					// Email: cerca nel testo della pagina
 					String pageText = detailDoc.text();
-					Pattern emailPattern = Pattern.compile("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
-					Matcher matcher = emailPattern.matcher(pageText);
-					if (matcher.find()) {
-						email = matcher.group();
-					}
+					email = IngesterUtil.extractEmail(pageText);
+					
 					// Country: cerca il campo
 					Elements countryElements = detailDoc.select(".u-mr-xsm");
 					if (!countryElements.isEmpty()) {

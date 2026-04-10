@@ -31,7 +31,7 @@ public class MathisJobService {
 	}
 	
 	public void enable(String jobId) {
-		if(registeredJobs.containsKey(jobId) && !registeredJobs.get(jobId).getEnabled()){
+		if(registeredJobs.containsKey(jobId)){
 			ScheduledFuture<?> futureTask = taskScheduler.schedule(registeredJobs.get(jobId).getTask(), registeredJobs.get(jobId).getTrigger());
 			scheduledJobs.put(jobId, futureTask);
 			

@@ -2,6 +2,7 @@ package com.gist.mathis.service.ingester;
 
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.support.CronTrigger;
@@ -15,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class KnowledgeIngesterScheduler extends MathisJob {
+public class KnowledgeIngesterScheduler implements InitializingBean{
 
 	@Autowired
 	private List<KnowledgeIngester> ingesters;
@@ -36,17 +37,18 @@ public class KnowledgeIngesterScheduler extends MathisJob {
 		if (annotation == null)
 			return;
 
-		this.setType(MathisJobTypeEnum.INGESTER);
-		this.setId(annotation.configKey());
+		MathisJob job = new MathisJob();
+		job.setType(MathisJobTypeEnum.INGESTER);
+		job.setId(annotation.configKey());
 		
 		String configKey = annotation.configKey();
-		this.setEnabled(Boolean.parseBoolean(env.getProperty(configKey + ".enabled", "false")));
+		job.setEnabled(Boolean.parseBoolean(env.getProperty(configKey + ".enabled", "false")));
 
 		String cron = env.getProperty(configKey + ".ingestion-cron", "0 0 * * * *");
 		CronTrigger trigger = new CronTrigger(cron);
-		this.setTrigger(trigger);
+		job.setTrigger(trigger);
 
-		log.info("Init MathisJob [{}][{}]", this.getType(), this.getClass().getCanonicalName());
+		log.info("Init MathisJob [{}][{}]", job.getType(), this.getClass().getCanonicalName());
 		
 		Runnable task = () -> {
 			try {
@@ -56,8 +58,8 @@ public class KnowledgeIngesterScheduler extends MathisJob {
 				Thread.currentThread().interrupt();
 			}
 		};
-		this.setTask(task);
+		job.setTask(task);
 		
-		mathisJobService.register(this);
+		mathisJobService.register(job);
 	}
 }
