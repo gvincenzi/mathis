@@ -86,6 +86,16 @@ public class FestivalContactKnowledgeProcessor implements KnowledgeProcessor {
 			String festival_mail = (String) festival.getMetadata().get("email");
 			String festival_description = festival.getDescription();
 			
+			if(
+					festival_name == null || festival_name.isBlank() || festival_name.isEmpty() ||
+					festival_mail == null || festival_mail.isBlank() || festival_mail.isEmpty() ||
+					country == null || country.isBlank() || country.isEmpty() ||
+					festival_description == null || festival_description.isBlank() || festival_description.isEmpty()
+			) {
+				log.warn("Missing mandatory field in RawKnoledge ID [{}]", festival.getId());
+				continue;
+			}
+			
 			MathisMessage mathisMessage;
 			String title = String.format("[%s] – Proposal for %s", ownerName, festival_name);
 			Optional<MathisMessage> byName = mathisMessageRepository.findByTitleAndProcessor(title, getProcessorName());
