@@ -104,20 +104,7 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 						}
 						sendMessageToBotConversation(message);
 						
-						//Send notification to admin
-						if(chat.getNotificationMessageForAdmin() != null) {
-							List<MathisUser> admins = userService.findAdmins();
-							admins.stream().forEach(admin -> 
-							{
-								SendMessage messageToAdmin = new SendMessage(admin.getUsername(), chat.getNotificationMessageForAdmin());
-								messageToAdmin.setParseMode("Markdown");
-								try {
-									sendMessageToBotConversation(messageToAdmin);
-								} catch (TelegramApiException e) {
-									log.error("Error processing chat message from chatId {}: {}", admin.getUsername(), e.getMessage(), e);
-								}
-							});
-						}
+						sendNotificationMessageForAdmin(chat);
 					}
 					log.info("Chat response sent to chatId: {}", chat.getConversationId());
 				} catch (TelegramApiException | IOException | NumberFormatException e) {
@@ -134,6 +121,23 @@ public class TelegramBotService implements SpringLongPollingBot, LongPollingSing
 			} else {
 				log.warn("Received unsupported update type from chatId: {}", update.hasMessage() ? update.getMessage().getChatId() : null);
 			}
+		}
+	}
+
+	public void sendNotificationMessageForAdmin(ChatMessage chat) {
+		//Send notification to admin
+		if(chat.getNotificationMessageForAdmin() != null) {
+			List<MathisUser> admins = userService.findAdmins();
+			admins.stream().forEach(admin -> 
+			{
+				SendMessage messageToAdmin = new SendMessage(admin.getUsername(), chat.getNotificationMessageForAdmin());
+				messageToAdmin.setParseMode("Markdown");
+				try {
+					sendMessageToBotConversation(messageToAdmin);
+				} catch (TelegramApiException e) {
+					log.error("Error processing chat message from chatId {}: {}", admin.getUsername(), e.getMessage(), e);
+				}
+			});
 		}
 	}
 

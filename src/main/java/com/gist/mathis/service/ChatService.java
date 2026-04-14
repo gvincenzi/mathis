@@ -67,11 +67,17 @@ public class ChatService {
 	@Value("${prompts.translation}")
 	private Resource translationResource;
 	
+	@Value("${prompts.translationEmail}")
+	private Resource translationEmailResource;
+	
 	@Value("${owner.name}")
 	private String ownerName;
 
 	@Value("${owner.website}")
 	private String ownerWebsite;
+	
+	@Value("${owner.language}")
+	private String ownerLanguage;
 	
 	private final KnowledgeService knowledgeService;
 	private final MistralAiChatModel chatModel;
@@ -179,8 +185,12 @@ public class ChatService {
 	public String translation(String toTranslate, String conversationId) {	
 		log.info("{} -> translation", ChatService.class.getSimpleName());
 		
-		PromptTemplate translationTemplate = new PromptTemplate(this.translationResource);
-		Prompt prompt = translationTemplate.create(Map.of("conversationForSummary", conversationHistory(conversationId)));
+		PromptTemplate translationTemplate = PromptTemplate.builder()
+			    .renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
+			    .variables(Map.of("conversationForSummary", conversationHistory(conversationId)))
+			    .resource(translationResource)
+			    .build();
+		Prompt prompt = translationTemplate.create();
 		
 		log.info(String.format("Calling MistralAI"));
 		
@@ -188,6 +198,30 @@ public class ChatService {
 			.stream().content();
 		
 		return content.collectList().block().stream().collect(Collectors.joining());
+	}
+	
+	public String translationEmail(String toTranslate) {	
+		log.info("{} -> translationEmail", ChatService.class.getSimpleName());
+		
+		PromptTemplate translationEmailTemplate = PromptTemplate.builder()
+			    .renderer(StTemplateRenderer.builder().startDelimiterToken('<').endDelimiterToken('>').build())
+			    .variables(Map.of("language", ownerLanguage))
+			    .resource(translationEmailResource)
+			    .build();
+		
+		Prompt prompt = translationEmailTemplate.create();
+		
+		log.info(String.format("Calling MistralAI"));
+		
+		Flux<String> content = this.simpleChatClient.prompt(prompt).user(toTranslate)
+			.stream().content();
+		
+		return content.collectList().block().stream().collect(Collectors.joining());
+	}
+	
+	public ChatMessage mailReceivedToAdmin(String emailText) {	
+		log.info("{} -> messageToAdmin", ChatService.class.getSimpleName());
+		return new ChatMessage(UserTypeEnum.AI, translationEmail(emailText));
 	}
 	
 	private ChatMessage genericQuestion(ChatMessage message) {

@@ -25,12 +25,12 @@ public class InboxMailKnowledgeIngester implements KnowledgeIngester {
 
     @Override
     public RawKnowledgeSourceEnum getSourceName() {
-        return RawKnowledgeSourceEnum.MAIL;
+        return RawKnowledgeSourceEnum.INBOX_MAIL;
     }
 
     @Override
     public void ingest() {
-        log.info("[{}][{}] Start ingestion", getSourceName(), getClass().getSimpleName());
+        log.debug("[{}][{}] Start ingestion", getSourceName(), getClass().getSimpleName());
         int count = 0;
         Properties props = new Properties();
         props.put("mail.store.protocol", properties.getProtocol());
@@ -103,7 +103,7 @@ public class InboxMailKnowledgeIngester implements KnowledgeIngester {
         } catch (Exception e) {
             log.error("Error reading mails", e);
         }
-        log.info("[{}][{}] End ingestion - {} RawKnowledge(s) ingested", getSourceName(), getClass().getSimpleName(), count);
+        log.debug("[{}][{}] End ingestion - {} RawKnowledge(s) ingested", getSourceName(), getClass().getSimpleName(), count);
     }
 }
 

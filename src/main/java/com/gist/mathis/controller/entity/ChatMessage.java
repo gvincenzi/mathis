@@ -55,4 +55,9 @@ public class ChatMessage {
 		this.resource = resource;
 	}
 	
+	public ChatMessage(UserTypeEnum userType, String notificationMessageForAdmin) {
+		this.userType = userType;
+		this.notificationMessageForAdmin = notificationMessageForAdmin;
+	}
+	
 }

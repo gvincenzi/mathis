@@ -1,5 +1,5 @@
 package com.gist.mathis.model.entity;
 
 public enum RawKnowledgeSourceEnum {
-	FESTIVAL, ORGANIZER, MAIL
+	FESTIVAL, ORGANIZER, INBOX_MAIL
 }

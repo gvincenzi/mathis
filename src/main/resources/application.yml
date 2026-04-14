@@ -61,6 +61,7 @@ owner:
  name: ${MATHIS_OWNER_NAME}
  website: ${MATHIS_OWNER_WEBSITE}
  adminPassword: ${MATHIS_OWNER_ADMIN_PASSWORD}
+ language: ${MATHIS_OWNER_LANGUAGE:en-US}
 
 prompts:
  adminRoleCheckFailed: classpath:/prompts/adminRoleCheckFailed.st
@@ -68,6 +69,7 @@ prompts:
  base: classpath:/prompts/base.st
  adminNotification: classpath:/prompts/adminNotification.st
  translation: classpath:/prompts/translation.st
+ translationEmail: classpath:/prompts/translationEmail.st
  festivalContact: classpath:/prompts/processors/festivalContact.st
  organizerContact: classpath:/prompts/processors/organizerContact.st
 message:
@@ -100,14 +102,26 @@ mathis:
       expiration-millis: 3600000
       cleanup-cron: "0 0/10 * * * ?"
   ingesters:
-    festival:
+   festival:
+     enabled: false
+     ingestion-cron: "0 0/5 * * * ?"
+     maxPages: 1
+     artDisciplines:
+      - "electronic-music"
+   organizer:
       enabled: false
-      ingestion-cron: "0 0 8 * * *"
-      maxPages: 2
-      artDisciplines:
-       - "electronic-music"
+      ingestion-cron: "0 0/1 * * * ?"
+   inboxmail:
+      enabled: false
+      ingestion-cron: "0 0/1 * * * ?"    
   processors:
-    festival-contact:
+   festival-contact:
+      enabled: false
+      processor-cron: "0 0/2 * * * ?"
+   organizer-contact:
+      enabled: false
+      processor-cron: "0 0/1 * * * ?"
+   inboxmail:
       enabled: false
       processor-cron: "0 0/1 * * * ?"
 
