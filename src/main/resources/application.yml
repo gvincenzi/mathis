@@ -37,6 +37,19 @@ spring:
      starttls:
       enable: true
     debug: false
+  reader:
+    protocol: ${MAIL_IN_PROTOCOL:EMPTY}
+    host: ${MAIL_IN_HOST:EMPTY}
+    port: ${MAIL_IN_PORT:0000}
+    username: ${MAIL_USERNAME:EMPTY}
+    password: ${MAIL_PASSWORD:EMPTY}
+    folder: INBOX
+    ssl-enable: true
+    starttls-enable: false
+    auth-login-disable: false
+    debug: false
+    connection-timeout: 15000
+    timeout: 10000
 
 telegram:
  bot:
