@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark h-100" data-bs-theme="dark">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="dark h-100" data-bs-theme="dark" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8">
     <title>Mathis - Configurations</title>
@@ -113,14 +113,15 @@
                                 <td th:text="${job.value.id}"></td>
                                 <td th:text="${job.value.trigger.expression}"></td>
                                 <td>
-                                    <span th:if="${job.value.enabled}" class="badge bg-success">Enabled</span>
-                                    <span th:unless="${job.value.enabled}" class="badge bg-danger">Disabled</span>
+                                    <span th:if="${job.value.enabled}" class="badge bg-success" sec:authorize="hasAuthority('ROLE_ADMIN')">Enabled</span>
+                                    <span th:unless="${job.value.enabled}" class="badge bg-danger" sec:authorize="hasAuthority('ROLE_ADMIN')">Disabled</span>
                                 </td>
                                 <td>
                                     <form th:action="@{/web/configurations/job/{jobId}/toggle(jobId=${job.value.id})}" method="post">
                                         <button type="submit"
-                                            th:text="${job.value.enabled ? 'Disattiva' : 'Attiva'}"
-                                            class="btn btn-sm btn-secondary"></button>
+                                            th:text="${job.value.enabled ? 'Disable' : 'Enable'}"
+											th:class="${job.value.enabled ? 'btn btn-sm btn-danger' : 'btn btn-sm btn-secondary'}"
+                                            sec:authorize="hasAuthority('ROLE_ADMIN')"></button>
                                     </form>
                                 </td>
                             </tr>
@@ -145,14 +146,15 @@
                                 <td th:text="${job.value.id}"></td>
                                 <td th:text="${job.value.trigger.expression}"></td>
                                 <td>
-                                    <span th:if="${job.value.enabled}" class="badge bg-success">Enabled</span>
-                                    <span th:unless="${job.value.enabled}" class="badge bg-danger">Disabled</span>
+                                    <span th:if="${job.value.enabled}" class="badge bg-success" sec:authorize="hasAuthority('ROLE_ADMIN')">Enabled</span>
+                                    <span th:unless="${job.value.enabled}" class="badge bg-danger" sec:authorize="hasAuthority('ROLE_ADMIN')">Disabled</span>
                                 </td>
                                 <td>
                                     <form th:action="@{/web/configurations/job/{jobId}/toggle(jobId=${job.value.id})}" method="post">
                                         <button type="submit"
-                                            th:text="${job.value.enabled ? 'Disattiva' : 'Attiva'}"
-                                            class="btn btn-sm btn-secondary"></button>
+                                            th:text="${job.value.enabled ? 'Disable' : 'Enable'}"
+											th:class="${job.value.enabled ? 'btn btn-sm btn-danger' : 'btn btn-sm btn-secondary'}"
+                                            sec:authorize="hasAuthority('ROLE_ADMIN')"></button>
                                     </form>
                                 </td>
                             </tr>

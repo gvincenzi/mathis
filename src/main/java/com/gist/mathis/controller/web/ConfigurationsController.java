@@ -24,7 +24,6 @@ public class ConfigurationsController {
     @Autowired
     private MathisJobService mathisJobService;
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public String configurations(Model model) {
         Map<String, MathisJob> allJobs = mathisJobService.getRegisteredJobs();

@@ -22,8 +22,8 @@ spring:
 
  mail:
   from: ${MAIL_FROM:EMPTY}
-  cc: ${MAIL_CC:}
-  bcc: ${MAIL_BCC:}
+  cc: ${MAIL_CC:EMPTY}
+  bcc: ${MAIL_BCC:EMPTY}
   host: ${MAIL_HOST:EMPTY}
   port: ${MAIL_PORT:0000}
   username: ${MAIL_USERNAME:EMPTY}
@@ -37,6 +37,19 @@ spring:
      starttls:
       enable: true
     debug: false
+  reader:
+    protocol: ${MAIL_IN_PROTOCOL:EMPTY}
+    host: ${MAIL_IN_HOST:EMPTY}
+    port: ${MAIL_IN_PORT:0000}
+    username: ${MAIL_USERNAME:EMPTY}
+    password: ${MAIL_PASSWORD:EMPTY}
+    folder: INBOX
+    ssl-enable: true
+    starttls-enable: false
+    auth-login-disable: false
+    debug: false
+    connection-timeout: 15000
+    timeout: 10000
 
 telegram:
  bot:
@@ -48,6 +61,7 @@ owner:
  name: ${MATHIS_OWNER_NAME}
  website: ${MATHIS_OWNER_WEBSITE}
  adminPassword: ${MATHIS_OWNER_ADMIN_PASSWORD}
+ language: ${MATHIS_OWNER_LANGUAGE:en-US}
 
 prompts:
  adminRoleCheckFailed: classpath:/prompts/adminRoleCheckFailed.st
@@ -55,6 +69,7 @@ prompts:
  base: classpath:/prompts/base.st
  adminNotification: classpath:/prompts/adminNotification.st
  translation: classpath:/prompts/translation.st
+ translationEmail: classpath:/prompts/translationEmail.st
  festivalContact: classpath:/prompts/processors/festivalContact.st
  organizerContact: classpath:/prompts/processors/organizerContact.st
 message:
@@ -87,14 +102,26 @@ mathis:
       expiration-millis: 3600000
       cleanup-cron: "0 0/10 * * * ?"
   ingesters:
-    festival:
+   festival:
+     enabled: false
+     ingestion-cron: "0 0/5 * * * ?"
+     maxPages: 1
+     artDisciplines:
+      - "electronic-music"
+   organizer:
       enabled: false
-      ingestion-cron: "0 0 8 * * *"
-      maxPages: 2
-      artDisciplines:
-       - "electronic-music"
+      ingestion-cron: "0 0/1 * * * ?"
+   inboxmail:
+      enabled: false
+      ingestion-cron: "0 0/1 * * * ?"    
   processors:
-    festival-contact:
+   festival-contact:
+      enabled: false
+      processor-cron: "0 0/2 * * * ?"
+   organizer-contact:
+      enabled: false
+      processor-cron: "0 0/1 * * * ?"
+   inboxmail:
       enabled: false
       processor-cron: "0 0/1 * * * ?"
 

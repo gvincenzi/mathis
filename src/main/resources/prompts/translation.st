@@ -8,4 +8,4 @@ Do not change or add content; translate faithfully as it is.
 Phrase to translate:
 
 Conversation (for language reference):
-<conversation>
+<conversationForSummary>
