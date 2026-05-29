@@ -33,13 +33,13 @@ public class InboxMailKnowledgeProcessor implements KnowledgeProcessor {
 	private RawKnowledgeService rawKnowledgeService;
 	
 	@Autowired
-	private Optional<MathisMessageRepository> mathisMessageRepository;
+	private MathisMessageRepository mathisMessageRepository;
 	
 	@Autowired
 	private ChatService chatService;
 	
 	@Autowired
-	private TelegramBotService telegramBotService;
+	private Optional<TelegramBotService> telegramBotService;
 	
 	@Value("${spring.mail.cc}")
     private String ownerMail;
@@ -60,8 +60,8 @@ public class InboxMailKnowledgeProcessor implements KnowledgeProcessor {
 	@Override
 	public void process() throws InterruptedException {
 		log.debug("[{}][{}] Start processing",getProcessorName(),getClass().getSimpleName());
-		if(mathisMessageRepository.isPresent()) {
-			MathisMessageRepository repository = mathisMessageRepository.get();
+		if(telegramBotService.isPresent()) {
+			TelegramBotService botService = telegramBotService.get();
 			List<RawKnowledge> list = rawKnowledgeService.findBySourceAndProcessedByIsNull(RawKnowledgeSourceEnum.INBOX_MAIL);
 			for (RawKnowledge inboxMail : list) {
 				String subject = (String) inboxMail.getMetadata().get("subject");
@@ -71,7 +71,7 @@ public class InboxMailKnowledgeProcessor implements KnowledgeProcessor {
 				String bcc = (String) inboxMail.getMetadata().get("bcc");
 				
 				MathisMessage mathisMessage;
-				Optional<MathisMessage> byName = repository.findByTitleAndProcessor(inboxMail.getName(), getProcessorName());
+				Optional<MathisMessage> byName = mathisMessageRepository.findByTitleAndProcessor(inboxMail.getName(), getProcessorName());
 				if(byName.isEmpty()) {
 					mathisMessage = new MathisMessage();
 					mathisMessage.setProcessor(getProcessorName());
@@ -110,9 +110,9 @@ public class InboxMailKnowledgeProcessor implements KnowledgeProcessor {
 				mathisMessage.setBody(mailReceivedToAdmin.getNotificationMessageForAdmin());
 				mathisMessage.getRecipients().add(ownerMail);
 				
-				telegramBotService.sendNotificationMessageForAdmin(mailReceivedToAdmin);
+				botService.sendNotificationMessageForAdmin(mailReceivedToAdmin);
 				
-				mathisMessage = repository.save(mathisMessage);
+				mathisMessage = mathisMessageRepository.save(mathisMessage);
 				
 				inboxMail.setProcessedBy(getProcessorName());
 				inboxMail.setProcessedAt(LocalDateTime.now());
