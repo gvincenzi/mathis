@@ -33,7 +33,7 @@ public class InboxMailKnowledgeProcessor implements KnowledgeProcessor {
 	private RawKnowledgeService rawKnowledgeService;
 	
 	@Autowired
-	private MathisMessageRepository mathisMessageRepository;
+	private Optional<MathisMessageRepository> mathisMessageRepository;
 	
 	@Autowired
 	private ChatService chatService;
@@ -60,67 +60,69 @@ public class InboxMailKnowledgeProcessor implements KnowledgeProcessor {
 	@Override
 	public void process() throws InterruptedException {
 		log.debug("[{}][{}] Start processing",getProcessorName(),getClass().getSimpleName());
-		List<RawKnowledge> list = rawKnowledgeService.findBySourceAndProcessedByIsNull(RawKnowledgeSourceEnum.INBOX_MAIL);
-		for (RawKnowledge inboxMail : list) {
-			String subject = (String) inboxMail.getMetadata().get("subject");
-			String from = (String) inboxMail.getMetadata().get("from");
-			String sentDate = (String) inboxMail.getMetadata().get("sentDate");
-			String cc = (String) inboxMail.getMetadata().get("cc");
-			String bcc = (String) inboxMail.getMetadata().get("bcc");
-			
-			MathisMessage mathisMessage;
-			Optional<MathisMessage> byName = mathisMessageRepository.findByTitleAndProcessor(inboxMail.getName(), getProcessorName());
-			if(byName.isEmpty()) {
-				mathisMessage = new MathisMessage();
-				mathisMessage.setProcessor(getProcessorName());
-				mathisMessage.setTitle(inboxMail.getName());
-				mathisMessage.setSource(RawKnowledgeSourceEnum.INBOX_MAIL);
-			} else {
-				mathisMessage = byName.get();
+		if(mathisMessageRepository.isPresent()) {
+			MathisMessageRepository repository = mathisMessageRepository.get();
+			List<RawKnowledge> list = rawKnowledgeService.findBySourceAndProcessedByIsNull(RawKnowledgeSourceEnum.INBOX_MAIL);
+			for (RawKnowledge inboxMail : list) {
+				String subject = (String) inboxMail.getMetadata().get("subject");
+				String from = (String) inboxMail.getMetadata().get("from");
+				String sentDate = (String) inboxMail.getMetadata().get("sentDate");
+				String cc = (String) inboxMail.getMetadata().get("cc");
+				String bcc = (String) inboxMail.getMetadata().get("bcc");
 				
-				if(mathisMessage.getSent()) {
-					log.info("Message already sent [%s]", mathisMessage.getSentAt().toString());
-					continue;
+				MathisMessage mathisMessage;
+				Optional<MathisMessage> byName = repository.findByTitleAndProcessor(inboxMail.getName(), getProcessorName());
+				if(byName.isEmpty()) {
+					mathisMessage = new MathisMessage();
+					mathisMessage.setProcessor(getProcessorName());
+					mathisMessage.setTitle(inboxMail.getName());
+					mathisMessage.setSource(RawKnowledgeSourceEnum.INBOX_MAIL);
+				} else {
+					mathisMessage = byName.get();
+					
+					if(mathisMessage.getSent()) {
+						log.info("Message already sent [%s]", mathisMessage.getSentAt().toString());
+						continue;
+					}
+					
+					mathisMessage.getRecipients().clear();
+					mathisMessage.getMetadata().clear();
+					inboxMail.setUpdatedAt(null);
 				}
 				
-				mathisMessage.getRecipients().clear();
-				mathisMessage.getMetadata().clear();
-				inboxMail.setUpdatedAt(null);
+				try {
+					SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
+			        Date date = sdf.parse(sentDate);
+					mathisMessage.setCreatedAt(date.toInstant());
+				} catch (ParseException e) {
+					log.error(e.getMessage());
+				}
+		       
+				
+				ChatMessage mailReceivedToAdmin = chatService.mailReceivedToAdmin(ProcessorUtil.cleanText(inboxMail.getDescription()));
+				mathisMessage.getMetadata().put("subject", subject);
+				mathisMessage.getMetadata().put("from", from);
+				mathisMessage.getMetadata().put("sentDate", sentDate);
+				mathisMessage.getMetadata().put("cc", cc);
+				mathisMessage.getMetadata().put("bcc", bcc);
+				mathisMessage.getMetadata().put("body", inboxMail.getDescription());
+				
+				mathisMessage.setBody(mailReceivedToAdmin.getNotificationMessageForAdmin());
+				mathisMessage.getRecipients().add(ownerMail);
+				
+				telegramBotService.sendNotificationMessageForAdmin(mailReceivedToAdmin);
+				
+				mathisMessage = repository.save(mathisMessage);
+				
+				inboxMail.setProcessedBy(getProcessorName());
+				inboxMail.setProcessedAt(LocalDateTime.now());
+				rawKnowledgeService.updateRawKnowledge(inboxMail);
+				
+				log.info(String.format("Inbox Mail generated: %d > %s", mathisMessage.getId(), mathisMessage.getTitle()));
+				
+				Thread.sleep(1000);
 			}
-			
-			try {
-				SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
-		        Date date = sdf.parse(sentDate);
-				mathisMessage.setCreatedAt(date.toInstant());
-			} catch (ParseException e) {
-				log.error(e.getMessage());
-			}
-	       
-			
-			ChatMessage mailReceivedToAdmin = chatService.mailReceivedToAdmin(ProcessorUtil.cleanText(inboxMail.getDescription()));
-			mathisMessage.getMetadata().put("subject", subject);
-			mathisMessage.getMetadata().put("from", from);
-			mathisMessage.getMetadata().put("sentDate", sentDate);
-			mathisMessage.getMetadata().put("cc", cc);
-			mathisMessage.getMetadata().put("bcc", bcc);
-			mathisMessage.getMetadata().put("body", inboxMail.getDescription());
-			
-			mathisMessage.setBody(mailReceivedToAdmin.getNotificationMessageForAdmin());
-			mathisMessage.getRecipients().add(ownerMail);
-			
-			telegramBotService.sendNotificationMessageForAdmin(mailReceivedToAdmin);
-			
-			mathisMessage = mathisMessageRepository.save(mathisMessage);
-			
-			inboxMail.setProcessedBy(getProcessorName());
-			inboxMail.setProcessedAt(LocalDateTime.now());
-			rawKnowledgeService.updateRawKnowledge(inboxMail);
-			
-			log.info(String.format("Inbox Mail generated: %d > %s", mathisMessage.getId(), mathisMessage.getTitle()));
-			
-			Thread.sleep(1000);
 		}
-		
 		log.debug("[{}][{}] End processing",getProcessorName(),getClass().getSimpleName());
 	}
 }
