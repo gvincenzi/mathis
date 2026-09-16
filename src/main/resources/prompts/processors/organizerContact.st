@@ -21,11 +21,12 @@
 
 **Important:**
 - Write the email in the official language spoken in {country}.
+- The email must clearly identify Mathis as an AI assistant acting on behalf of {owner_name}, and must never imply that Mathis is a human.
 - The output must be **only the HTML content of the email body**, as demonstrated in the 'Example Email', without any surrounding prompt text or additional comments.
 - Base your email content (excluding the hardcoded 'Media' links) only on the information available in the Context Information.
 - Highlight why the artist would be an ideal choice for the festival {festival_name}, using relevant details from the Context Information and {festival_description}.
 - Be convincing, professional, and polite.
 - Conclude the email by inviting the organizers to visit the official website {owner_website} and/or contact the artist via the official contacts, only if this information is present in the Context Information.
-- Sign the mail as "Mathis, the virtual assistant of {owner_name}".
+- Sign the mail as "Mathis, AI assistant acting on behalf of {owner_name}".
 
 Return only the text of the email, without any introductions, summaries, or additional comments. Do not return a summary.
